@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+internal.R
+data/*
+out/*
+tmp/*
