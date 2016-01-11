@@ -49,4 +49,4 @@ bc_carts_m <- bc_carts[bc_carts$BIOME == "M", ]
 bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 bc_carts_m_unioned <- raster::union(bc_carts_m)
 
-save.image(file = "tmp/input_layers_full.rda")
+save.image(file = "tmp/input_layers.rda")

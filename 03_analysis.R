@@ -28,6 +28,9 @@ load("tmp/input_layers.rda")
 ## Get the earliest year of protection for polygon segments that overlap
 bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "PROTDATE", min, "numeric", na.rm = TRUE)
 
+## Get areas of unioned polygons
+bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
+
 ## Aggregate the protected areas by their protected date
 bc_carts_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = c("prot_date"))
 
@@ -43,6 +46,9 @@ carts_eco <- rgeos::createSPComment(carts_eco) # Ensure polygon holes are proper
 ## Calculate size of protected areas in each ecoregion
 carts_eco$prot_area <- rgeos::gArea(carts_eco, byid = TRUE)
 
+
+bc_area_sq_m <- 9.44735e11
+
 ## Summarize
 carts_eco_summary_by_year <- carts_eco@data %>%
   filter(prot_date > 0) %>%
@@ -52,12 +58,14 @@ carts_eco_summary_by_year <- carts_eco@data %>%
             tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-carts_bc_summary_by_year <- carts_eco_summary_by_year %>%
+## Provincial summary
+carts_bc_summary_by_year <- bc_carts_t_unioned@data %>%
+  filter(prot_date > 0) %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
-            ecoregion_area = 9.44735e11,
-            tot_protected = sum(tot_protected),
+            ecoregion_area = bc_area_sq_m,
+            tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
 cum_summary <- bind_rows(carts_eco_summary_by_year, carts_bc_summary_by_year) %>%
@@ -77,19 +85,28 @@ ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
   geom_path() +
   facet_wrap(~ecoregion)
 
-bc_designation_summary <- bc_carts@data %>%
+bc_designation_summary <- bc_carts_t@data %>%
   group_by(Designation = TYPE_E) %>%
   summarise(total_area_ha = sum(O_AREA),
-            percent_of_bc = total_area_ha / 94473500 * 100) %>%
+            percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
   bind_rows(data_frame(Designation = "British Columbia Total",
                        total_area_ha = sum(.$total_area_ha),
                        percent_of_bc = sum(.$percent_of_bc))) %>%
   mutate(percent_of_bc = round(percent_of_bc, 4))
 
-bc_iucn_summary <- bc_carts@data %>%
+bc_designation_iucn_summary <- bc_carts_t@data %>%
   group_by(TYPE_E, IUCN_CAT) %>%
   summarise(total_area_ha = sum(O_AREA),
-            percent_of_bc = total_area_ha / 94473500 * 100) %>%
+            percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
+  bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
+                       total_area_ha = sum(.$total_area_ha),
+                       percent_of_bc = sum(.$percent_of_bc))) %>%
+  mutate(percent_of_bc = round(percent_of_bc, 4))
+
+bc_iucn_summary <- bc_carts_t@data %>%
+  group_by(IUCN_CAT) %>%
+  summarise(total_area_ha = sum(O_AREA),
+            percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
   bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
                        total_area_ha = sum(.$total_area_ha),
                        percent_of_bc = sum(.$percent_of_bc))) %>%
