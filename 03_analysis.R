@@ -25,8 +25,13 @@ source("fun.R")
 ## Load the cleanup up data from 02_clean.R
 load("tmp/input_layers.rda")
 
+## Set the IUCN category as an ordered factor:
+bc_carts_t$IUCN_CAT = factor_iucn_cats(bc_carts_t$IUCN_CAT)
+
 ## Get the earliest year of protection for polygon segments that overlap
 bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "PROTDATE", min, "numeric", na.rm = TRUE)
+
+bc_carts_t_unioned$iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "IUCN_CAT", min, "factor", na.rm = TRUE)
 
 ## Get areas of unioned polygons
 bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
@@ -47,7 +52,7 @@ carts_eco <- rgeos::createSPComment(carts_eco) # Ensure polygon holes are proper
 carts_eco$prot_area <- rgeos::gArea(carts_eco, byid = TRUE)
 
 
-bc_area_sq_m <- 9.44735e11
+bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
 carts_eco_summary_by_year <- carts_eco@data %>%
@@ -85,6 +90,8 @@ ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
   geom_path() +
   facet_wrap(~ecoregion)
 
+## Need to double check which area metric to use here.
+
 bc_designation_summary <- bc_carts_t@data %>%
   group_by(Designation = TYPE_E) %>%
   summarise(total_area_ha = sum(O_AREA),
@@ -104,13 +111,10 @@ bc_designation_iucn_summary <- bc_carts_t@data %>%
   mutate(percent_of_bc = round(percent_of_bc, 4))
 
 bc_iucn_summary <- bc_carts_t@data %>%
+  mutate(IUCN_CAT) %>%
   group_by(IUCN_CAT) %>%
   summarise(total_area_ha = sum(O_AREA),
-            percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
-  bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
-                       total_area_ha = sum(.$total_area_ha),
-                       percent_of_bc = sum(.$percent_of_bc))) %>%
-  mutate(percent_of_bc = round(percent_of_bc, 4))
+            percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100)
 
 write_csv(cum_summary, path = "out/ecoregion_cons_lands_trends.csv")
 write_csv(bc_designation_summary, path = "out/bc_carts_designation_summary.csv")

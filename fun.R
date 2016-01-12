@@ -26,16 +26,28 @@
 #'
 #' @examples
 get_unioned_attribute <- function(unioned_sp, orig_sp, col, fun, return_type, ...) {
-  if (!return_type %in% c("logical", "character", "numeric", "double", "integer", "complex")) {
-    stop("return_type is not a valid data type")
+  if (return_type %in% c("logical", "character", "numeric", "double", "integer", "complex")) {
+    return_call <- call(return_type, 1)
+  } else if (return_type == "factor") {
+    lvls <- sort(unique(orig_sp[[col]]))
+    fac <- TRUE
+    return_call <- expression(factor(1, levels = lvls))
+  } else {
+    stop(return_type, "is not a valid data type")
   }
-  return_call <- call(return_type, 1)
 
   unioned_ids <- get_unioned_ids(unioned_sp)
 
-  vapply(unioned_ids, function(x) {
+  ret <- vapply(unioned_ids, function(x) {
     fun(orig_sp[[col]][x], ...)
   }, eval(return_call))
+
+  if (fac) {
+    ret <- lvls[ret]
+  }
+
+  ret
+
 }
 
 ## Function to get the original polygon ids that make up each new polygon in the
@@ -60,4 +72,10 @@ fill_initial_na <- function(x) {
     x[1:runs$lengths[1]] <- NA
   }
   x
+}
+
+iucn_cats <- function() ordered(c("Ia", "Ib", "II", "III", "IV", "V", "VI"))
+
+factor_iucn_cats <- function(x) {
+  factor(x, levels = iucn_cats(), ordered = TRUE)
 }
