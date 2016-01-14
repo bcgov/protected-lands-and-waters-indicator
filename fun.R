@@ -28,6 +28,7 @@
 get_unioned_attribute <- function(unioned_sp, orig_sp, col, fun, return_type, ...) {
   if (return_type %in% c("logical", "character", "numeric", "double", "integer", "complex")) {
     return_call <- call(return_type, 1)
+    fac <- FALSE
   } else if (return_type == "factor") {
     lvls <- sort(unique(orig_sp[[col]]))
     fac <- TRUE
@@ -49,6 +50,16 @@ get_unioned_attribute <- function(unioned_sp, orig_sp, col, fun, return_type, ..
   ret
 
 }
+
+which_min <- function(x) {
+  if (all(is.na(x))) {
+    fun <- first
+  } else {
+    fun <- which.min
+  }
+  fun(x)
+}
+
 
 ## Function to get the original polygon ids that make up each new polygon in the
 ## unioned product (the result of raster:union(SPDF, missing))

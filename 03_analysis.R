@@ -31,7 +31,11 @@ bc_carts_t$IUCN_CAT = factor_iucn_cats(bc_carts_t$IUCN_CAT)
 ## Get the earliest year of protection for polygon segments that overlap
 bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "PROTDATE", min, "numeric", na.rm = TRUE)
 
+## Get the minimum iucn category
 bc_carts_t_unioned$iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "IUCN_CAT", min, "factor", na.rm = TRUE)
+
+## Get the row.names of the polygon with the minimum iucn category
+bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "IUCN_CAT", which_min, "integer")
 
 ## Get areas of unioned polygons
 bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
