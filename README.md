@@ -4,7 +4,7 @@
 
 ---
 
-## Analysis of trends in conservation land designations in B.C. ecosystems
+## Analysis of trends in parks and protected areas in B.C. ecosystems
 
 ### Project Status
 
