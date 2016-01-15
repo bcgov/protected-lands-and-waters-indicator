@@ -86,14 +86,6 @@ cum_summary <- bind_rows(carts_eco_summary_by_year, carts_bc_summary_by_year) %>
          prot_date_full = paste0(prot_date, "-01-01")) %>%
   filter(!is.na(cum_area_protected))
 
-ggplot(cum_summary, aes(x = prot_date, y = cum_percent_protected)) +
-  geom_path() +
-  facet_wrap(~ecoregion)
-
-ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
-  geom_path() +
-  facet_wrap(~ecoregion)
-
 ## Need to double check which area metric to use here.
 
 bc_designation_summary <- bc_carts_t@data %>%
