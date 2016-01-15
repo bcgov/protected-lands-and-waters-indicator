@@ -18,7 +18,6 @@ library(bcmaps)
 library(readr) # writing csv files
 library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
-library(ggplot2) # plotting
 
 source("fun.R")
 

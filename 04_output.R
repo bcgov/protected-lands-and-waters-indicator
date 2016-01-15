@@ -9,12 +9,17 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
+
+library(ggplot2)
+library(envreportutils) # for order_df and theme_soe
+
 cum_summary$ecoregion <- tools::toTitleCase(tolower(cum_summary$ecoregion))
 cum_summary <- order_df(cum_summary, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 
 ggplot(cum_summary, aes(x = prot_date, y = cum_percent_protected)) +
-  geom_path() +
-  facet_wrap(~ecoregion, labeller = label_wrap_gen())
+  geom_path(colour = "forestgreen") +
+  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20)) +
+  theme_soe_facet()
 
 ## To much variation in size for this to be useful
 # ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
