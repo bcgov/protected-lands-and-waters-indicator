@@ -61,7 +61,7 @@ bc_area_sq_m <- bc_area(units = "m2")
 ## Summarize
 carts_eco_summary_by_year <- carts_eco@data %>%
   filter(prot_date > 0) %>%
-  complete(c(CRGNNM, area), prot_date, fill = list(prot_area = 0)) %>%
+  complete(c(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
   summarise(ecoregion_area = min(area),
             tot_protected = sum(prot_area),
@@ -80,8 +80,8 @@ carts_bc_summary_by_year <- bc_carts_t_unioned@data %>%
 cum_summary <- bind_rows(carts_eco_summary_by_year, carts_bc_summary_by_year) %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
-  mutate(cum_area_protected = fill_initial_na(cumsum(tot_protected)),
-         cum_percent_protected = fill_initial_na(cumsum(percent_protected)),
+  mutate(cum_area_protected = cumsum(tot_protected),
+         cum_percent_protected = cumsum(percent_protected),
          type = "All conservation lands",
          prot_date_full = paste0(prot_date, "-01-01")) %>%
   filter(!is.na(cum_area_protected))
