@@ -13,13 +13,23 @@
 library(ggplot2)
 library(envreportutils) # for order_df and theme_soe
 
+load("tmp/analyzed.rda")
+
 cum_summary$ecoregion <- tools::toTitleCase(tolower(cum_summary$ecoregion))
 cum_summary <- order_df(cum_summary, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 
-ggplot(cum_summary, aes(x = prot_date, y = cum_percent_protected)) +
+ecoregion_facet_plot <- ggplot(cum_summary,
+                               aes(x = prot_date, y = cum_percent_protected)) +
   geom_path(colour = "forestgreen") +
-  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20)) +
-  theme_soe_facet()
+  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 5) +
+  scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
+  scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
+  labs(x = "Year", y = "Cumulative percent of ecoregion protected") +
+  theme_minimal() +
+  theme(panel.margin.x = unit(1.5, "lines"),
+        axis.text = element_text(size = 8))
+  # theme_soe_facet() +
+  # theme(panel.margin = unit(1, "mm"))
 
 ## To much variation in size for this to be useful
 # ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
