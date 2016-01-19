@@ -50,6 +50,10 @@ bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 bc_carts_m_unioned <- raster::union(bc_carts_m)
 
 ## Clip ecoregions to terrestrial boundaries
-ecoregions_t <- raster::intersect(ecoregions, bc_bound_hres)
+bc_exploded <- sp::disaggregate(bc_bound_hres)
+ecoregions_t <- raster::intersect(ecoregions, bc_exploded)
+ecoregions_t <- gBuffer(ecoregions_t, byid = TRUE, width = 0) # Fix ring self-intersection
+ecoregions_t <- createSPComment(ecoregions_t)
+ecoregions_t <- aggregate(ecoregions_t, by = names(ecoregions))
 
 save.image(file = "tmp/input_layers.rda")

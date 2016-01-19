@@ -45,10 +45,10 @@ bc_carts_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = c("pro
 ###
 
 ## Calculate the area of the ecoregions
-ecoregions$area <- rgeos::gArea(ecoregions, byid = TRUE)
+ecoregions_t$area <- rgeos::gArea(ecoregions_t, byid = TRUE)
 
 ## Intersect ecoregions with protected areas
-carts_eco <- raster::intersect(ecoregions, bc_carts_agg)
+carts_eco <- raster::intersect(ecoregions_t, bc_carts_agg)
 carts_eco <- rgeos::createSPComment(carts_eco) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
