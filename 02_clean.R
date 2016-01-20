@@ -15,7 +15,8 @@ library(rgdal)
 library(sp)
 library(rgeos)
 library(raster)
-library(bcmaps)
+library(bcmaps) # install using devtools::install_github("bcgov/bcmaps")
+library(rmapshaper) # install using devtools::install_github("ateucher/rmapshaper")
 
 ## The CARTS database is downloadable from the Canadian Council on
 ## Ecological Areas here: http://www.ccea.org/carts/
