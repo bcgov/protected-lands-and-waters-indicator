@@ -40,7 +40,7 @@ bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned
 bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
 
 ## Aggregate the protected areas by their protected date
-bc_carts_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = c("prot_date"))
+bc_carts_t_agg <- aggregate(bc_carts_t_unioned[, "prot_date"], by = c("prot_date"))
 
 ###
 
@@ -48,17 +48,17 @@ bc_carts_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = c("pro
 ecoregions_t$area <- rgeos::gArea(ecoregions_t, byid = TRUE)
 
 ## Intersect ecoregions with protected areas
-carts_eco <- raster::intersect(ecoregions_t, bc_carts_agg)
-carts_eco <- rgeos::createSPComment(carts_eco) # Ensure polygon holes are properly identified
+carts_eco_t <- raster::intersect(ecoregions_t, bc_carts_t_agg)
+carts_eco_t <- rgeos::createSPComment(carts_eco_t) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
-carts_eco$prot_area <- rgeos::gArea(carts_eco, byid = TRUE)
+carts_eco_t$prot_area <- rgeos::gArea(carts_eco_t, byid = TRUE)
 
 
 bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
-carts_eco_summary_by_year <- carts_eco@data %>%
+carts_eco_t_summary_by_year <- carts_eco_t@data %>%
   filter(prot_date > 0) %>%
   complete(c(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
@@ -67,7 +67,7 @@ carts_eco_summary_by_year <- carts_eco@data %>%
             percent_protected = tot_protected / ecoregion_area * 100)
 
 ## Provincial summary
-carts_bc_summary_by_year <- bc_carts_t_unioned@data %>%
+carts_bc_t_summary_by_year <- bc_carts_t_unioned@data %>%
   filter(prot_date > 0) %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
@@ -76,7 +76,7 @@ carts_bc_summary_by_year <- bc_carts_t_unioned@data %>%
             tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-cum_summary <- bind_rows(carts_eco_summary_by_year, carts_bc_summary_by_year) %>%
+cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_year) %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
   mutate(cum_area_protected = cumsum(tot_protected),
@@ -87,7 +87,7 @@ cum_summary <- bind_rows(carts_eco_summary_by_year, carts_bc_summary_by_year) %>
 
 ## Need to double check which area metric to use here.
 
-bc_designation_summary <- bc_carts_t@data %>%
+bc_designation_summary_t <- bc_carts_t@data %>%
   group_by(Designation = TYPE_E) %>%
   summarise(total_area_ha = sum(O_AREA),
             percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
@@ -96,7 +96,7 @@ bc_designation_summary <- bc_carts_t@data %>%
                        percent_of_bc = sum(.$percent_of_bc))) %>%
   mutate(percent_of_bc = round(percent_of_bc, 4))
 
-bc_designation_iucn_summary <- bc_carts_t@data %>%
+bc_designation_iucn_summary_t <- bc_carts_t@data %>%
   group_by(TYPE_E, IUCN_CAT) %>%
   summarise(total_area_ha = sum(O_AREA),
             percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100) %>%
@@ -105,7 +105,7 @@ bc_designation_iucn_summary <- bc_carts_t@data %>%
                        percent_of_bc = sum(.$percent_of_bc))) %>%
   mutate(percent_of_bc = round(percent_of_bc, 4))
 
-bc_iucn_summary <- bc_carts_t@data %>%
+bc_iucn_summary_t <- bc_carts_t@data %>%
   mutate(IUCN_CAT) %>%
   group_by(IUCN_CAT) %>%
   summarise(total_area_ha = sum(O_AREA),
@@ -113,6 +113,6 @@ bc_iucn_summary <- bc_carts_t@data %>%
 
 save.image("tmp/analyzed.rda")
 
-write_csv(cum_summary, path = "out/ecoregion_cons_lands_trends.csv")
-write_csv(bc_designation_summary, path = "out/bc_carts_designation_summary.csv")
-write_csv(bc_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
+write_csv(cum_summary_t, path = "out/ecoregion_cons_lands_trends.csv")
+write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv")
+write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")
