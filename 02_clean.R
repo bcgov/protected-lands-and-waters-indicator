@@ -49,11 +49,12 @@ bc_carts_m <- bc_carts[bc_carts$BIOME == "M", ]
 bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 bc_carts_m_unioned <- raster::union(bc_carts_m)
 
-## Clip ecoregions to terrestrial boundaries
-bc_exploded <- sp::disaggregate(bc_bound_hres)
-ecoregions_t <- raster::intersect(ecoregions, bc_exploded)
-ecoregions_t <- gBuffer(ecoregions_t, byid = TRUE, width = 0) # Fix ring self-intersection
-ecoregions_t <- createSPComment(ecoregions_t)
-ecoregions_t <- aggregate(ecoregions_t, by = names(ecoregions))
+## Remove marine ecoregions
+m_ecoregions <- c("GPB", "HCS", "IPS", "OPS", "SBC", "TPC")
+ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
+
+## Remove terrestrial areas from marine ecoregions
+ecoregions_m <- ms_erase(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
+                         bc_bound_hres)
 
 save.image(file = "tmp/input_layers.rda")
