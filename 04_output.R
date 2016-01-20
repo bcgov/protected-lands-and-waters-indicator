@@ -10,19 +10,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
+library(dplyr)
 library(ggplot2)
 library(envreportutils) # for order_df and theme_soe
 library(geojsonio)
 library(rmapshaper)
+library(readr)
+library(sp)
 
 load("tmp/analyzed.rda")
 
-cum_summary$ecoregion <- tools::toTitleCase(tolower(cum_summary$ecoregion))
-cum_summary <- order_df(cum_summary, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
+cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
+cum_summary_t <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
+cum_summary_t$is_bc <- ifelse(cum_summary_t$ecoregion == "British Columbia", TRUE, FALSE)
 
-label_df <- cum_summary[cum_summary$prot_date == max(cum_summary$prot_date), ]
+label_df <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot_date), ]
 
-ecoregion_facet_plot <- ggplot(cum_summary,
+ecoregion_facet_plot <- ggplot(cum_summary_t,
                                aes(x = prot_date, y = cum_percent_protected)) +
   geom_path(colour = "forestgreen") +
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
@@ -40,8 +44,23 @@ ecoregion_facet_plot <- ggplot(cum_summary,
 
 plot(ecoregion_facet_plot)
 
-## To much variation in size for this to be useful
-# ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
+carts_eco_t_current <- cum_summary_t %>% group_by(ecoregion, is_bc) %>%
+  summarize(total_ha_prot = round(max(cum_area_protected) / 1e4),
+            percent_protected = round(max(cum_percent_protected), 1)) %>%
+  arrange(ecoregion) %>%
+  ungroup()
+
+summary_eco_t_plot <- ggplot(carts_eco_t_current, aes(x = ecoregion, y = percent_protected, fill = is_bc)) +
+  scale_fill_manual(guide = "none", values = c("forestgreen", "royalblue3")) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_soe() +
+  theme(axis.text.y = element_text(colour = ifelse(carts_eco_t_current$is_bc, "royalblue3", "black")))
+
+
+
+## Too much variation in size for this to be useful
+# ggplot(cum_summary_t, aes(x = prot_date, y = cum_area_protected)) +
 #   geom_path() +
 #   facet_wrap(~ecoregion)
 
