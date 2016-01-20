@@ -17,12 +17,15 @@ library(geojsonio)
 library(rmapshaper)
 library(readr)
 library(sp)
+library(ggthemes)
+library(maptools)
 
 load("tmp/analyzed.rda")
 
 cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 cum_summary_t$is_bc <- ifelse(cum_summary_t$ecoregion == "British Columbia", TRUE, FALSE)
+cum_summary_t$decade <- floor(cum_summary_t$prot_date / 10) * 10
 
 label_df <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot_date), ]
 
@@ -44,20 +47,47 @@ ecoregion_facet_plot <- ggplot(cum_summary_t,
 
 plot(ecoregion_facet_plot)
 
-carts_eco_t_current <- cum_summary_t %>% group_by(ecoregion, is_bc) %>%
+carts_eco_t_current <- cum_summary_t %>% group_by(ecoregion, ecoregion_code, is_bc) %>%
   summarize(total_ha_prot = round(max(cum_area_protected) / 1e4),
             percent_protected = round(max(cum_percent_protected), 1)) %>%
   arrange(ecoregion) %>%
   ungroup()
 
 summary_eco_t_plot <- ggplot(carts_eco_t_current, aes(x = ecoregion, y = percent_protected, fill = is_bc)) +
-  scale_fill_manual(guide = "none", values = c("forestgreen", "royalblue3")) +
+  scale_fill_manual(guide = "none", values = c("#008000", "royalblue3")) +
   geom_bar(stat = "identity") +
   coord_flip() +
+  scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
+  labs(x = "Ecoregion", y = "Percent ecoregion protected") +
   theme_soe() +
-  theme(axis.text.y = element_text(colour = ifelse(carts_eco_t_current$is_bc, "royalblue3", "black")))
+  theme(axis.text.y = element_text(colour = ifelse(carts_eco_t_current$is_bc, "royalblue3", "black")),
+        axis.line = element_blank(), panel.grid.major.y = element_blank())
 
+plot(summary_eco_t_plot)
 
+## Make a map of protection level:
+carts_eco_t_by_decade <- cum_summary_t %>%
+  group_by(ecoregion_code, ecoregion, decade) %>%
+  summarise(percent_protected = max(cum_percent_protected))
+
+ecoregions_t_simp <- ms_simplify(ecoregions_t, 0.01)
+ecoregions_t_gg <- fortify(ecoregions_t_simp, region = "CRGNCD")
+ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id" = "ecoregion_code"))
+
+decade_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+  facet_wrap(~decade) +
+  geom_polygon(colour = "grey80") +
+  scale_fill_continuous(low = "white", high = "#008000") +
+  coord_equal() +
+  theme_map()
+
+current_map <- ecoregions_t_gg %>%
+  filter(decade == 2010) %>%
+  ggplot(aes(x = long, y = lat, group = group, fill = percent_protected)) +
+  geom_polygon(colour = "grey80") +
+  scale_fill_continuous(low = "white", high = "#008000") +
+  coord_equal() +
+  theme_map()
 
 ## Too much variation in size for this to be useful
 # ggplot(cum_summary_t, aes(x = prot_date, y = cum_area_protected)) +
@@ -71,9 +101,8 @@ write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv
 write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
-ecoregions_t_out <- ecoregions_t[, "CRGNCD"]
+ecoregions_t_out <- ecoregions_t_simp[, "CRGNCD"]
 names(ecoregions_t_out) <- "ECOREGION_CODE"
 file.remove("out/ecoregions.geojson")
 spTransform(ecoregions_t_out, CRS("+init=epsg:4326")) %>%
-  ms_simplify() %>%
   geojson_write(file = "out/ecoregions.geojson", precision = 5)
