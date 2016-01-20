@@ -112,7 +112,3 @@ bc_iucn_summary_t <- bc_carts_t@data %>%
             percent_of_bc = total_area_ha / (bc_area_sq_m / 1e4) * 100)
 
 save.image("tmp/analyzed.rda")
-
-write_csv(cum_summary_t, path = "out/ecoregion_cons_lands_trends.csv")
-write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv")
-write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")

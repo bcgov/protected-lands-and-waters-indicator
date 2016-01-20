@@ -12,6 +12,8 @@
 
 library(ggplot2)
 library(envreportutils) # for order_df and theme_soe
+library(geojsonio)
+library(rmapshaper)
 
 load("tmp/analyzed.rda")
 
@@ -42,3 +44,17 @@ plot(ecoregion_facet_plot)
 # ggplot(cum_summary, aes(x = prot_date, y = cum_area_protected)) +
 #   geom_path() +
 #   facet_wrap(~ecoregion)
+
+cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
+
+write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
+write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv")
+write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")
+
+## Output terrestrial ecoregions as geojson for the visualization:
+ecoregions_t_out <- ecoregions_t[, "CRGNCD"]
+names(ecoregions_t_out) <- "ECOREGION_CODE"
+file.remove("out/ecoregions.geojson")
+spTransform(ecoregions_t_out, CRS("+init=epsg:4326")) %>%
+  ms_simplify() %>%
+  geojson_write(file = "out/ecoregions.geojson", precision = 5)
