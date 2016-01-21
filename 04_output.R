@@ -80,6 +80,8 @@ decade_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group
   scale_fill_continuous(low = "white", high = "#008000") +
   coord_equal() +
   theme_map()
+plot(decade_facet_map)
+
 
 current_map <- ecoregions_t_gg %>%
   filter(decade == 2010) %>%
@@ -88,6 +90,7 @@ current_map <- ecoregions_t_gg %>%
   scale_fill_continuous(low = "white", high = "#008000") +
   coord_equal() +
   theme_map()
+plot(current_map)
 
 ## Too much variation in size for this to be useful
 # ggplot(cum_summary_t, aes(x = prot_date, y = cum_area_protected)) +
