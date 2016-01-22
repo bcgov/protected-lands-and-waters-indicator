@@ -15,6 +15,7 @@ library(rgeos)
 library(raster)
 library(bcmaps)
 
+# data manipulation packages
 library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
 
