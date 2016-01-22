@@ -19,6 +19,7 @@ library(bcmaps)
 library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
 
+## Load the functions we need
 source("fun.R")
 
 ## Load the cleanup up data from 02_clean.R
