@@ -22,11 +22,16 @@ library(maptools)
 
 load("tmp/analyzed.rda")
 
+## Prep data frame for visualizations
 cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 cum_summary_t$is_bc <- ifelse(cum_summary_t$ecoregion == "British Columbia", TRUE, FALSE)
 cum_summary_t$decade <- floor(cum_summary_t$prot_date / 10) * 10
 
+###############################################################################
+## Facet line-chart by ecoregion of cumulative percent protected over time
+
+# Make a data frame of labels for current % protected
 label_df <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot_date), ]
 
 ecoregion_facet_plot <- ggplot(cum_summary_t,
@@ -47,6 +52,8 @@ ecoregion_facet_plot <- ggplot(cum_summary_t,
 
 plot(ecoregion_facet_plot)
 
+###############################################################################
+## Bar chart of current protection by ecoregion
 carts_eco_t_current <- cum_summary_t %>% group_by(ecoregion, ecoregion_code, is_bc) %>%
   summarize(total_ha_prot = round(max(cum_area_protected) / 1e4),
             percent_protected = round(max(cum_percent_protected), 1)) %>%
@@ -65,7 +72,8 @@ summary_eco_t_plot <- ggplot(carts_eco_t_current, aes(x = ecoregion, y = percent
 
 plot(summary_eco_t_plot)
 
-## Make a map of protection level:
+###############################################################################
+## Make a facetted map of protection level by decade
 carts_eco_t_by_decade <- cum_summary_t %>%
   group_by(ecoregion_code, ecoregion, decade) %>%
   summarise(percent_protected = max(cum_percent_protected))
@@ -82,7 +90,8 @@ decade_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group
   theme_map()
 plot(decade_facet_map)
 
-
+###############################################################################
+## Map of urrent level of protection by ecoregion
 current_map <- ecoregions_t_gg %>%
   filter(decade == 2010) %>%
   ggplot(aes(x = long, y = lat, group = group, fill = percent_protected)) +
@@ -97,8 +106,8 @@ plot(current_map)
 #   geom_path() +
 #   facet_wrap(~ecoregion)
 
+## Output csv files
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
-
 write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
 write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv")
 write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")
