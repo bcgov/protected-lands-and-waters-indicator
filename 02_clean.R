@@ -58,4 +58,6 @@ ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
 ecoregions_m <- ms_erase(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
                          bc_bound_hres)
 
+dir.create("tmp", showWarnings = FALSE)
+
 save.image(file = "tmp/input_layers.rda")
