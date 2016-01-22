@@ -15,7 +15,6 @@ library(rgeos)
 library(raster)
 library(bcmaps)
 
-library(readr) # writing csv files
 library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
 
