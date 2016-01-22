@@ -22,6 +22,9 @@ library(maptools)
 
 load("tmp/analyzed.rda")
 
+
+# Terrestrial -------------------------------------------------------------
+
 ## Prep data frame for visualizations
 cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
@@ -32,9 +35,9 @@ cum_summary_t$decade <- floor(cum_summary_t$prot_date / 10) * 10
 ## Facet line-chart by ecoregion of cumulative percent protected over time
 
 # Make a data frame of labels for current % protected
-label_df <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot_date), ]
+current_eco_t <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot_date), ]
 
-ecoregion_facet_plot <- ggplot(cum_summary_t,
+ecoregion_t_facet_plot <- ggplot(cum_summary_t,
                                aes(x = prot_date, y = cum_percent_protected)) +
   geom_path(colour = "forestgreen") +
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
@@ -44,25 +47,19 @@ ecoregion_facet_plot <- ggplot(cum_summary_t,
   theme_minimal() +
   theme(panel.margin.x = unit(1.5, "lines"),
         axis.text = element_text(size = 8)) +
-  geom_text(data = label_df, x = 1980, y = 80,
+  geom_text(data = current_eco_t, x = 1980, y = 80,
             aes(label = paste(round(cum_percent_protected, 1), "%")),
             size = 3)
   # theme_soe_facet() +
   # theme(panel.margin = unit(1, "mm"))
 
-plot(ecoregion_facet_plot)
+plot(ecoregion_t_facet_plot)
 
 ###############################################################################
 ## Bar chart of current protection by ecoregion
-carts_eco_t_current <- cum_summary_t %>% group_by(ecoregion, ecoregion_code, is_bc) %>%
-  summarize(total_ha_prot = round(max(cum_area_protected) / 1e4),
-            percent_protected = round(max(cum_percent_protected), 1)) %>%
-  arrange(ecoregion) %>%
-  ungroup()
-
-summary_eco_t_plot <- ggplot(carts_eco_t_current, aes(x = ecoregion, y = percent_protected, fill = is_bc)) +
-  scale_fill_manual(guide = "none", values = c("#008000", "royalblue3")) +
-  geom_bar(stat = "identity") +
+summary_eco_t_plot <- ggplot(current_eco_t, aes(x = ecoregion, y = cum_percent_protected, colour = is_bc)) +
+  scale_colour_manual(guide = "none", values = c(NA, "royalblue3")) +
+  geom_bar(stat = "identity", fill = "#008000", size = 1) +
   coord_flip() +
   scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
   labs(x = "Ecoregion", y = "Percent ecoregion protected") +
@@ -82,27 +79,119 @@ ecoregions_t_simp <- ms_simplify(ecoregions_t, 0.01)
 ecoregions_t_gg <- fortify(ecoregions_t_simp, region = "CRGNCD")
 ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id" = "ecoregion_code"))
 
-decade_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+decade_t_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
   facet_wrap(~decade) +
   geom_polygon(colour = "grey80") +
   scale_fill_continuous(low = "white", high = "#008000") +
   coord_equal() +
   theme_map()
-plot(decade_facet_map)
+plot(decade_t_facet_map)
 
 ###############################################################################
 ## Map of urrent level of protection by ecoregion
-current_map <- ecoregions_t_gg %>%
+current_t_map <- ecoregions_t_gg %>%
   filter(decade == 2010) %>%
   ggplot(aes(x = long, y = lat, group = group, fill = percent_protected)) +
   geom_polygon(colour = "grey80") +
   scale_fill_continuous(low = "white", high = "#008000") +
   coord_equal() +
   theme_map()
-plot(current_map)
+plot(current_t_map)
+
+
+# Marine ------------------------------------------------------------------
+
+
+## Prep data frame for visualizations
+cum_summary_m$ecoregion <- tools::toTitleCase(tolower(cum_summary_m$ecoregion))
+cum_summary_m <- order_df(cum_summary_m, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
+cum_summary_m$is_bc <- ifelse(cum_summary_m$ecoregion == "British Columbia", TRUE, FALSE)
+cum_summary_m$decade <- floor(cum_summary_m$prot_date / 10) * 10
+
+###############################################################################
+## Facet line-chart by ecoregion of cumulative percent protected over time
+
+# Make a data frame of labels for current % protected
+current_eco_m <- cum_summary_m[cum_summary_m$prot_date == max(cum_summary_m$prot_date), ]
+
+ecoregion_m_facet_plot <- ggplot(cum_summary_m,
+                               aes(x = prot_date, y = cum_percent_protected)) +
+  geom_path(colour = "forestgreen") +
+  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
+  scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
+  scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
+  labs(x = "Year", y = "Cumulative percent of ecoregion protected") +
+  theme_minimal() +
+  theme(panel.margin.x = unit(1.5, "lines"),
+        axis.text = element_text(size = 8)) +
+  geom_text(data = current_eco_m, x = 1980, y = 80,
+            aes(label = paste(round(cum_percent_protected, 1), "%")),
+            size = 3)
+  # theme_soe_facet() +
+  # theme(panel.margin = unit(1, "mm"))
+
+plot(ecoregion_m_facet_plot)
+
+###############################################################################
+## Bar chart of current protection by ecoregion
+summary_eco_m_plot <- ggplot(current_eco_m, aes(x = ecoregion, y = cum_percent_protected, colour = is_bc)) +
+  scale_colour_manual(guide = "none", values = c(NA, "royalblue3")) +
+  geom_bar(stat = "identity", fill = "#008000", size = 1) +
+  coord_flip() +
+  scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
+  labs(x = "Ecoregion", y = "Percent ecoregion protected") +
+  theme_soe() +
+  theme(axis.text.y = element_text(colour = ifelse(carts_eco_m_current$is_bc, "royalblue3", "black")),
+        axis.line = element_blank(), panel.grid.major.y = element_blank())
+
+plot(summary_eco_m_plot)
+
+###############################################################################
+## Make a facetted map of protection level by decade
+carts_eco_m_by_decade <- cum_summary_m %>%
+  group_by(ecoregion_code, ecoregion, decade) %>%
+  summarise(percent_protected = max(cum_percent_protected))
+
+ecoregions_m_simp <- ms_simplify(ecoregions_m, 0.01)
+ecoregions_m_gg <- fortify(ecoregions_m_simp, region = "CRGNCD")
+ecoregions_m_gg_decade <- left_join(ecoregions_m_gg, carts_eco_m_by_decade, by = c("id" = "ecoregion_code"))
+
+decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+  facet_wrap(~decade) +
+  geom_polygon(data = ecoregions_m_gg_decade[!ecoregions_m_gg_decade$hole, ],
+               aes(fill = percent_protected), colour = "grey70") +
+  geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
+               colour = "grey70") +
+  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
+                       palette = "YlGnBu", direction = 1, na.value = "#ffffd9") +
+  coord_equal() +
+  labs(fill = "Percent of marine\necoregion protected\n") +
+  theme_map() +
+  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
+        legend.title = element_text(size = 11), legend.title.align = 1)
+plot(decade_m_facet_map)
+
+###############################################################################
+## Map of urrent level of protection by ecoregion
+eco_m_gg_current <- ecoregions_m_gg %>% filter((decade == 2010 | is.na(ecoregion)))
+
+current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group)) +
+  geom_polygon(data = eco_m_gg_current[!eco_m_gg_current$hole, ],
+               aes(fill = percent_protected), colour = "grey70") +
+  geom_polygon(data = eco_m_gg_current[eco_m_gg_current$hole, ], fill = "white",
+               colour = "grey70") +
+  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg$percent_protected, na.rm = TRUE)),
+                      palette = "YlGnBu", direction = 1, na.value = "#ffffd9") +
+  coord_equal() +
+  labs(fill = "Percent of marine\necoregion protected\n") +
+  theme_map() +
+  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
+        legend.title = element_text(size = 11), legend.title.align = 1)
+plot(current_m_map)
+
 
 ## Too much variation in size for this to be useful
-# ggplot(cum_summary_t, aes(x = prot_date, y = cum_area_protected)) +
+# ggplot(cum_summary_m, aes(x = prot_date, y = cum_area_protected)) +
 #   geom_path() +
 #   facet_wrap(~ecoregion)
 
