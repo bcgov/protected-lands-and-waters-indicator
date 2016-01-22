@@ -19,6 +19,7 @@ library(readr)
 library(sp)
 library(ggthemes)
 library(maptools)
+library(RColorBrewer)
 
 load("tmp/analyzed.rda")
 
@@ -134,17 +135,39 @@ plot(ecoregion_m_facet_plot)
 
 ###############################################################################
 ## Bar chart of current protection by ecoregion
-summary_eco_m_plot <- ggplot(current_eco_m, aes(x = ecoregion, y = cum_percent_protected, colour = is_bc)) +
-  scale_colour_manual(guide = "none", values = c(NA, "royalblue3")) +
-  geom_bar(stat = "identity", fill = "#008000", size = 1) +
+summary_eco_m_plot <- ggplot(current_eco_m[!current_eco_m$is_bc, ],
+                             aes(x = ecoregion, y = cum_percent_protected, fill = cum_percent_protected)) +
+  scale_fill_distiller(limits = c(0, max(current_eco_m$cum_percent_protected, na.rm = TRUE)),
+                       palette = "YlGnBu", direction = 1, guide = "none") +
+  geom_bar(stat = "identity") +
   coord_flip() +
-  scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
-  labs(x = "Ecoregion", y = "Percent ecoregion protected") +
+  #scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
+  labs(x = "Marine Ecoregion", y = "Percent Protected") +
   theme_soe() +
-  theme(axis.text.y = element_text(colour = ifelse(carts_eco_m_current$is_bc, "royalblue3", "black")),
-        axis.line = element_blank(), panel.grid.major.y = element_blank())
+  theme(axis.line = element_blank(), panel.grid.major.y = element_blank(),
+        plot.margin = unit(c(2,0,2,0), "lines"))
 
 plot(summary_eco_m_plot)
+
+###############################################################################
+## Map of current level of protection by ecoregion
+eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "ecoregion_code"))
+
+current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group)) +
+  geom_polygon(data = eco_m_gg_current[!eco_m_gg_current$hole, ],
+               aes(fill = cum_percent_protected), colour = "grey70") +
+  geom_polygon(data = eco_m_gg_current[eco_m_gg_current$hole, ], fill = "white",
+               colour = "grey70") +
+  scale_fill_distiller(limits = c(0, max(eco_m_gg_current$cum_percent_protected, na.rm = TRUE)),
+                       palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
+  coord_equal() +
+  labs(fill = "Percent of marine\necoregion protected\n") +
+  theme_map() +
+  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
+        legend.title = element_text(size = 12), legend.text = element_text(size = 11),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.8, "cm"),
+        plot.margin = unit(c(0,0,0,0), "lines"))
+plot(current_m_map)
 
 ###############################################################################
 ## Make a facetted map of protection level by decade
@@ -163,37 +186,18 @@ decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, grou
   geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
                colour = "grey70") +
   scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
-                       palette = "YlGnBu", direction = 1, na.value = "#ffffd9") +
+                       palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
   coord_equal() +
-  labs(fill = "Percent of marine\necoregion protected\n") +
+  labs(fill = "Percent of Marine\nEcoregion Protected\n") +
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 11), legend.title.align = 1, legend.position = c(0.7,0.1))
+        legend.title = element_text(size = 11), legend.position = c(0.7,0.1))
 plot(decade_m_facet_map)
 
-###############################################################################
-## Map of urrent level of protection by ecoregion
-eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "ecoregion_code"))
-
-current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group)) +
-  geom_polygon(data = eco_m_gg_current[!eco_m_gg_current$hole, ],
-               aes(fill = cum_percent_protected), colour = "grey70") +
-  geom_polygon(data = eco_m_gg_current[eco_m_gg_current$hole, ], fill = "white",
-               colour = "grey70") +
-  scale_fill_distiller(limits = c(0, max(eco_m_gg_current$cum_percent_protected, na.rm = TRUE)),
-                      palette = "YlGnBu", direction = 1, na.value = "#ffffd9") +
-  coord_equal() +
-  labs(fill = "Percent of marine\necoregion protected\n") +
-  theme_map() +
-  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 11), legend.title.align = 1)
-plot(current_m_map)
-
-
-## Too much variation in size for this to be useful
-# ggplot(cum_summary_m, aes(x = prot_date, y = cum_area_protected)) +
-#   geom_path() +
-#   facet_wrap(~ecoregion)
+## Multiplot of marine map and bar chart
+png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px")
+multiplot(current_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+dev.off()
 
 ## Output csv files
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
