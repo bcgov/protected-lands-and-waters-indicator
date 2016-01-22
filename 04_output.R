@@ -168,19 +168,19 @@ decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, grou
   labs(fill = "Percent of marine\necoregion protected\n") +
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 11), legend.title.align = 1)
+        legend.title = element_text(size = 11), legend.title.align = 1, legend.position = c(0.7,0.1))
 plot(decade_m_facet_map)
 
 ###############################################################################
 ## Map of urrent level of protection by ecoregion
-eco_m_gg_current <- ecoregions_m_gg %>% filter((decade == 2010 | is.na(ecoregion)))
+eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "ecoregion_code"))
 
 current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group)) +
   geom_polygon(data = eco_m_gg_current[!eco_m_gg_current$hole, ],
-               aes(fill = percent_protected), colour = "grey70") +
+               aes(fill = cum_percent_protected), colour = "grey70") +
   geom_polygon(data = eco_m_gg_current[eco_m_gg_current$hole, ], fill = "white",
                colour = "grey70") +
-  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg$percent_protected, na.rm = TRUE)),
+  scale_fill_distiller(limits = c(0, max(eco_m_gg_current$cum_percent_protected, na.rm = TRUE)),
                       palette = "YlGnBu", direction = 1, na.value = "#ffffd9") +
   coord_equal() +
   labs(fill = "Percent of marine\necoregion protected\n") +
