@@ -123,8 +123,14 @@ carts_eco_m$prot_area <- rgeos::gArea(carts_eco_m, byid = TRUE)
 #bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
+missing_m_ecoregions <- ecoregions_m@data %>%
+  select(CRGNNM, CRGNCD, area) %>%
+  filter(CRGNCD %in% c("TPC", "SBC")) %>%
+  mutate(prot_date = 2013, prot_area = 0)
+
 carts_eco_m_summary_by_year <- carts_eco_m@data %>%
   filter(prot_date > 0) %>%
+  bind_rows(missing_m_ecoregions) %>%
   complete(c(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
   summarise(ecoregion_area = min(area),
