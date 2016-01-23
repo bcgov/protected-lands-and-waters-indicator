@@ -58,6 +58,14 @@ ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
 ecoregions_m <- ms_erase(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
                          bc_bound_hres)
 
+
+# BEC ---------------------------------------------------------------------
+
+bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
+bec <- disaggregate(bec)
+bc_bound_hres <- disaggregate(bc_bound_hres)
+bec_t <- raster::intersect(bec, bc_bound_hres)
+
 dir.create("tmp", showWarnings = FALSE)
 
 save.image(file = "tmp/input_layers.rda")
