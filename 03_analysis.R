@@ -25,8 +25,7 @@ source("fun.R")
 ## Load the cleanup up data from 02_clean.R
 load("tmp/input_layers.rda")
 
-
-# Terrestrial analysis ----------------------------------------------------
+# Terrestrial Ecoregion analysis -----------------------------------------------
 
 ## Set the IUCN category as an ordered factor:
 bc_carts_t$IUCN_CAT = factor_iucn_cats(bc_carts_t$IUCN_CAT)
@@ -88,7 +87,7 @@ cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_ye
          prot_date_full = paste0(prot_date, "-01-01")) %>%
   filter(!is.na(cum_area_protected))
 
-# Marine analysis ----------------------------------------------------
+# Marine Ecoregion analysis ----------------------------------------------------
 
 ## Set the IUCN category as an ordered factor:
 bc_carts_m$IUCN_CAT = factor_iucn_cats(bc_carts_m$IUCN_CAT)
@@ -156,7 +155,30 @@ cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_ye
          prot_date_full = paste0(prot_date, "-01-01")) %>%
   filter(!is.na(cum_area_protected))
 
-# Provincial summaries ------------------------------------------------------
+
+# Terrrestrial BEC -------------------------------------------------------------
+
+
+## Get a simple percent protected of each Biogeoclimatic Zone
+
+# Intersect terrestrial CARTS and BEC and get area
+carts_bec <- raster::intersect(bec_t, bc_carts_t_agg)
+carts_bec$prot_area <- rgeos::gArea(carts_bec, byid = TRUE)
+
+# Get total size of terrestrial area of each zone
+bec_t_summary <- bec_t@data %>%
+  group_by(ZONE_NAME) %>%
+  summarize(total_area = sum(area))
+
+# Summarize
+carts_bec_summary <- carts_bec@data %>%
+  group_by(ZONE_NAME) %>%
+  summarize(prot_area = sum(prot_area)) %>%
+  left_join(bec_t_summary, by = "ZONE_NAME") %>%
+  mutate(percent_protected = prot_area / total_area * 100)
+
+
+# Provincial summaries (no ecoregions/BEC) -------------------------------------
 
 bc_area_ha <- bc_area(units = "ha")
 
