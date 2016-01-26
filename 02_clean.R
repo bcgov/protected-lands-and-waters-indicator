@@ -65,6 +65,7 @@ bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
 bec <- disaggregate(bec)
 bc_bound_hres <- disaggregate(bc_bound_hres)
 bec_t <- raster::intersect(bec, bc_bound_hres)
+bec_t$area <- gArea(bec_t, byid = TRUE)
 
 dir.create("tmp", showWarnings = FALSE)
 
