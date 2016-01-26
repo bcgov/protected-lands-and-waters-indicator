@@ -20,7 +20,7 @@ library(rmapshaper) # install using devtools::install_github("ateucher/rmapshape
 
 ## The CARTS database is downloadable from the Canadian Council on
 ## Ecological Areas here: http://www.ccea.org/carts/
-carts <- readOGR("data", "CARTS_20141231_noQC", stringsAsFactors = FALSE)
+carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_Without_Qc", stringsAsFactors = FALSE)
 
 ## Extract just BC
 bc_carts_orig <- carts[carts$LOC_E == "British Columbia", ]
@@ -65,6 +65,7 @@ bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
 bec <- disaggregate(bec)
 bc_bound_hres <- disaggregate(bc_bound_hres)
 bec_t <- raster::intersect(bec, bc_bound_hres)
+bec_t <- aggregate(bec_t, by = "OBJECTID")
 bec_t$area <- gArea(bec_t, byid = TRUE)
 
 dir.create("tmp", showWarnings = FALSE)
