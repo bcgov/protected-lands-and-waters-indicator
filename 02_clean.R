@@ -65,9 +65,12 @@ bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
 bec <- disaggregate(bec)
 bc_bound_hres <- disaggregate(bc_bound_hres)
 bec_t <- raster::intersect(bec, bc_bound_hres)
-bec_t <- aggregate(bec_t, by = "OBJECTID")
+bec_t$bec_poly_id <- row.names(bec_t)
+# bec_t <- aggregate(bec_t, by = "OBJECTID")
 bec_t$area <- gArea(bec_t, byid = TRUE)
+
+bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
 dir.create("tmp", showWarnings = FALSE)
 
-save.image(file = "tmp/input_layers.rda")
+save.image(file = paste0("tmp/input_layers_", Sys.Date(), ".rda"))
