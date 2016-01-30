@@ -23,7 +23,7 @@ library(tidyr) # for 'complete' function
 source("fun.R")
 
 ## Load the cleanup up data from 02_clean.R
-load("tmp/input_layers.rda")
+# load("tmp/input_layers.rda")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
@@ -31,13 +31,19 @@ load("tmp/input_layers.rda")
 bc_carts_t$IUCN_CAT = factor_iucn_cats(bc_carts_t$IUCN_CAT)
 
 ## Get the earliest year of protection for polygon segments that overlap
-bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "PROTDATE", min, "numeric", na.rm = TRUE)
+bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t,
+                                                      "PROTDATE", min, "numeric",
+                                                      na.rm = TRUE)
 
 ## Get the minimum iucn category
-bc_carts_t_unioned$iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "IUCN_CAT", min, "factor", na.rm = TRUE)
+bc_carts_t_unioned$iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t,
+                                                 "IUCN_CAT", min, "factor",
+                                                 na.rm = TRUE)
 
 ## Get the row.names of the polygon with the minimum iucn category
-bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t, "IUCN_CAT", which_min, "integer")
+bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned,
+                                                              bc_carts_t, "IUCN_CAT",
+                                                              which_min, "integer")
 
 ## Get areas of unioned polygons
 bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
@@ -93,13 +99,19 @@ cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_ye
 bc_carts_m$IUCN_CAT = factor_iucn_cats(bc_carts_m$IUCN_CAT)
 
 ## Get the earliest year of protection for polygon segments that overlap
-bc_carts_m_unioned$prot_date <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m, "PROTDATE", min, "numeric", na.rm = TRUE)
+bc_carts_m_unioned$prot_date <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m,
+                                                      "PROTDATE", min, "numeric",
+                                                      na.rm = TRUE)
 
 ## Get the minimum iucn category
-bc_carts_m_unioned$iucn <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m, "IUCN_CAT", min, "factor", na.rm = TRUE)
+bc_carts_m_unioned$iucn <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m,
+                                                 "IUCN_CAT", min, "factor",
+                                                 na.rm = TRUE)
 
 ## Get the row.names of the polygon with the minimum iucn category
-bc_carts_m_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m, "IUCN_CAT", which_min, "integer")
+bc_carts_m_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_m_unioned,
+                                                              bc_carts_m, "IUCN_CAT",
+                                                              which_min, "integer")
 
 ## Get areas of unioned polygons
 bc_carts_m_unioned$prot_area <- gArea(bc_carts_m_unioned, byid = TRUE)
@@ -158,11 +170,10 @@ cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_ye
 
 # Terrrestrial BEC -------------------------------------------------------------
 
-
 ## Get a simple percent protected of each Biogeoclimatic Zone
 
 # Intersect terrestrial CARTS and BEC and get area
-carts_bec <- raster::intersect(bec_t, bc_carts_t_agg)
+carts_bec <- raster::intersect(bec_t, bc_carts_t_unioned)
 carts_bec$prot_area <- rgeos::gArea(carts_bec, byid = TRUE)
 
 # Get total size of terrestrial area of each zone
@@ -211,4 +222,4 @@ bc_iucn_summary <- bc_carts@data %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
-save.image("tmp/analyzed.rda")
+save.image(file = paste0("tmp/analyzed", Sys.Date(),".rda"))
