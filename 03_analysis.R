@@ -23,7 +23,8 @@ library(tidyr) # for 'complete' function
 source("fun.R")
 
 ## Load the cleanup up data from 02_clean.R
-# load("tmp/input_layers.rda")
+load("tmp/bc_carts_clean.rda")
+load("tmp/ecoregions_clean.rda")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
@@ -68,11 +69,12 @@ bc_area_sq_m <- bc_area(units = "m2")
 ## Summarize
 carts_eco_t_summary_by_year <- carts_eco_t@data %>%
   filter(prot_date > 0) %>%
-  complete(c(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
+  complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
   summarise(ecoregion_area = min(area),
             tot_protected = sum(prot_area),
-            percent_protected = tot_protected / ecoregion_area * 100)
+            percent_protected = tot_protected / ecoregion_area * 100) %>%
+  ungroup()
 
 ## Provincial summary
 carts_bc_t_summary_by_year <- bc_carts_t_unioned@data %>%
@@ -91,7 +93,8 @@ cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_ye
          cum_percent_protected = cumsum(percent_protected),
          type = "All conservation lands",
          prot_date_full = paste0(prot_date, "-01-01")) %>%
-  filter(!is.na(cum_area_protected))
+  filter(!is.na(cum_area_protected)) %>%
+  ungroup()
 
 # Marine Ecoregion analysis ----------------------------------------------------
 
@@ -142,7 +145,7 @@ missing_m_ecoregions <- ecoregions_m@data %>%
 carts_eco_m_summary_by_year <- carts_eco_m@data %>%
   filter(prot_date > 0) %>%
   bind_rows(missing_m_ecoregions) %>%
-  complete(c(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
+  complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
   summarise(ecoregion_area = min(area),
             tot_protected = sum(prot_area),
@@ -222,4 +225,4 @@ bc_iucn_summary <- bc_carts@data %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
-save.image(file = paste0("tmp/analyzed", Sys.Date(),".rda"))
+save.image(file = "tmp/analyzed.rda")
