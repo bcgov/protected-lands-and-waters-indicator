@@ -80,9 +80,13 @@ rm(list = ls())
 ## and install mapshaper with: 'npm install -g mapshaper'
 geojsonio::geojson_write(bc_bound_hres, file = "data/bc_bound.geojson")
 system("mapshaper data/BEC_POLY/BEC_POLY_polygon.shp -clip data/bc_bound.geojson -o data/bec_clip.shp")
+unlink(paste0("data/", c("bc_bound.geojson", "bec_clip.*")))
 bec_t <- readOGR("data", "bec_clip", stringsAsFactors = FALSE)
 
-bec_t$area <- gArea(bec_t, byid = TRUE)
+bec_t$area <- gArea(bec_t, byid = TRUE) ## TODO - convert to hectares (makes field too wide for writing)
+writeOGR(bec_t, "data", "bec_t", "ESRI Shapefile")
+system("mapshaper data/bec_t.shp -explode -simplify 0.01 keep-shapes -o data/bec_t_simp.shp")
+bec_t_simp <- readOGR("data", "bec_t_simp", stringsAsFactors = FALSE)
 
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
