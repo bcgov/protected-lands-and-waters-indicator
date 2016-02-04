@@ -18,6 +18,8 @@ library(raster)
 library(bcmaps) # install using devtools::install_github("bcgov/bcmaps")
 library(rmapshaper) # install using devtools::install_github("ateucher/rmapshaper")
 
+dir.create("tmp", showWarnings = FALSE)
+
 ## The CARTS database is downloadable from the Canadian Council on
 ## Ecological Areas here: http://www.ccea.org/carts/
 carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_Without_Qc", stringsAsFactors = FALSE)
@@ -50,6 +52,9 @@ bc_carts_m <- bc_carts[bc_carts$BIOME == "M", ]
 bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 bc_carts_m_unioned <- raster::union(bc_carts_m)
 
+save(list = ls(), file = "tmp/bc_carts_clean.rda")
+rm(list = ls())
+
 ## Remove marine ecoregions
 m_ecoregions <- c("GPB", "HCS", "IPS", "OPS", "SBC", "TPC")
 ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
@@ -58,19 +63,27 @@ ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
 ecoregions_m <- ms_erase(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
                          bc_bound_hres)
 
+## Create simplified versions for visualization
+ecoregions_t_simp <- ms_simplify(ecoregions_t, 0.01)
+ecoregions_m_simp <- ms_simplify(ecoregions_m, 0.01)
+
+save(list = ls(), file = "tmp/ecoregions_clean.rda")
+rm(list = ls())
 
 # BEC ---------------------------------------------------------------------
 
-bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
-bec <- disaggregate(bec)
-bc_bound_hres <- disaggregate(bc_bound_hres)
-bec_t <- raster::intersect(bec, bc_bound_hres)
-bec_t$bec_poly_id <- row.names(bec_t)
-# bec_t <- aggregate(bec_t, by = "OBJECTID")
+## Using rmapshaper - runs out of memory
+# bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
+# bec_t <- rmapshaper::ms_clip(bec, bc_bound_hres)
+
+## Using mapshaper on the command line. Requires Node installed (https://nodejs.org),
+## and install mapshaper with: 'npm install -g mapshaper'
+geojsonio::geojson_write(bc_bound_hres, file = "data/bc_bound.geojson")
+system("mapshaper data/BEC_POLY/BEC_POLY_polygon.shp -clip data/bc_bound.geojson -o data/bec_clip.shp")
+bec_t <- readOGR("data", "bec_clip", stringsAsFactors = FALSE)
+
 bec_t$area <- gArea(bec_t, byid = TRUE)
 
-bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
+# bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
-dir.create("tmp", showWarnings = FALSE)
-
-save.image(file = paste0("tmp/input_layers_", Sys.Date(), ".rda"))
+save(list = ls(), file = "tmp/bec_clean.rda")
