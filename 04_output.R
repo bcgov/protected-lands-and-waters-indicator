@@ -21,7 +21,7 @@ library(ggthemes)
 library(maptools)
 library(RColorBrewer)
 
-load("tmp/analyzed.rda")
+load("tmp/analyzed2016-02-03.rda")
 
 
 # Terrestrial -------------------------------------------------------------
@@ -65,7 +65,7 @@ summary_eco_t_plot <- ggplot(current_eco_t, aes(x = ecoregion, y = cum_percent_p
   scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
   labs(x = "Ecoregion", y = "Percent ecoregion protected") +
   theme_soe() +
-  theme(axis.text.y = element_text(colour = ifelse(carts_eco_t_current$is_bc, "royalblue3", "black")),
+  theme(axis.text.y = element_text(colour = ifelse(current_eco_t$is_bc, "royalblue3", "black")),
         axis.line = element_blank(), panel.grid.major.y = element_blank())
 
 plot(summary_eco_t_plot)
@@ -76,7 +76,6 @@ carts_eco_t_by_decade <- cum_summary_t %>%
   group_by(ecoregion_code, ecoregion, decade) %>%
   summarise(percent_protected = max(cum_percent_protected))
 
-ecoregions_t_simp <- ms_simplify(ecoregions_t, 0.01)
 ecoregions_t_gg <- fortify(ecoregions_t_simp, region = "CRGNCD")
 ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id" = "ecoregion_code"))
 
@@ -150,6 +149,30 @@ summary_eco_m_plot <- ggplot(current_eco_m[!current_eco_m$is_bc, ],
 plot(summary_eco_m_plot)
 
 ###############################################################################
+## Make a facetted map of protection level by decade
+carts_eco_m_by_decade <- cum_summary_m %>%
+  group_by(ecoregion_code, ecoregion, decade) %>%
+  summarise(percent_protected = max(cum_percent_protected))
+
+ecoregions_m_gg <- fortify(ecoregions_m_simp, region = "CRGNCD")
+ecoregions_m_gg_decade <- left_join(ecoregions_m_gg, carts_eco_m_by_decade, by = c("id" = "ecoregion_code"))
+
+decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+  facet_wrap(~decade) +
+  geom_polygon(data = ecoregions_m_gg_decade[!ecoregions_m_gg_decade$hole, ],
+               aes(fill = percent_protected), colour = "grey70") +
+  geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
+               colour = "grey70") +
+  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
+                       palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
+  coord_equal() +
+  labs(fill = "Percent of Marine\nEcoregion Protected\n") +
+  theme_map() +
+  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
+        legend.title = element_text(size = 11), legend.position = c(0.7,0.1))
+plot(decade_m_facet_map)
+
+###############################################################################
 ## Map of current level of protection by ecoregion
 eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "ecoregion_code"))
 
@@ -169,31 +192,6 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
         plot.margin = unit(c(0,0,0,0), "lines"))
 plot(current_m_map)
 
-###############################################################################
-## Make a facetted map of protection level by decade
-carts_eco_m_by_decade <- cum_summary_m %>%
-  group_by(ecoregion_code, ecoregion, decade) %>%
-  summarise(percent_protected = max(cum_percent_protected))
-
-ecoregions_m_simp <- ms_simplify(ecoregions_m, 0.01)
-ecoregions_m_gg <- fortify(ecoregions_m_simp, region = "CRGNCD")
-ecoregions_m_gg_decade <- left_join(ecoregions_m_gg, carts_eco_m_by_decade, by = c("id" = "ecoregion_code"))
-
-decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, group = group, fill = percent_protected)) +
-  facet_wrap(~decade) +
-  geom_polygon(data = ecoregions_m_gg_decade[!ecoregions_m_gg_decade$hole, ],
-               aes(fill = percent_protected), colour = "grey70") +
-  geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
-               colour = "grey70") +
-  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
-                       palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
-  coord_equal() +
-  labs(fill = "Percent of Marine\nEcoregion Protected\n") +
-  theme_map() +
-  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 11), legend.position = c(0.7,0.1))
-plot(decade_m_facet_map)
-
 ## Multiplot of marine map and bar chart
 png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px")
 multiplot(current_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
@@ -202,8 +200,9 @@ dev.off()
 ## Output csv files
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
 write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
-write_csv(bc_designation_summary_t, path = "out/bc_carts_designation_summary.csv")
-write_csv(bc_iucn_summary_t, path = "out/bc_carts_iucn_summary.csv")
+write_csv(bc_designation_summary, path = "out/bc_carts_designation_summary.csv")
+write_csv(bc_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
+write_csv(bc_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
 ecoregions_t_out <- ecoregions_t_simp[, "CRGNCD"]
