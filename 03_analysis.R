@@ -175,9 +175,11 @@ cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_ye
 
 ## Get a simple percent protected of each Biogeoclimatic Zone
 
+load("tmp/bec_clean.rda")
+
 # Intersect terrestrial CARTS and BEC and get area
 carts_bec <- raster::intersect(bec_t, bc_carts_t_unioned)
-carts_bec$prot_area <- rgeos::gArea(carts_bec, byid = TRUE)
+carts_bec$prot_area <- rgeos::gArea(carts_bec, byid = TRUE) * 1e-4
 
 # Get total size of terrestrial area of each zone
 bec_t_summary <- bec_t@data %>%
