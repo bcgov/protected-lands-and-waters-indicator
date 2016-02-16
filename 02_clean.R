@@ -94,6 +94,7 @@ system("mapshaper data/bec_t.shp -explode -simplify 0.01 keep-shapes -o data/bec
 bec_t_simp <- readOGR("data", "bec_t_simp", stringsAsFactors = FALSE)
 ## Repair orphaned hole
 bec_t_simp <- gBuffer(bec_t_simp, byid = TRUE, width = 0)
+bec_t_simp <- raster::aggregate(bec_t_simp, by = "OBJECTID")
 
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
