@@ -50,7 +50,7 @@ bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned
 bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
 
 ## Aggregate the protected areas by their protected date
-bc_carts_t_agg <- aggregate(bc_carts_t_unioned[, "prot_date"], by = c("prot_date"))
+bc_carts_t_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = "prot_date")
 
 ###
 
