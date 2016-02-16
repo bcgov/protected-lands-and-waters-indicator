@@ -203,7 +203,8 @@ bc_carts$area_ha <- gArea(bc_carts, byid = TRUE) / 1e4
 
 bc_designation_summary <- bc_carts@data %>%
   group_by(BIOME, Designation = TYPE_E) %>%
-  summarise(total_area_ha = sum(area_ha)) %>%
+  summarise(total_area_ha = sum(area_ha),
+            n = n()) %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
          percent_of_bc = round(percent_of_bc, 4)) %>%
@@ -213,7 +214,7 @@ bc_designation_summary <- bc_carts@data %>%
 
 bc_designation_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, TYPE_E, IUCN_CAT) %>%
-  summarise(total_area_ha = sum(area_ha)) %>%
+  summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
          percent_of_bc = round(percent_of_bc, 4)) %>%
@@ -223,7 +224,7 @@ bc_designation_iucn_summary <- bc_carts@data %>%
 
 bc_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, IUCN_CAT) %>%
-  summarise(total_area_ha = sum(area_ha)) %>%
+  summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
