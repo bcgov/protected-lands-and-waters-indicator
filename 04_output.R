@@ -21,7 +21,7 @@ library(ggthemes)
 library(maptools)
 library(RColorBrewer)
 
-load("tmp/analyzed2016-02-03.rda")
+load("tmp/analyzed.rda")
 
 
 # Terrestrial -------------------------------------------------------------
