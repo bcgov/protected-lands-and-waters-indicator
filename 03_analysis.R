@@ -193,39 +193,4 @@ carts_bec_summary <- carts_bec@data %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(percent_protected = prot_area / total_area * 100)
 
-
-# Provincial summaries (no ecoregions/BEC) -------------------------------------
-
-bc_area_ha <- bc_area(units = "ha")
-
-## Get accurate areas:
-bc_carts$area_ha <- gArea(bc_carts, byid = TRUE) / 1e4
-
-bc_designation_summary <- bc_carts@data %>%
-  group_by(BIOME, Designation = TYPE_E) %>%
-  summarise(total_area_ha = sum(area_ha),
-            n = n()) %>%
-  ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
-         percent_of_bc = round(percent_of_bc, 4)) %>%
-  bind_rows(data_frame(Designation = "British Columbia Total",
-                       total_area_ha = sum(.$total_area_ha),
-                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
-
-bc_designation_iucn_summary <- bc_carts@data %>%
-  group_by(BIOME, TYPE_E, IUCN_CAT) %>%
-  summarise(total_area_ha = sum(area_ha), n = n()) %>%
-  ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
-         percent_of_bc = round(percent_of_bc, 4)) %>%
-  bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
-                       total_area_ha = sum(.$total_area_ha),
-                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
-
-bc_iucn_summary <- bc_carts@data %>%
-  group_by(BIOME, IUCN_CAT) %>%
-  summarise(total_area_ha = sum(area_ha), n = n()) %>%
-  ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
-
 save.image(file = "tmp/analyzed.rda")

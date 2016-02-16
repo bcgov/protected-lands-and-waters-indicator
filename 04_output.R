@@ -19,6 +19,8 @@ library(readr)
 library(sp)
 library(ggthemes)
 library(maptools)
+library(bcmaps)
+library(rgeos)
 library(RColorBrewer)
 
 load("tmp/analyzed.rda")
@@ -48,8 +50,8 @@ ecoregion_t_facet_plot <- ggplot(cum_summary_t,
   theme_minimal() +
   theme(panel.margin.x = unit(1.5, "lines"),
         axis.text = element_text(size = 8)) +
-  geom_text(data = current_eco_t, x = 1980, y = 80,
-            aes(label = paste(round(cum_percent_protected, 1), "%")),
+  geom_text(data = current_eco_t, x = 2003, y = 80,
+            aes(label = paste0(round(cum_percent_protected, 1), "%")),
             size = 3)
   # theme_soe_facet() +
   # theme(panel.margin = unit(1, "mm"))
@@ -191,6 +193,40 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
         legend.key.height = unit(1, "cm"), legend.key.width = unit(0.8, "cm"),
         plot.margin = unit(c(0,0,0,0), "lines"))
 plot(current_m_map)
+
+# Provincial summaries (no ecoregions/BEC) -------------------------------------
+
+bc_area_ha <- bc_area(units = "ha")
+
+## Get accurate areas:
+bc_carts$area_ha <- gArea(bc_carts, byid = TRUE) / 1e4
+
+bc_designation_summary <- bc_carts@data %>%
+  group_by(BIOME, Designation = TYPE_E, LEGISL_E) %>%
+  summarise(total_area_ha = sum(area_ha),
+            n = n()) %>%
+  ungroup() %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
+         percent_of_bc = round(percent_of_bc, 4)) %>%
+  bind_rows(data_frame(Designation = "British Columbia Total",
+                       total_area_ha = sum(.$total_area_ha),
+                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
+
+bc_designation_iucn_summary <- bc_carts@data %>%
+  group_by(BIOME, TYPE_E, IUCN_CAT) %>%
+  summarise(total_area_ha = sum(area_ha), n = n()) %>%
+  ungroup() %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
+         percent_of_bc = round(percent_of_bc, 4)) %>%
+  bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
+                       total_area_ha = sum(.$total_area_ha),
+                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
+
+bc_iucn_summary <- bc_carts@data %>%
+  group_by(BIOME, IUCN_CAT) %>%
+  summarise(total_area_ha = sum(area_ha), n = n()) %>%
+  ungroup() %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
 ## Multiplot of marine map and bar chart
 png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px")
