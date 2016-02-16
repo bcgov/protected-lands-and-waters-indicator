@@ -194,6 +194,29 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
         plot.margin = unit(c(0,0,0,0), "lines"))
 plot(current_m_map)
 
+## BEC
+# aggregate carts_by by OBJECTID (unique polygon identifier from original BEC)
+carts_bec_agg <- raster::aggregate(carts_bec, by = "OBJECTID")
+carts_bec_agg$prot_area <- gArea(carts_bec_agg, byid = TRUE) * 1e-4
+
+bec_t_prot_simp <- merge(bec_t_simp, carts_bec_agg, by = "OBJECTID")
+bec_t_prot_simp$OBJECTID <- as.character(bec_t_prot_simp$OBJECTID)
+bec_t_prot_simp$percent_protected <- bec_t_prot_simp$prot_area / bec_t_prot_simp$area * 100
+
+bec_t_gg <- fortify(bec_t_prot_simp, region = "OBJECTID")
+
+bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "OBJECTID"))
+bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
+
+ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+  geom_polygon() +
+  scale_fill_distiller(palette = "YlGn", direction = 1) +
+  coord_fixed() +
+  theme_map()
+
+
+
+
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 
 bc_area_ha <- bc_area(units = "ha")
