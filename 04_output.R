@@ -46,7 +46,7 @@ ecoregion_t_facet_plot <- ggplot(cum_summary_t,
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
   scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
   scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
-  labs(x = "Year", y = "Cumulative percent of ecoregion protected") +
+  labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
   theme_minimal() +
   theme(panel.margin.x = unit(1.5, "lines"),
         axis.text = element_text(size = 8)) +
@@ -65,7 +65,7 @@ summary_eco_t_plot <- ggplot(current_eco_t, aes(x = ecoregion, y = cum_percent_p
   geom_bar(stat = "identity", fill = "#008000", size = 1) +
   coord_flip() +
   scale_y_continuous(breaks = seq(0, 100, by = 20), expand = c(0, 1.2)) +
-  labs(x = "Ecoregion", y = "Percent ecoregion protected") +
+  labs(x = "Ecoregion", y = "Percent Ecoregion Protected") +
   theme_soe() +
   theme(axis.text.y = element_text(colour = ifelse(current_eco_t$is_bc, "royalblue3", "black")),
         axis.line = element_blank(), panel.grid.major.y = element_blank())
@@ -122,7 +122,7 @@ ecoregion_m_facet_plot <- ggplot(cum_summary_m,
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
   scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
   scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
-  labs(x = "Year", y = "Cumulative percent of ecoregion protected") +
+  labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
   theme_minimal() +
   theme(panel.margin.x = unit(1.5, "lines"),
         axis.text = element_text(size = 8)) +
@@ -186,7 +186,7 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
   scale_fill_distiller(limits = c(0, max(eco_m_gg_current$cum_percent_protected, na.rm = TRUE)),
                        palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
   coord_equal() +
-  labs(fill = "Percent of marine\necoregion protected\n") +
+  labs(fill = "Percent of Marine\nEcoregion Protected\n") +
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
         legend.title = element_text(size = 12), legend.text = element_text(size = 11),
