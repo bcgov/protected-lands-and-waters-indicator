@@ -212,15 +212,30 @@ bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
 bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
   geom_polygon() +
   scale_fill_distiller(palette = "YlGn", direction = 1) +
-  labs(fill = "Percent Protected\n") +
+  labs(fill = "Percent Protected") +
   coord_fixed() +
   theme_map() +
   theme(legend.title = element_text(size = 12, vjust = 1),
-        legend.text = element_text(size = 11), legend.position = c(0,0.15),
+        legend.text = element_text(size = 11), legend.position = c(0,0.03),
         legend.background = element_rect(fill = NA),
         legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"))
 
 #plot(bec_prot_map)
+
+## Create a map of bec zones
+bec_zone_spdf <- raster::aggregate(bec_t_simp, by = "ZONE")
+
+bec_zone_gg <- fortify(bec_zone_spdf, region = "ZONE")
+
+bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill = id)) +
+  geom_polygon() +
+  scale_fill_manual(values = bgc_colours(), guide = "none") +
+  coord_fixed() +
+  ggtitle("Biogeoclimatic Zones of B.C.") +
+  theme_map() +
+  theme(plot.margin = margin(2,0,1,0, "lines"),
+        plot.title = element_text(hjust = 0.3, size = 12,
+                                  margin = margin(0,0,3,0, "pt")))
 
 zone_summary <- bec_t_prot_simp@data %>%
   group_by(ZONE, ZONE_NAME) %>%
@@ -231,19 +246,30 @@ zone_summary <- bec_t_prot_simp@data %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
 
 zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
-                                         fill = percent_protected)) +
+                                         fill = ZONE)) +
   geom_bar(stat = "identity") +
-  scale_fill_distiller(palette = "YlGn", direction = 1, guide = "none") +
+  scale_fill_manual(values = bgc_colours(), guide = "none") +
   coord_flip() +
-  labs(title = "Amount of land protected in\nbiogeoclimatic zones",
-       x = "Biogeoclimatic Zone\n", y = "Percent Protected") +
-  theme_minimal()
+  # ggtitle("Percent of Biogeoclimatic Zones\nDesignated Within\nParks & Protected Areas") +
+  labs(x = "Biogeoclimatic Zone\n", y = "Percent Protected") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0),
+        panel.grid.major.x = element_line(colour = "grey85"),
+        panel.grid.minor.x = element_line(colour = "grey90"),
+        panel.grid.major.y = element_blank(),
+        plot.margin = unit(c(2,0,1,0), "lines"))
 
 #plot(zone_barplot)
 
 png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
-multiplot(bec_prot_map, zone_barplot, cols = 2, widths = c(5,4))
+multiplot(zone_barplot, bec_zone_map, cols = 2)
 dev.off()
+
+png("out/bgc_finescale_map.png", width = 600, height = 600, units = "px")
+plot(bec_prot_map)
+dev.off()
+
+
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 
 bc_area_ha <- bc_area(units = "ha")
@@ -289,6 +315,7 @@ write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
 write_csv(bc_designation_summary, path = "out/bc_carts_designation_summary.csv")
 write_csv(bc_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
 write_csv(bc_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")
+write_csv(zone_summary, path = "out/zone_summary.csv")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
 ecoregions_t_out <- ecoregions_t_simp[, "CRGNCD"]
