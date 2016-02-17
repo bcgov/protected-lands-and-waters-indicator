@@ -195,9 +195,10 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
 plot(current_m_map)
 
 ## BEC
+
 # aggregate carts_by by OBJECTID (unique polygon identifier from original BEC)
-carts_bec_agg <- raster::aggregate(carts_bec, by = "OBJECTID")
-carts_bec_agg$prot_area <- gArea(carts_bec_agg, byid = TRUE) * 1e-4
+carts_bec_agg <- raster::aggregate(carts_bec, by = "OBJECTID",
+                                   sums = list(list(sum, "prot_area")))
 
 bec_t_prot_simp <- merge(bec_t_simp, carts_bec_agg, by = "OBJECTID")
 bec_t_prot_simp$OBJECTID <- as.character(bec_t_prot_simp$OBJECTID)
@@ -208,15 +209,41 @@ bec_t_gg <- fortify(bec_t_prot_simp, region = "OBJECTID")
 bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "OBJECTID"))
 bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
 
-ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
   geom_polygon() +
   scale_fill_distiller(palette = "YlGn", direction = 1) +
+  labs(fill = "Percent Protected\n") +
   coord_fixed() +
-  theme_map()
+  theme_map() +
+  theme(legend.title = element_text(size = 12, vjust = 1),
+        legend.text = element_text(size = 11), legend.position = c(0,0.15),
+        legend.background = element_rect(fill = NA),
+        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"))
 
+#plot(bec_prot_map)
 
+zone_summary <- bec_t_prot_simp@data %>%
+  group_by(ZONE, ZONE_NAME) %>%
+  summarize(prot_area = sum(prot_area, na.rm = TRUE),
+            total_area = sum(area),
+            percent_protected = prot_area / total_area * 100) %>%
+  ungroup() %>%
+  order_df("ZONE_NAME", "percent_protected", fun = max)
 
+zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
+                                         fill = percent_protected)) +
+  geom_bar(stat = "identity") +
+  scale_fill_distiller(palette = "YlGn", direction = 1, guide = "none") +
+  coord_flip() +
+  labs(title = "Amount of land protected in\nbiogeoclimatic zones",
+       x = "Biogeoclimatic Zone\n", y = "Percent Protected") +
+  theme_minimal()
 
+#plot(zone_barplot)
+
+png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
+multiplot(bec_prot_map, zone_barplot, cols = 2, widths = c(5,4))
+dev.off()
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 
 bc_area_ha <- bc_area(units = "ha")
@@ -252,7 +279,7 @@ bc_iucn_summary <- bc_carts@data %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
 ## Multiplot of marine map and bar chart
-png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px")
+png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
 multiplot(current_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
 dev.off()
 
