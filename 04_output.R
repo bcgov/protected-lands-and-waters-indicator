@@ -272,14 +272,23 @@ plot(bec_prot_map)
 dev.off()
 
 ## Plot CARTS
-gg_carts <- fortify(bc_carts, group = "ZONE_ID")
+
+bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
+
+gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
+  geom_polygon(fill = NA, colour = "grey70", size = 0.1) +
+  theme_map() +
+  coord_fixed()
+
+gg_carts <- fortify(bc_carts, region = "ZONE_ID")
 bc_carts_tmp <- bc_carts@data
 bc_carts_tmp$ZONE_ID <- as.character(bc_carts_tmp$ZONE_ID)
 gg_carts <- left_join(gg_carts, bc_carts_tmp, by = c("id" = "ZONE_ID"))
 
-carts_map <- ggplot(gg_carts, aes(x = long, y = lat, group = id, fill = BIOME)) +
-  geom_polygon() +
-  scale_fill_manual(values = c("T" = "#006837", "M" = "#253494")) +
+carts_map <- gg_bc +
+  geom_polygon(data = gg_carts, aes(x = long, y = lat, group = group, fill = BIOME)) +
+  scale_fill_manual(labels = c("T" = "Terrestrial", "M" = "Marine"), name = "Biome",
+                    values = c("T" = "#006837", "M" = "#253494")) +
   coord_fixed() +
   theme_map()
 
