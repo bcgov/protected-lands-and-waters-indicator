@@ -218,7 +218,9 @@ bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = pe
   theme(legend.title = element_text(size = 12, vjust = 1),
         legend.text = element_text(size = 11), legend.position = c(0,0.03),
         legend.background = element_rect(fill = NA),
-        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"))
+        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"),
+        panel.background = element_rect(fill = "grey90", colour = NA),
+        plot.margin = margin(0,0,0,0))
 
 #plot(bec_prot_map)
 
@@ -234,8 +236,8 @@ bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill =
   ggtitle("Biogeoclimatic Zones of B.C.") +
   theme_map() +
   theme(plot.margin = margin(2,0,1,0, "lines"),
-        plot.title = element_text(hjust = 0.3, size = 12,
-                                  margin = margin(0,0,3,0, "pt")))
+        plot.title = element_text(hjust = 0.3, size = 13,
+                                  margin = margin(0,0,0,0, "pt")))
 
 zone_summary <- bec_t_prot_simp@data %>%
   group_by(ZONE, ZONE_NAME) %>%
@@ -265,10 +267,21 @@ png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
 multiplot(zone_barplot, bec_zone_map, cols = 2)
 dev.off()
 
-png("out/bgc_finescale_map.png", width = 600, height = 600, units = "px")
+png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
 plot(bec_prot_map)
 dev.off()
 
+## Plot CARTS
+gg_carts <- fortify(bc_carts, group = "ZONE_ID")
+bc_carts_tmp <- bc_carts@data
+bc_carts_tmp$ZONE_ID <- as.character(bc_carts_tmp$ZONE_ID)
+gg_carts <- left_join(gg_carts, bc_carts_tmp, by = c("id" = "ZONE_ID"))
+
+carts_map <- ggplot(gg_carts, aes(x = long, y = lat, group = id, fill = BIOME)) +
+  geom_polygon() +
+  scale_fill_manual(values = c("T" = "#006837", "M" = "#253494")) +
+  coord_fixed() +
+  theme_map()
 
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 
