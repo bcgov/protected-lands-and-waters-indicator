@@ -263,14 +263,6 @@ zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
 
 #plot(zone_barplot)
 
-png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
-multiplot(zone_barplot, bec_zone_map, cols = 2)
-dev.off()
-
-png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
-plot(bec_prot_map)
-dev.off()
-
 ## Plot CARTS
 
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
@@ -326,9 +318,21 @@ bc_iucn_summary <- bc_carts@data %>%
   ungroup() %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
 
+
+# Output data summaries and charts ----------------------------------------
+
 ## Multiplot of marine map and bar chart
 png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
 multiplot(current_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+dev.off()
+
+## BGC plots
+png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
+multiplot(zone_barplot, bec_zone_map, cols = 2)
+dev.off()
+
+png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
+plot(bec_prot_map)
 dev.off()
 
 ## Output csv files
