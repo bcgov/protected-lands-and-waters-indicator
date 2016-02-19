@@ -87,6 +87,8 @@ if (any(!gIsValid(bec_t, byid = TRUE))) {
   any(!gIsValid(bec_t, byid = TRUE))
 }
 
+bec_t <- disaggregate(bec_t)
+
 bec_t$area <- gArea(bec_t, byid = TRUE) * 1e-4 # convert to hectares (makes field too wide for writing as shp)
 unlink(paste0("data/", c("bec_t.*", "bec_t_simp.*")))
 writeOGR(bec_t, "data", "bec_t", "ESRI Shapefile")
