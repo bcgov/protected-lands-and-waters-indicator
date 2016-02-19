@@ -212,14 +212,15 @@ bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
 bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
   geom_polygon() +
   scale_fill_distiller(palette = "YlGn", direction = 1) +
-  labs(fill = "Percent Protected") +
+  guides(fill = guide_colourbar(title = "Percent of\nEcosystem\nProtected",
+                                title.position = "left", label.position = "right")) +
   coord_fixed() +
   theme_map() +
   theme(legend.title = element_text(size = 12, vjust = 1),
         legend.text = element_text(size = 11), legend.position = c(0,0.03),
         legend.background = element_rect(fill = NA),
         legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"),
-        panel.background = element_rect(fill = "grey90", colour = NA),
+        # panel.background = element_rect(fill = "grey90", colour = NA),
         plot.margin = margin(0,0,0,0))
 
 #plot(bec_prot_map)
