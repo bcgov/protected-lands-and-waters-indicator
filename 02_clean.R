@@ -78,9 +78,10 @@ rm(list = ls())
 
 ## Using mapshaper on the command line. Requires Node installed (https://nodejs.org),
 ## and install mapshaper with: 'npm install -g mapshaper'
+unlink(paste0("data/", c("bc_bound.geojson", "bec_clip.*")))
 geojsonio::geojson_write(bc_bound_hres, file = "data/bc_bound.geojson")
 system("mapshaper data/BEC_POLY/BEC_POLY_polygon.shp -clip data/bc_bound.geojson -o data/bec_clip.shp")
-unlink(paste0("data/", c("bc_bound.geojson", "bec_clip.*")))
+
 bec_t <- readOGR("data", "bec_clip", stringsAsFactors = FALSE)
 if (any(!gIsValid(bec_t, byid = TRUE))) {
   bec_t <- gBuffer(bec_t, byid = TRUE, width = 0)
@@ -88,17 +89,16 @@ if (any(!gIsValid(bec_t, byid = TRUE))) {
 }
 
 bec_t <- disaggregate(bec_t)
+bec_t$poly_id <- rownames(bec_t)
 
 bec_t$area <- gArea(bec_t, byid = TRUE) * 1e-4 # convert to hectares (makes field too wide for writing as shp)
 unlink(paste0("data/", c("bec_t.*", "bec_t_simp.*")))
 writeOGR(bec_t, "data", "bec_t", "ESRI Shapefile")
-system("mapshaper data/bec_t.shp -explode -simplify 0.01 keep-shapes -o data/bec_t_simp.shp")
+system("mapshaper data/bec_t.shp -simplify 0.01 keep-shapes -o data/bec_t_simp.shp")
 bec_t_simp <- readOGR("data", "bec_t_simp", stringsAsFactors = FALSE)
-## Repair orphaned hole
+## Repair orphaned holes
 bec_t_simp <- gBuffer(bec_t_simp, byid = TRUE, width = 0)
-bec_t_simp <- raster::aggregate(bec_t_simp, by = "OBJECTID")
-bec_t_simp <- merge(bec_t_simp, bec_t, by = "OBJECTID")
 
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
-save(list = ls(), file = "tmp/bec_clean.rda")
+save(list = ls(), file = "tmp/bec_clean_disagg.rda")

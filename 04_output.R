@@ -23,7 +23,7 @@ library(bcmaps)
 library(rgeos)
 library(RColorBrewer)
 
-load("tmp/analyzed.rda")
+load("tmp/analyzed_disagg.rda")
 
 
 # Terrestrial -------------------------------------------------------------
@@ -194,19 +194,20 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
         plot.margin = unit(c(0,0,0,0), "lines"))
 plot(current_m_map)
 
-## BEC
 
-# aggregate carts_by by OBJECTID (unique polygon identifier from original BEC)
-carts_bec_agg <- raster::aggregate(carts_bec, by = "OBJECTID",
+# BEC ---------------------------------------------------------------------
+
+# aggregate carts_bec by poly_id
+carts_bec_agg <- raster::aggregate(carts_bec, by = "poly_id",
                                    sums = list(list(sum, "prot_area")))
 
-bec_t_prot_simp <- merge(bec_t_simp, carts_bec_agg, by = "OBJECTID")
-bec_t_prot_simp$OBJECTID <- as.character(bec_t_prot_simp$OBJECTID)
+bec_t_prot_simp <- merge(bec_t_simp, carts_bec_agg, by = "poly_id")
+bec_t_prot_simp$poly_id <- as.character(bec_t_prot_simp$poly_id)
 bec_t_prot_simp$percent_protected <- bec_t_prot_simp$prot_area / bec_t_prot_simp$area * 100
 
-bec_t_gg <- fortify(bec_t_prot_simp, region = "OBJECTID")
+bec_t_gg <- fortify(bec_t_prot_simp, region = "poly_id")
 
-bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "OBJECTID"))
+bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "poly_id"))
 bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
 
 bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +

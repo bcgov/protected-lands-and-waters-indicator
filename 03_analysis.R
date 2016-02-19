@@ -175,7 +175,7 @@ cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_ye
 
 ## Get a simple percent protected of each Biogeoclimatic Zone
 
-load("tmp/bec_clean.rda")
+load("tmp/bec_clean_disagg.rda")
 
 # Intersect terrestrial CARTS and BEC and get area
 carts_bec <- raster::intersect(bec_t, bc_carts_t_unioned)
@@ -193,4 +193,4 @@ carts_bec_summary <- carts_bec@data %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(percent_protected = prot_area / total_area * 100)
 
-save.image(file = "tmp/analyzed.rda")
+save.image(file = "tmp/analyzed_disagg.rda")
