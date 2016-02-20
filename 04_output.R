@@ -23,7 +23,7 @@ library(bcmaps)
 library(rgeos)
 library(RColorBrewer)
 
-load("tmp/analyzed_disagg.rda")
+load("tmp/analyzed.rda")
 
 
 # Terrestrial -------------------------------------------------------------
