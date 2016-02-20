@@ -193,4 +193,4 @@ carts_bec_summary <- carts_bec@data %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(percent_protected = prot_area / total_area * 100)
 
-save.image(file = "tmp/analyzed_disagg.rda")
+save.image(file = "tmp/analyzed.rda")
