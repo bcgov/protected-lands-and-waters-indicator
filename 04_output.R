@@ -246,6 +246,7 @@ zone_summary <- bec_t_prot_simp@data %>%
             total_area = sum(area),
             percent_protected = prot_area / total_area * 100) %>%
   ungroup() %>%
+  mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME)) %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
 
 zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
