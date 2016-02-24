@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-carts_zip <- "data/CARTS_20151231_Download.zip"
+carts_zip <- "data/CARTS_31122015_Download.zip"
 
 unzip(carts_zip, exdir = "data", overwrite = TRUE)
 

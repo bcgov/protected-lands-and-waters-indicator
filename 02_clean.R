@@ -22,7 +22,7 @@ dir.create("tmp", showWarnings = FALSE)
 
 ## The CARTS database is downloadable from the Canadian Council on
 ## Ecological Areas here: http://www.ccea.org/carts/
-carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_Without_Qc", stringsAsFactors = FALSE)
+carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_WithoutQc", stringsAsFactors = FALSE)
 
 ## Extract just BC
 bc_carts_orig <- carts[carts$LOC_E == "British Columbia", ]
