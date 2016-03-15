@@ -199,9 +199,10 @@ current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group))
 endeavour <- coordinates(bc_carts[bc_carts$ZONE_ID == "700020100", ])
 
 annotated_m_map <- current_m_map +
-  geom_point(aes(x = endeavour[1], y = endeavour[2]), inherit.aes = FALSE) +
-  annotate("text", x = endeavour[1] - 40, y = endeavour[2] - 100, hjust = 0,
-           label = "Endeavour Hydrothermal Vents Marine Protected Area")
+  geom_point(aes(x = endeavour[1], y = endeavour[2]), inherit.aes = FALSE,
+             colour = "#253494", size = 2) +
+  annotate("text", x = endeavour[1], y = endeavour[2] - 40000, hjust = 0.2,
+           label = "Endeavour Hydrothermal Vents\nMarine Protected Area")
 
 # BEC ---------------------------------------------------------------------
 
@@ -342,7 +343,7 @@ dev.off()
 
 ## Multiplot of marine map and bar chart
 png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
-multiplot(current_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
 dev.off()
 
 ## BGC plots
