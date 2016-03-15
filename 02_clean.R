@@ -25,7 +25,7 @@ dir.create("tmp", showWarnings = FALSE)
 carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_WithoutQc", stringsAsFactors = FALSE)
 
 ## Extract just BC
-bc_carts_orig <- carts[carts$LOC_E == "British Columbia", ]
+bc_carts_orig <- carts[carts$LOC_E %in% c("British Columbia", "Offshore Pacific Marine"), ]
 rm(carts)
 
 ## Transform CRS of bc_carts to BC Albers
