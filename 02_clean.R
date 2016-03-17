@@ -24,12 +24,23 @@ dir.create("tmp", showWarnings = FALSE)
 ## Ecological Areas here: http://www.ccea.org/carts/
 carts <- readOGR("data/CARTS_Update_31122015.gdb", "CARTS_Update_31122015_WithoutQc", stringsAsFactors = FALSE)
 
-## Extract just BC
+## Read in the Conservation Lands database from: http://catalogue.data.gov.bc.ca/dataset/conservation-lands
+cl_gdb <- "data/BCGW_conservation_lands_fgdb/WCL_CONSERVATION_LANDS_SP.gdb"
+conservation_lands <- readOGR(cl_gdb, ogrListLayers(cl_gdb)[1])
+rm(cl_gdb)
+
+## Extract just BC from CARTS
 bc_carts_orig <- carts[carts$LOC_E %in% c("British Columbia", "Offshore Pacific Marine"), ]
 rm(carts)
 
+## Subset only the Administrated Lands - Acquisitions and Leases
+bc_admin_lands <- conservation_lands[conservation_lands$CONSERVATION_LAND_TYPE == "Administered Lands" &
+                                           (conservation_lands$TENURE_TYPE == "Acquisition" |
+                                              conservation_lands$TENURE_TYPE == "Lease" |
+                                              conservation_lands$TENURE_TYPE == "Transfer of Administration/Control"), ]
+
 ## Transform CRS of bc_carts to BC Albers
-bc_carts <- spTransform(bc_carts_orig, CRS(proj4string(ecoregions)))
+bc_carts <- spTransform(bc_carts_orig, CRS("+init=epsg:3005"))
 
 #### Simplify for testing
 ## devtools::install_github("ateucher/rmapshaper")
@@ -51,6 +62,8 @@ bc_carts_m <- bc_carts[bc_carts$BIOME == "M", ]
 ## Union shapes to deal with overlaps (loses attributes but makes a dataframe of the shapes that combine to make each polygon)
 bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 bc_carts_m_unioned <- raster::union(bc_carts_m)
+
+bc_prot_areas <- raster::union(bc_carts_t_unioned, bc_admin_lands)
 
 save(list = ls(), file = "tmp/bc_carts_clean.rda")
 rm(list = ls())
