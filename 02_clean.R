@@ -68,18 +68,34 @@ bc_prot_areas <- raster::union(bc_carts_t_unioned, bc_admin_lands)
 save(list = ls(), file = "tmp/bc_carts_clean.rda")
 rm(list = ls())
 
-## Remove marine ecoregions
-m_ecoregions <- c("GPB", "HCS", "IPS", "OPS", "SBC", "TPC")
-ecoregions_t <- ecoregions[!ecoregions$CRGNCD %in% m_ecoregions, ]
 
-## Remove terrestrial areas from marine ecoregions
-ecoregions_m <- ms_erase(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
-                         bc_bound_hres)
+# Process Ecoregions ------------------------------------------------------
+
+## Marine ecoregions
+m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
+
+## Extract the terrestrial and marine portions of GPB
+gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
+                           bc_bound_hres)
+gpb_marine <- ms_erase(ecoregions[ecoregions$CRGNCD == "GPB",],
+                       bc_bound_hres)
+## Fix it up:
+gpb_terrestrial <- gBuffer(gpb_terrestrial, byid = TRUE, width = 0)
+gpb_marine <- gBuffer(gpb_marine, byid = TRUE, width = 0)
+
+## Add terrestrial portion of GPB back to terrestrial ecoregions
+ecoregions_t <- rbind(ecoregions[!ecoregions$CRGNCD %in% c("GPB", m_ecoregions), ],
+                          gpb_terrestrial[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
+
+## Add marine portion of GPB back to marine ecoregions
+ecoregions_m <- rbind(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
+                      gpb_marine[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
 
 ## Create simplified versions for visualization
 ecoregions_t_simp <- ms_simplify(ecoregions_t, 0.01)
 ecoregions_m_simp <- ms_simplify(ecoregions_m, 0.01)
 
+rm(list = c("gpb_marine", "gpb_terrestrial"))
 save(list = ls(), file = "tmp/ecoregions_clean.rda")
 rm(list = ls())
 
