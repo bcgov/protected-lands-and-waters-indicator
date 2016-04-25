@@ -51,6 +51,16 @@ get_unioned_attribute <- function(unioned_sp, orig_sp, col, fun, return_type, ..
 
 }
 
+## Union a SPDF with itself to remove overlaps. Attributes for overlapping
+## polygons are stored in a list-column called "union_df"
+single_sp_union <- function(x) {
+  unioned <- raster::union(x)
+  unioned_ids <- get_unioned_ids(unioned)
+  unioned$union_df <- lapply(unioned_ids, function(y) x@data[y, ])
+  names(unioned)[names(unioned) == "count"] <- "union_count"
+  unioned[, c("union_count", "union_df")]
+}
+
 which_min <- function(x) {
   if (all(is.na(x))) {
     fun <- first
@@ -59,7 +69,6 @@ which_min <- function(x) {
   }
   fun(x)
 }
-
 
 ## Function to get the original polygon ids that make up each new polygon in the
 ## unioned product (the result of raster:union(SPDF, missing))
@@ -89,4 +98,24 @@ iucn_cats <- function() ordered(c("Ia", "Ib", "II", "III", "IV", "V", "VI"))
 
 factor_iucn_cats <- function(x) {
   factor(x, levels = iucn_cats(), ordered = TRUE)
+}
+
+transform_albers <- function(sp_obj) {
+  if (!is(sp_obj, "Spatial")) stop("sp_obj must be a Spatial object", call. = FALSE)
+  if (!require("rgdal")) stop("Package rgdal could not be loaded", call. = FALSE)
+
+  sp::spTransform(sp_obj, CRS("+init=epsg:3005"))
+}
+
+fix_geometry <- function(sp_obj) {
+  if (!is(sp_obj, "Spatial")) stop("sp_obj must be a Spatial object", call. = FALSE)
+  if (!require("rgeos")) stop("Package rgdal could not be loaded", call. = FALSE)
+
+  suppressWarnings({
+    if (any(!gIsValid(sp_obj, byid = TRUE))) {
+      sp_obj <- gBuffer(sp_obj, byid = TRUE, width = 0)
+    }
+  })
+
+  sp_obj
 }
