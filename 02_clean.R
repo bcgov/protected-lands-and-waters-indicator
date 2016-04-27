@@ -16,7 +16,7 @@ library(sp)
 library(rgeos)
 library(raster)
 library(bcmaps) # install using devtools::install_github("bcgov/bcmaps")
-# library(rmapshaper) # install using devtools::install_github("ateucher/rmapshaper")
+library(rmapshaper) # install using devtools::install_github("ateucher/rmapshaper")
 
 source("fun.R")
 
@@ -94,8 +94,8 @@ gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
 gpb_marine <- ms_erase(ecoregions[ecoregions$CRGNCD == "GPB",],
                        bc_bound_hres)
 ## Fix it up:
-gpb_terrestrial <- gBuffer(gpb_terrestrial, byid = TRUE, width = 0)
-gpb_marine <- gBuffer(gpb_marine, byid = TRUE, width = 0)
+gpb_terrestrial <- fix_self_intersect(gpb_terrestrial)
+gpb_marine <- fix_self_intersect(gpb_marine)
 
 ## Add terrestrial portion of GPB back to terrestrial ecoregions
 ecoregions_t <- rbind(ecoregions[!ecoregions$CRGNCD %in% c("GPB", m_ecoregions), ],
