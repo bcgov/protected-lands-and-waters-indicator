@@ -34,6 +34,8 @@ rm(cl_gdb)
 ## Read in NGO conservation lands
 fee_simple_ngo_lands <- readOGR("data", "BC_NGO_ConsDB_FeeSimple_31Dec2014_updated02Nov2015", stringsAsFactors = FALSE)
 
+fee_simple_ngo_lands$PROTDATE <- as.numeric(substr(fee_simple_ngo_lands$SecDate1, 1, 4))
+
 ## Extract just BC from CARTS
 bc_carts <- carts[carts$LOC_E %in% c("British Columbia", "Offshore Pacific Marine"), ]
 rm(carts)
@@ -43,13 +45,12 @@ bc_admin_lands <- conservation_lands[conservation_lands$CONSERVATION_LAND_TYPE =
                                            (conservation_lands$TENURE_TYPE == "Acquisition" |
                                               conservation_lands$TENURE_TYPE == "Lease" |
                                               conservation_lands$TENURE_TYPE == "Transfer of Administration/Control"), ]
-
-bc_admin_lands$PROTDATE <- max(bc_carts$PROTDATE, na.rm = TRUE)
+rm(conservation_lands)
 
 ## Transform CRS of all layers to BC Albers
-bc_carts <- transform_albers(bc_carts)
-bc_admin_lands <- transform_albers(bc_admin_lands)
-fee_simple_ngo_lands <- transform_albers(fee_simple_ngo_lands)
+bc_carts <- transform_bc_albers(bc_carts)
+bc_admin_lands <- transform_bc_albers(bc_admin_lands)
+fee_simple_ngo_lands <- transform_bc_albers(fee_simple_ngo_lands)
 
 #### Simplify for testing
 ## devtools::install_github("ateucher/rmapshaper")
@@ -59,17 +60,41 @@ fee_simple_ngo_lands <- transform_albers(fee_simple_ngo_lands)
 ####
 
 ## Check validity of polygons of bc_carts, fix with gBuffer trick, and check again:
-bc_carts <- fix_geometry(bc_carts)
-bc_admin_lands <- fix_geometry(bc_admin_lands)
-fee_simple_ngo_lands <- fix_geometry(fee_simple_ngo_lands)
+bc_carts <- fix_self_intersect(bc_carts)
+bc_admin_lands <- fix_self_intersect(bc_admin_lands)
+fee_simple_ngo_lands <- fix_self_intersect(fee_simple_ngo_lands)
 
-bc_admin_lands_unioned <- single_sp_union(bc_admin_lands)
-fee_simple_ngo_lands_unioned <- single_sp_union(fee_simple_ngo_lands)
-bc_carts_unioned <- single_sp_union(bc_carts)
+## Convert IUCN category to an ordered factor
+bc_carts$IUCN_CAT <- factor_iucn_cats(bc_carts$IUCN_CAT)
 
-non_carts_unioned <- raster::union(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
+bc_admin_lands_unioned <- self_union(bc_admin_lands)
+fee_simple_ngo_lands_unioned <- self_union(fee_simple_ngo_lands) ## Completed up to and including this step
+bc_carts_unioned <- self_union(bc_carts)
 
-all_unioned <- raster::union(bc_carts_unioned, non_carts_unioned)
+## Get attributes of Fee Simple lands
+fee_simple_ngo_lands_unioned$prot_date <- as.integer(get_poly_attribute(fee_simple_ngo_lands_unioned$union_df,
+                                                                        "PROTDATE", min, na.rm = TRUE))
+fee_simple_ngo_lands_unioned$designation_type <- "NGO"
+fee_simple_ngo_lands_unioned$source <- "LTABC"
+
+## Get attributes of BC Administered lands
+bc_admin_lands_unioned$prot_date <- max(c(bc_carts$PROTDATE,
+                                          fee_simple_ngo_lands_unioned$prot_date), na.rm = TRUE)
+bc_admin_lands_unioned$designation_type <- get_poly_attribute(bc_admin_lands_unioned$union_df,
+                                                              "TENURE_TYPE", min, na.rm = TRUE)
+bc_admin_lands_unioned$source <- "Cons_Lands_Admin"
+
+## Get the earliest year of protection for polygon segments that overlap
+bc_carts_unioned$prot_date <- get_poly_attribute(bc_carts_unioned$union_df,
+                                                      "PROTDATE", min, na.rm = TRUE)
+
+## Get the minimum iucn category
+bc_carts_unioned$iucn <- get_poly_attribute(bc_carts_unioned$union_df,
+                                                 "IUCN_CAT", min, na.rm = TRUE)
+
+admin_fee_simple_unioned <- raster::union(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
+
+prot_areas_unioned <- raster::union(bc_carts_unioned, admin_fee_simple_unioned)
 
 # # Get separate layers for terrestrial and marine protected areas
 # bc_carts_t <- bc_carts[bc_carts$BIOME == "T", ]
@@ -78,6 +103,12 @@ all_unioned <- raster::union(bc_carts_unioned, non_carts_unioned)
 # ## Union shapes to deal with overlaps (loses attributes but makes a dataframe of the shapes that combine to make each polygon)
 # bc_carts_t_unioned <- raster::union(bc_carts_t) # This is incredibly slow.
 # bc_carts_m_unioned <- raster::union(bc_carts_m)
+
+saveRDS(fee_simple_ngo_lands_unioned, "tmp/fee_simple_ngo_lands_unioned.rds")
+saveRDS(bc_admin_lands_unioned, "tmp/bc_admin_lands_unioned.rds")
+saveRDS(bc_carts_unioned, "tmp/bc_carts_unioned.rds")
+saveRDS(admin_fee_simple_unioned, "tmp/admin_fee_simple_unioned.rds")
+saveRDS(prot_areas_unioned, "tmp/prot_areas_unioned.rds")
 
 save(list = ls(), file = "tmp/prot_areas_clean.rda")
 rm(list = ls())
