@@ -28,43 +28,25 @@ load("tmp/ecoregions_clean.rda")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
-## Set the IUCN category as an ordered factor:
-bc_carts_t$IUCN_CAT = factor_iucn_cats(bc_carts_t$IUCN_CAT)
-
-## Get the earliest year of protection for polygon segments that overlap
-bc_carts_t_unioned$prot_date <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t,
-                                                      "PROTDATE", min, "numeric",
-                                                      na.rm = TRUE)
-
-## Get the minimum iucn category
-bc_carts_t_unioned$iucn <- get_unioned_attribute(bc_carts_t_unioned, bc_carts_t,
-                                                 "IUCN_CAT", min, "factor",
-                                                 na.rm = TRUE)
-
-## Get the row.names of the polygon with the minimum iucn category
-bc_carts_t_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_t_unioned,
-                                                              bc_carts_t, "IUCN_CAT",
-                                                              which_min, "integer")
-
 ## Get areas of unioned polygons
-bc_carts_t_unioned$prot_area <- gArea(bc_carts_t_unioned, byid = TRUE)
+prot_areas_unioned$prot_area <- gArea(prot_areas_unioned, byid = TRUE)
 
 ## Aggregate the protected areas by their protected date
-bc_carts_t_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = "prot_date")
+# bc_carts_t_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = "prot_date")
 
 ###
 
 ## Intersect ecoregions with protected areas
-carts_eco_t <- raster::intersect(ecoregions_t, bc_carts_t_agg)
-carts_eco_t <- rgeos::createSPComment(carts_eco_t) # Ensure polygon holes are properly identified
+prot_areas_eco_t <- raster::intersect(ecoregions_t, prot_areas_unioned)
+prot_areas_eco_t <- rgeos::createSPComment(prot_areas_eco_t) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
-carts_eco_t$prot_area <- rgeos::gArea(carts_eco_t, byid = TRUE)
+prot_areas_eco_t$prot_area <- rgeos::gArea(prot_areas_eco_t, byid = TRUE)
 
 bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
-carts_eco_t_summary_by_year <- carts_eco_t@data %>%
+prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   filter(prot_date > 0) %>%
   complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
@@ -74,8 +56,7 @@ carts_eco_t_summary_by_year <- carts_eco_t@data %>%
   ungroup()
 
 ## Provincial summary
-carts_bc_t_summary_by_year <- bc_carts_t_unioned@data %>%
-  filter(prot_date > 0) %>%
+prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
@@ -83,7 +64,7 @@ carts_bc_t_summary_by_year <- bc_carts_t_unioned@data %>%
             tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_year) %>%
+cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_summary_by_year) %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
   mutate(cum_area_protected = cumsum(tot_protected),
@@ -96,28 +77,25 @@ cum_summary_t <- bind_rows(carts_eco_t_summary_by_year, carts_bc_t_summary_by_ye
 # Marine Ecoregion analysis ----------------------------------------------------
 
 ## Set the IUCN category as an ordered factor:
-bc_carts_m$IUCN_CAT = factor_iucn_cats(bc_carts_m$IUCN_CAT)
+# bc_carts_m$IUCN_CAT = factor_iucn_cats(bc_carts_m$IUCN_CAT)
 
 ## Get the earliest year of protection for polygon segments that overlap
-bc_carts_m_unioned$prot_date <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m,
-                                                      "PROTDATE", min, "numeric",
-                                                      na.rm = TRUE)
+# bc_carts_m_unioned$prot_date <- get_poly_attribute(bc_carts_unioned$union_df,
+#                                                       "PROTDATE", min, na.rm = TRUE)
 
-## Get the minimum iucn category
-bc_carts_m_unioned$iucn <- get_unioned_attribute(bc_carts_m_unioned, bc_carts_m,
-                                                 "IUCN_CAT", min, "factor",
-                                                 na.rm = TRUE)
+# ## Get the minimum iucn category
+# bc_carts_m_unioned$iucn <- get_poly_attribute(bc_carts_unioned$union_df,
+#                                                  "IUCN_CAT", min, na.rm = TRUE)
 
-## Get the row.names of the polygon with the minimum iucn category
-bc_carts_m_unioned$carts_id_min_iucn <- get_unioned_attribute(bc_carts_m_unioned,
-                                                              bc_carts_m, "IUCN_CAT",
-                                                              which_min, "integer")
+# ## Get the row.names of the polygon with the minimum iucn category
+# bc_carts_m_unioned$carts_id_min_iucn <- get_poly_attribute(bc_carts_unioned$union_df, "IUCN_CAT",
+#                                                               which_min)
 
 ## Get areas of unioned polygons
-bc_carts_m_unioned$prot_area <- gArea(bc_carts_m_unioned, byid = TRUE)
+# bc_carts_m_unioned$prot_area <- gArea(bc_carts_m_unioned, byid = TRUE)
 
 ## Aggregate the protected areas by their protected date
-bc_carts_m_agg <- aggregate(bc_carts_m_unioned[, "prot_date"], by = c("prot_date"))
+# bc_carts_m_agg <- aggregate(bc_carts_m_unioned[, "prot_date"], by = c("prot_date"))
 
 ###
 
@@ -125,11 +103,11 @@ bc_carts_m_agg <- aggregate(bc_carts_m_unioned[, "prot_date"], by = c("prot_date
 ecoregions_m$area <- rgeos::gArea(ecoregions_m, byid = TRUE)
 
 ## Intersect ecoregions with protected areas
-carts_eco_m <- raster::intersect(ecoregions_m, bc_carts_m_agg)
-carts_eco_m <- rgeos::createSPComment(carts_eco_m) # Ensure polygon holes are properly identified
+prot_areas_eco_m <- raster::intersect(ecoregions_m, prot_areas_unioned)
+prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
-carts_eco_m$prot_area <- rgeos::gArea(carts_eco_m, byid = TRUE)
+prot_areas_eco_m$prot_area <- rgeos::gArea(prot_areas_eco_m, byid = TRUE)
 
 #bc_area_sq_m <- bc_area(units = "m2")
 
@@ -139,7 +117,7 @@ missing_m_ecoregions <- ecoregions_m@data %>%
   filter(CRGNCD %in% c("TPC", "SBC")) %>%
   mutate(prot_date = 2013, prot_area = 0)
 
-carts_eco_m_summary_by_year <- carts_eco_m@data %>%
+prot_areas_eco_m_summary_by_year <- prot_areas_eco_m@data %>%
   filter(prot_date > 0) %>%
   bind_rows(missing_m_ecoregions) %>%
   complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
@@ -149,8 +127,7 @@ carts_eco_m_summary_by_year <- carts_eco_m@data %>%
             percent_protected = tot_protected / ecoregion_area * 100)
 
 ## Provincial summary
-carts_bc_m_summary_by_year <- bc_carts_m_unioned@data %>%
-  filter(prot_date > 0) %>%
+prot_areas_bc_m_summary_by_year <- prot_areas_eco_m_summary_by_year %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
@@ -158,7 +135,7 @@ carts_bc_m_summary_by_year <- bc_carts_m_unioned@data %>%
             tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_year) %>%
+cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_summary_by_year) %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
   mutate(cum_area_protected = cumsum(tot_protected),
@@ -175,8 +152,8 @@ cum_summary_m <- bind_rows(carts_eco_m_summary_by_year, carts_bc_m_summary_by_ye
 load("tmp/bec_clean.rda")
 
 # Intersect terrestrial CARTS and BEC and get area
-carts_bec <- raster::intersect(bec_t, bc_carts_t_unioned)
-carts_bec$prot_area <- rgeos::gArea(carts_bec, byid = TRUE) * 1e-4
+prot_areas_bec <- raster::intersect(bec_t, prot_areas_unioned)
+prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE) * 1e-4
 
 # Get total size of terrestrial area of each zone
 bec_t_summary <- bec_t@data %>%
@@ -184,7 +161,7 @@ bec_t_summary <- bec_t@data %>%
   summarize(total_area = sum(area))
 
 # Summarize
-carts_bec_summary <- carts_bec@data %>%
+prot_areas_bec_summary <- prot_areas_bec@data %>%
   group_by(ZONE_NAME) %>%
   summarize(prot_area = sum(prot_area)) %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
