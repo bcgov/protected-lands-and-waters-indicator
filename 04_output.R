@@ -307,7 +307,7 @@ bc_area_ha <- bc_area(units = "ha")
 ## Get accurate areas:
 bc_carts$area_ha <- gArea(bc_carts, byid = TRUE) / 1e4
 
-bc_designation_summary <- bc_carts@data %>%
+carts_designation_summary <- bc_carts@data %>%
   group_by(BIOME, Designation = TYPE_E, LEGISL_E) %>%
   summarise(total_area_ha = sum(area_ha),
             n = n()) %>%
@@ -318,7 +318,7 @@ bc_designation_summary <- bc_carts@data %>%
                        total_area_ha = sum(.$total_area_ha),
                        percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
 
-bc_designation_iucn_summary <- bc_carts@data %>%
+carts_designation_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, TYPE_E, IUCN_CAT) %>%
   summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
@@ -328,7 +328,7 @@ bc_designation_iucn_summary <- bc_carts@data %>%
                        total_area_ha = sum(.$total_area_ha),
                        percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
 
-bc_iucn_summary <- bc_carts@data %>%
+carts_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, IUCN_CAT) %>%
   summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
@@ -358,9 +358,9 @@ dev.off()
 ## Output csv files
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
 write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
-write_csv(bc_designation_summary, path = "out/bc_carts_designation_summary.csv")
-write_csv(bc_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
-write_csv(bc_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")
+write_csv(carts_designation_summary, path = "out/bc_carts_designation_summary.csv")
+write_csv(carts_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
+write_csv(carts_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")
 write_csv(zone_summary, path = "out/zone_summary.csv")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
