@@ -332,6 +332,17 @@ carts_iucn_summary <- bc_carts@data %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
                                 total_area_ha / bc_m_area_ha * 100))
 
+carts_summary <- bc_carts@data %>%
+  filter(TYPE_E != "Wildlife Management Area") %>%
+  mutate(designation_type = ifelse(OWNER_E == "Government of British Columbia",
+                                   "BC Parks", "Federal Parks")) %>%
+  group_by(BIOME, designation_type, designation = TYPE_E) %>%
+  summarise(total_area_ha = sum(area_ha),
+            n = n()) %>%
+  ungroup() %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100),
+         percent_of_bc = round(percent_of_bc, 4))
 
 # BC Administered Conservation Lands Summaries ----------------------------
 
@@ -355,7 +366,7 @@ wma_summary <- bc_carts@data[bc_carts$TYPE_E == "Wildlife Management Area", ] %>
 
 ngo_summary$BIOME <- "T"
 
-foo <- bind_rows(bc_admin_lands_summary, wma_summary, ngo_summary)
+foo <- bind_rows(carts_summary, bc_admin_lands_summary, wma_summary, ngo_summary)
 
 # Output data summaries and charts ----------------------------------------
 
