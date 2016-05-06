@@ -24,7 +24,7 @@ library(rgeos)
 library(RColorBrewer)
 
 load("tmp/analyzed.rda")
-
+ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv")
 
 # Terrestrial -------------------------------------------------------------
 
@@ -303,37 +303,59 @@ carts_map <- gg_bc +
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 
 bc_area_ha <- bc_area(units = "ha")
+bc_m_area_ha <- 453602787832 * 1e-4
 
 ## Get accurate areas:
 bc_carts$area_ha <- gArea(bc_carts, byid = TRUE) / 1e4
 
 carts_designation_summary <- bc_carts@data %>%
-  group_by(BIOME, Designation = TYPE_E, LEGISL_E) %>%
+  group_by(BIOME, Designation = TYPE_E, LEGISL_E, OWNER_E) %>%
   summarise(total_area_ha = sum(area_ha),
             n = n()) %>%
   ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
-         percent_of_bc = round(percent_of_bc, 4)) %>%
-  bind_rows(data_frame(Designation = "British Columbia Total",
-                       total_area_ha = sum(.$total_area_ha),
-                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100),
+         percent_of_bc = round(percent_of_bc, 4))
 
 carts_designation_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, TYPE_E, IUCN_CAT) %>%
   summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA),
-         percent_of_bc = round(percent_of_bc, 4)) %>%
-  bind_rows(data_frame(IUCN_CAT = "British Columbia Total",
-                       total_area_ha = sum(.$total_area_ha),
-                       percent_of_bc = sum(.$percent_of_bc, na.rm = TRUE)))
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100),
+         percent_of_bc = round(percent_of_bc, 4))
 
 carts_iucn_summary <- bc_carts@data %>%
   group_by(BIOME, IUCN_CAT) %>%
   summarise(total_area_ha = sum(area_ha), n = n()) %>%
   ungroup() %>%
-  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100, NA))
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100))
 
+
+# BC Administered Conservation Lands Summaries ----------------------------
+
+# bc_admin_less_ngo <- raster::erase(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
+# bc_admin_less_ngo$prot_area <- gArea(bc_admin_less_ngo, byid = TRUE)
+
+bc_admin_lands_summary <- bc_admin_lands_unioned@data %>%
+  mutate(BIOME = "T", designation = designation_type,
+         designation_type = "BC Administered Conservation Lands") %>%
+  group_by(BIOME, designation_type, designation) %>%
+  summarise(total_area_ha = sum(prot_area) * 1e-4,
+            percent_of_bc = total_area_ha / (bc_area_ha) * 100)
+
+wma_summary <- bc_carts@data[bc_carts$TYPE_E == "Wildlife Management Area", ] %>%
+  mutate(designation = "Wildlife Management Area",
+         designation_type = "BC Administered Conservation Lands") %>%
+  group_by(BIOME, designation_type, designation) %>%
+  summarise(total_area_ha = sum(area_ha)) %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100))
+
+ngo_summary$BIOME <- "T"
+
+foo <- bind_rows(bc_admin_lands_summary, wma_summary, ngo_summary)
 
 # Output data summaries and charts ----------------------------------------
 
