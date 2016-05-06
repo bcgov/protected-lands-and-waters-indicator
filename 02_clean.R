@@ -67,22 +67,28 @@ fee_simple_ngo_lands <- fix_self_intersect(fee_simple_ngo_lands)
 ## Convert IUCN category to an ordered factor
 bc_carts$IUCN_CAT <- factor_iucn_cats(bc_carts$IUCN_CAT)
 
+
+bc_carts_agg <- raster::aggregate(bc_carts, by = "PROTDATE")
+bc_carts_agg <- fix_self_intersect(bc_carts_agg)
+
 bc_admin_lands_unioned <- self_union(bc_admin_lands)
 fee_simple_ngo_lands_unioned <- self_union(fee_simple_ngo_lands) ## Completed up to and including this step
-bc_carts_unioned <- self_union(bc_carts)
+bc_carts_agg_unioned <- self_union(bc_carts_agg)
 
 ## Get attributes of Fee Simple lands
 fee_simple_ngo_lands_unioned$prot_date <- as.integer(get_poly_attribute(fee_simple_ngo_lands_unioned$union_df,
                                                                         "PROTDATE", min, na.rm = TRUE))
-fee_simple_ngo_lands_unioned$designation_type <- "NGO"
-fee_simple_ngo_lands_unioned$source <- "LTABC"
+fee_simple_ngo_lands_unioned$designation_type <- "NGO Fee Simple"
+fee_simple_ngo_lands_unioned$source <- "DU / TNT Conservation Areas"
+fee_simple_ngo_lands_unioned$prot_area <- gArea(fee_simple_ngo_lands_unioned, byid = TRUE)
 
 ## Get attributes of BC Administered lands
 bc_admin_lands_unioned$prot_date <- max(c(bc_carts$PROTDATE,
                                           fee_simple_ngo_lands_unioned$prot_date), na.rm = TRUE)
 bc_admin_lands_unioned$designation_type <- get_poly_attribute(bc_admin_lands_unioned$union_df,
                                                               "TENURE_TYPE", min, na.rm = TRUE)
-bc_admin_lands_unioned$source <- "Cons_Lands_Admin"
+bc_admin_lands_unioned$source <- "Conservation Lands Admin Areas"
+bc_admin_lands_unioned$prot_area <- gArea(bc_admin_lands_unioned, byid = TRUE)
 
 ## Get the earliest year of protection for polygon segments that overlap
 bc_carts_unioned$prot_date <- get_poly_attribute(bc_carts_unioned$union_df,
@@ -93,6 +99,7 @@ bc_carts_unioned$iucn <- get_poly_attribute(bc_carts_unioned$union_df,
                                                  "IUCN_CAT", min, na.rm = TRUE)
 
 admin_fee_simple_unioned <- raster::union(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
+admin_fee_simple_unioned$prot_area <- gArea(admin_fee_simple_unioned, byid = TRUE)
 
 prot_areas_unioned <- raster::union(bc_carts_unioned, admin_fee_simple_unioned)
 
