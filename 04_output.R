@@ -350,8 +350,7 @@ carts_summary <- bc_carts@data %>%
 # bc_admin_less_ngo$prot_area <- gArea(bc_admin_less_ngo, byid = TRUE)
 
 bc_admin_lands_summary <- bc_admin_lands_unioned@data %>%
-  mutate(BIOME = "T", designation = designation_type,
-         designation_type = "BC Administered Conservation Lands") %>%
+  mutate(BIOME = "T") %>%
   group_by(BIOME, designation_type, designation) %>%
   summarise(total_area_ha = sum(prot_area) * 1e-4,
             percent_of_bc = total_area_ha / (bc_area_ha) * 100)
@@ -363,8 +362,6 @@ wma_summary <- bc_carts@data[bc_carts$TYPE_E == "Wildlife Management Area", ] %>
   summarise(total_area_ha = sum(area_ha)) %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
                                 total_area_ha / bc_m_area_ha * 100))
-
-ngo_summary$BIOME <- "T"
 
 foo <- bind_rows(carts_summary, bc_admin_lands_summary, wma_summary, ngo_summary)
 
