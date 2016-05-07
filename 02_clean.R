@@ -72,36 +72,36 @@ bc_carts_agg <- raster::aggregate(bc_carts, by = "PROTDATE")
 bc_carts_agg <- fix_self_intersect(bc_carts_agg)
 
 bc_admin_lands_unioned <- self_union(bc_admin_lands)
-fee_simple_ngo_lands_unioned <- self_union(fee_simple_ngo_lands) ## Completed up to and including this step
+fee_simple_ngo_lands_unioned <- self_union(fee_simple_ngo_lands)
 bc_carts_agg_unioned <- self_union(bc_carts_agg)
+
+## Get the earliest year of protection for polygon segments that overlap
+bc_carts_agg_unioned$prot_date <- sapply(bc_carts_agg_unioned$union_df, min, na.rm = TRUE)
 
 ## Get attributes of Fee Simple lands
 fee_simple_ngo_lands_unioned$prot_date <- as.integer(get_poly_attribute(fee_simple_ngo_lands_unioned$union_df,
                                                                         "PROTDATE", min, na.rm = TRUE))
-fee_simple_ngo_lands_unioned$designation_type <- "NGO Fee Simple"
-fee_simple_ngo_lands_unioned$source <- "DU / TNT Conservation Areas"
+fee_simple_ngo_lands_unioned$designation_type <- "NGO Conservation Areas"
+fee_simple_ngo_lands_unioned$designation <- "Fee Simple"
 fee_simple_ngo_lands_unioned$prot_area <- gArea(fee_simple_ngo_lands_unioned, byid = TRUE)
 
 ## Get attributes of BC Administered lands
 bc_admin_lands_unioned$prot_date <- max(c(bc_carts$PROTDATE,
                                           fee_simple_ngo_lands_unioned$prot_date), na.rm = TRUE)
-bc_admin_lands_unioned$designation_type <- get_poly_attribute(bc_admin_lands_unioned$union_df,
-                                                              "TENURE_TYPE", min, na.rm = TRUE)
-bc_admin_lands_unioned$source <- "Conservation Lands Admin Areas"
+bc_admin_lands_unioned$designation_type <- "BC Administered Conservation Lands"
+bc_admin_lands_unioned$designation <- get_poly_attribute(bc_admin_lands_unioned$union_df,
+                                                         "TENURE_TYPE", min, na.rm = TRUE)
 bc_admin_lands_unioned$prot_area <- gArea(bc_admin_lands_unioned, byid = TRUE)
 
-## Get the earliest year of protection for polygon segments that overlap
-bc_carts_unioned$prot_date <- get_poly_attribute(bc_carts_unioned$union_df,
-                                                      "PROTDATE", min, na.rm = TRUE)
+## Aggregate for unioning to make the time series
+bc_admin_lands_agg_unioned <- raster::aggregate(bc_admin_lands_unioned, by = "prot_date")
+fee_simple_ngo_lands_agg_unioned <- raster::aggregate(fee_simple_ngo_lands_unioned, by = "prot_date")
 
-## Get the minimum iucn category
-bc_carts_unioned$iucn <- get_poly_attribute(bc_carts_unioned$union_df,
-                                                 "IUCN_CAT", min, na.rm = TRUE)
+## Union the first two layers
+admin_fee_simple_unioned <- raster::union(bc_admin_lands_agg_unioned, fee_simple_ngo_lands_agg_unioned)
 
-admin_fee_simple_unioned <- raster::union(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
-admin_fee_simple_unioned$prot_area <- gArea(admin_fee_simple_unioned, byid = TRUE)
-
-prot_areas_unioned <- raster::union(bc_carts_unioned, admin_fee_simple_unioned)
+## Finally add the CARTS data for BC
+prot_areas_unioned <- raster::union(bc_carts_agg_unioned, admin_fee_simple_unioned)
 
 # # Get separate layers for terrestrial and marine protected areas
 # bc_carts_t <- bc_carts[bc_carts$BIOME == "T", ]
@@ -113,11 +113,11 @@ prot_areas_unioned <- raster::union(bc_carts_unioned, admin_fee_simple_unioned)
 
 saveRDS(fee_simple_ngo_lands_unioned, "tmp/fee_simple_ngo_lands_unioned.rds")
 saveRDS(bc_admin_lands_unioned, "tmp/bc_admin_lands_unioned.rds")
-saveRDS(bc_carts_unioned, "tmp/bc_carts_unioned.rds")
+saveRDS(bc_carts_agg_unioned, "tmp/bc_carts_agg_unioned.rds")
 saveRDS(admin_fee_simple_unioned, "tmp/admin_fee_simple_unioned.rds")
 saveRDS(prot_areas_unioned, "tmp/prot_areas_unioned.rds")
 
-save(list = ls(), file = "tmp/prot_areas_clean.rda")
+save(list = ls(), file = "tmp/prot_areas_clean_new.rda")
 rm(list = ls())
 
 
