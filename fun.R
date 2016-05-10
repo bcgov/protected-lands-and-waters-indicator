@@ -55,3 +55,13 @@ bind_spdf <- function(x, y) {
   y <- spChFIDs(y, as.character((len_x + 1):(len_x + len_y)))
   rbind(x, y)
 }
+
+gg_fortify <- function(x) {
+  if (!require("maptools")) stop("maptools is not installed")
+  if (!requireNamespace("ggplot2")) stop("ggplot2 is not installed.")
+  if (!requireNamespace("dplyr")) stop("dplyr is not installed.")
+  x@data$ggid <- rownames(x@data)
+  x_points <- ggplot2::fortify(x, region = "ggid")
+  x_df <- dplyr::left_join(x_points, x@data, by = c("id" = "ggid"))
+  x_df
+}
