@@ -28,16 +28,8 @@ load("tmp/ecoregions_clean.rda")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
-## Get areas of unioned polygons
-prot_areas_unioned$prot_area <- gArea(prot_areas_unioned, byid = TRUE)
-
-## Aggregate the protected areas by their protected date
-# bc_carts_t_agg <- raster::aggregate(bc_carts_t_unioned[, "prot_date"], by = "prot_date")
-
-###
-
 ## Intersect ecoregions with protected areas
-prot_areas_eco_t <- raster::intersect(ecoregions_t, prot_areas_unioned)
+prot_areas_eco_t <- raster::intersect(ecoregions_t, prot_areas_agg)
 prot_areas_eco_t <- rgeos::createSPComment(prot_areas_eco_t) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
@@ -103,7 +95,7 @@ cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_sum
 ecoregions_m$area <- rgeos::gArea(ecoregions_m, byid = TRUE)
 
 ## Intersect ecoregions with protected areas
-prot_areas_eco_m <- raster::intersect(ecoregions_m, prot_areas_unioned)
+prot_areas_eco_m <- raster::intersect(ecoregions_m, prot_areas_agg)
 prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon holes are properly identified
 
 ## Calculate size of protected areas in each ecoregion
