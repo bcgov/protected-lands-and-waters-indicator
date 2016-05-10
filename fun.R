@@ -37,13 +37,21 @@ factor_iucn_cats <- function(x) {
 }
 
 get_gov_level <- function(x) {
-  if (any(grepl("federal", x, ignore.case = TRUE)) { # let federal take precedence ??
+  if (any(grepl("federal", x, ignore.case = TRUE))) { # let federal take precedence ??
     gov <- "Federal"
-  } else if (any(grepl("sub-national", x, ignore.case = TRUE)) {
+  } else if (any(grepl("sub-national", x, ignore.case = TRUE))) {
     gov <- "Provincial"
   } else {
     gov <- NA_character_
   }
-  
+
   gov
+}
+
+bind_spdf <- function(x, y) {
+  len_x <- length(x)
+  len_y <- length(y)
+  x <- spChFIDs(x, as.character(1:len_x))
+  y <- spChFIDs(y, as.character((len_x + 1):(len_x + len_y)))
+  rbind(x, y)
 }
