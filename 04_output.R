@@ -275,7 +275,7 @@ zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
 
 #plot(zone_barplot)
 
-## Plot CARTS
+## Plot protected areas
 
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
 
@@ -284,15 +284,19 @@ gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
   theme_map() +
   coord_fixed()
 
-gg_carts <- fortify(bc_carts, region = "ZONE_ID")
-bc_carts_tmp <- bc_carts@data
-bc_carts_tmp$ZONE_ID <- as.character(bc_carts_tmp$ZONE_ID)
-gg_carts <- left_join(gg_carts, bc_carts_tmp, by = c("id" = "ZONE_ID"))
+## Make a simplified spdf of terrestrial and marine protected areas
+prot_areas_t <- raster::aggregate(carts_eco_t)
+prot_areas_t$BIOME <- "Terrestrial"
+prot_areas_m <- raster::aggregate(carts_eco_m)
+prot_areas_m$BIOME <- "Marine"
+prot_areas_map <- bind_spdf(prot_areas_t, prot_areas_m)
+
+gg_prot <- gg_fortify(prot_areas_map)
 
 carts_map <- gg_bc +
-  geom_polygon(data = gg_carts, aes(x = long, y = lat, group = group, fill = BIOME)) +
-  scale_fill_manual(labels = c("T" = "Terrestrial", "M" = "Marine"), name = "Biome",
-                    values = c("T" = "#006837", "M" = "#253494")) +
+  geom_polygon(data = gg_prot, aes(x = long, y = lat, group = group, fill = BIOME)) +
+  scale_fill_manual(name = "Biome",
+                    values = c("Terrestrial" = "#006837", "Marine" = "#253494")) +
   coord_fixed() +
   theme_map() +
   theme(legend.title = element_text(size = 12, vjust = 1),
