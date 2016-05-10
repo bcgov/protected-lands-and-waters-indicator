@@ -91,9 +91,6 @@ cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_sum
 
 ###
 
-## Calculate the area of the ecoregions
-ecoregions_m$area <- rgeos::gArea(ecoregions_m, byid = TRUE)
-
 ## Intersect ecoregions with protected areas
 prot_areas_eco_m <- raster::intersect(ecoregions_m, prot_areas_agg)
 prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon holes are properly identified
