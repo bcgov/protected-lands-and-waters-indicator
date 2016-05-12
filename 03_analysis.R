@@ -141,7 +141,7 @@ cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_sum
 load("tmp/bec_clean.rda")
 
 # Intersect terrestrial CARTS and BEC and get area
-prot_areas_bec <- raster::intersect(bec_t, prot_areas_unioned)
+prot_areas_bec <- raster::intersect(bec_t, prot_areas_agg)
 prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE) * 1e-4
 
 # Get total size of terrestrial area of each zone

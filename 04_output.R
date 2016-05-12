@@ -293,7 +293,7 @@ prot_areas_map <- bind_spdf(prot_areas_t, prot_areas_m)
 
 gg_prot <- gg_fortify(prot_areas_map)
 
-carts_map <- gg_bc +
+prot_map <- gg_bc +
   geom_polygon(data = gg_prot, aes(x = long, y = lat, group = group, fill = BIOME)) +
   scale_fill_manual(name = "Biome",
                     values = c("Terrestrial" = "#006837", "Marine" = "#253494")) +
