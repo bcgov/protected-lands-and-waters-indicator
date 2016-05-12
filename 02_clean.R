@@ -105,6 +105,8 @@ admin_fee_simple_unioned <- raster::aggregate(admin_fee_simple_unioned, by = "pr
 prot_areas_unioned <- raster::union(bc_carts_agg_unioned, admin_fee_simple_unioned)
 prot_areas_unioned$prot_date <- pmin(prot_areas_unioned$prot_date.1,
                                      prot_areas_unioned$prot_date.2, na.rm = TRUE)
+prot_areas_unioned$prot_date[is.infinite(prot_areas_unioned$prot_date)] <- max(c(bc_carts_agg_unioned$prot_date,
+                                                                                 fee_simple_ngo_lands_unioned$prot_date), na.rm = TRUE)
 prot_areas_agg <- raster::aggregate(prot_areas_unioned, by = "prot_date")
 
 saveRDS(fee_simple_ngo_lands_unioned, "tmp/fee_simple_ngo_lands_unioned.rds")
@@ -113,7 +115,7 @@ saveRDS(bc_carts_agg_unioned, "tmp/bc_carts_agg_unioned.rds")
 saveRDS(admin_fee_simple_unioned, "tmp/admin_fee_simple_unioned.rds")
 saveRDS(prot_areas_unioned, "tmp/prot_areas_unioned.rds")
 
-save(list = ls(), file = "tmp/prot_areas_clean_new_may09.rda")
+save(list = ls(), file = "tmp/prot_areas_clean.rda")
 rm(list = ls())
 
 
