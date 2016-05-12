@@ -23,7 +23,7 @@ library(tidyr) # for 'complete' function
 source("fun.R")
 
 ## Load the cleanup up data from 02_clean.R
-load("tmp/bc_carts_clean.rda")
+load("tmp/prot_areas_clean.rda")
 load("tmp/ecoregions_clean.rda")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
@@ -53,7 +53,7 @@ prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
             ecoregion_area = bc_area_sq_m,
-            tot_protected = sum(prot_area),
+            tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
 cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_summary_by_year) %>%
@@ -121,7 +121,7 @@ prot_areas_bc_m_summary_by_year <- prot_areas_eco_m_summary_by_year %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
             ecoregion_area = sum(ecoregions_m$area),
-            tot_protected = sum(prot_area),
+            tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
 cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_summary_by_year) %>%
