@@ -25,6 +25,7 @@ source("fun.R")
 ## Load the cleanup up data from 02_clean.R
 load("tmp/prot_areas_clean.rda")
 load("tmp/ecoregions_clean.rda")
+reg_int_ecoreg_summary <- read.csv("data/reg_interests_ecoreg_summary_year.csv", stringsAsFactors = FALSE)
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
@@ -43,9 +44,15 @@ prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
   group_by(ecoregion = CRGNNM, ecoregion_code = CRGNCD, prot_date) %>%
   summarise(ecoregion_area = min(area),
-            tot_protected = sum(prot_area),
-            percent_protected = tot_protected / ecoregion_area * 100) %>%
-  ungroup()
+            tot_protected = sum(prot_area)) %>%
+  ungroup() %>%
+  left_join(select(reg_int_ecoreg_summary, ecoregion_code, prot_date, tot_protected),
+            by = c("ecoregion_code", "prot_date")) %>%
+  mutate(tot_protected.y = ifelse(is.na(tot_protected.y), 0, tot_protected.y),
+         tot_protected = (tot_protected.x + tot_protected.y),
+         percent_protected = tot_protected / ecoregion_area * 100) %>%
+  select(-tot_protected.x, -tot_protected.y)
+
 
 ## Provincial summary
 prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
@@ -142,7 +149,7 @@ load("tmp/bec_clean.rda")
 
 # Intersect terrestrial CARTS and BEC and get area
 prot_areas_bec <- raster::intersect(bec_t, prot_areas_agg)
-prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE) * 1e-4
+prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE)
 
 # Get total size of terrestrial area of each zone
 bec_t_summary <- bec_t@data %>%
