@@ -70,7 +70,7 @@ bc_carts$IUCN_CAT <- factor_iucn_cats(bc_carts$IUCN_CAT)
 ## Union CARTS
 bc_carts_agg <- raster::aggregate(bc_carts, by = "PROTDATE")
 bc_carts_agg <- fix_self_intersect(bc_carts_agg)
-bc_carts_agg_unioned <- self_union(bc_carts_agg)
+bc_carts_agg_unioned <- self_union(bc_carts_agg) # This takes over a day to run
 ## Get the earliest year of protection for polygon segments that overlap
 bc_carts_agg_unioned$prot_date <- sapply(bc_carts_agg_unioned$union_df, min, na.rm = TRUE)
 bc_carts_agg_unioned <- raster::aggregate(bc_carts_agg_unioned, by = "prot_date")
