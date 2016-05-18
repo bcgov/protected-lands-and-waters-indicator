@@ -23,6 +23,9 @@ library(bcmaps)
 library(rgeos)
 library(RColorBrewer)
 
+load("tmp/prot_areas_clean.rda")
+load("tmp/ecoregions_clean.rda")
+load("tmp/bec_clean.rda")
 load("tmp/analyzed.rda")
 ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv")
 
@@ -219,7 +222,7 @@ bec_t_gg <- fortify(bec_t_prot_simp, region = "poly_id")
 bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "poly_id"))
 bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
 
-bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+(bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
   geom_polygon() +
   scale_fill_distiller(palette = "YlGn", direction = 1) +
   guides(fill = guide_colourbar(title = "Percent of\nEcosystem\nProtected",
@@ -231,16 +234,13 @@ bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = pe
         legend.background = element_rect(fill = NA),
         legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"),
         # panel.background = element_rect(fill = "grey90", colour = NA),
-        plot.margin = margin(0,0,0,0))
+        plot.margin = margin(0,0,0,0)))
 
 #plot(bec_prot_map)
 
-## Create a map of bec zones
-bec_zone_spdf <- raster::aggregate(bec_t_simp, by = "ZONE")
+bec_zone_gg <- fortify(bec_zone_simp, region = "ZONE")
 
-bec_zone_gg <- fortify(bec_zone_spdf, region = "ZONE")
-
-bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill = id)) +
+(bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill = id)) +
   geom_polygon() +
   scale_fill_manual(values = bgc_colours(), guide = "none") +
   coord_fixed() +
@@ -248,7 +248,7 @@ bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill =
   theme_map() +
   theme(plot.margin = margin(2,0,1,0, "lines"),
         plot.title = element_text(hjust = 0.3, size = 13,
-                                  margin = margin(0,0,0,0, "pt")))
+                                  margin = margin(0,0,0,0, "pt"))))
 
 zone_summary <- bec_t_prot_simp@data %>%
   group_by(ZONE, ZONE_NAME) %>%
@@ -259,7 +259,7 @@ zone_summary <- bec_t_prot_simp@data %>%
   mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME)) %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
 
-zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
+(zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
                                          fill = ZONE)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = bgc_colours(), guide = "none") +
@@ -271,7 +271,7 @@ zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey90"),
         panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(2,0,1,0), "lines"))
+        plot.margin = unit(c(2,0,1,0), "lines")))
 
 #plot(zone_barplot)
 
@@ -279,21 +279,21 @@ zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
 
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
 
-gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
+(gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
   geom_polygon(fill = NA, colour = "grey70", size = 0.5) +
   theme_map() +
-  coord_fixed()
+  coord_fixed())
 
 ## Make a simplified spdf of terrestrial and marine protected areas
-prot_areas_t <- raster::aggregate(carts_eco_t)
+prot_areas_t <- raster::aggregate(prot_areas_eco_t)
 prot_areas_t$BIOME <- "Terrestrial"
-prot_areas_m <- raster::aggregate(carts_eco_m)
+prot_areas_m <- raster::aggregate(prot_areas_eco_m)
 prot_areas_m$BIOME <- "Marine"
 prot_areas_map <- bind_spdf(prot_areas_t, prot_areas_m)
 
 gg_prot <- gg_fortify(prot_areas_map)
 
-prot_map <- gg_bc +
+(prot_map <- gg_bc +
   geom_polygon(data = gg_prot, aes(x = long, y = lat, group = group, fill = BIOME)) +
   scale_fill_manual(name = "Biome",
                     values = c("Terrestrial" = "#006837", "Marine" = "#253494")) +
@@ -302,7 +302,7 @@ prot_map <- gg_bc +
   theme(legend.title = element_text(size = 12, vjust = 1),
         legend.text = element_text(size = 11), legend.position = c(0.05,0.05),
         legend.background = element_rect(fill = NA),
-        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"))
+        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm")))
 
 # Provincial summaries (no ecoregions/BEC) -------------------------------------
 

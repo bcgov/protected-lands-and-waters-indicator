@@ -184,6 +184,10 @@ bec_t_simp <- gBuffer(bec_t_simp, byid = TRUE, width = 0)
 bec_t$area <- gArea(bec_t, byid = TRUE)
 bec_t_simp$area <- bec_t$area
 
+## Create a map of bec zones
+bec_zone_simp <- raster::aggregate(bec_t_simp, by = "ZONE")
+bec_zone_simp$area <- gArea(bec_zone_simp, byid = TRUE)
+
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
-save("bec_t", "bec_t_simp", file = "tmp/bec_clean.rda")
+save("bec_t", "bec_t_simp", "bec_zone_simp", file = "tmp/bec_clean.rda")
