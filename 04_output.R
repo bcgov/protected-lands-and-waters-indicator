@@ -27,7 +27,7 @@ load("tmp/prot_areas_clean.rda")
 load("tmp/ecoregions_clean.rda")
 load("tmp/bec_clean.rda")
 load("tmp/analyzed.rda")
-ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv")
+ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv", col_types = "cdcdc")
 
 # Terrestrial -------------------------------------------------------------
 
