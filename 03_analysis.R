@@ -123,7 +123,7 @@ cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_sum
 ## Get a simple percent protected of each Biogeoclimatic Zone
 
 load("tmp/bec_clean.rda")
-
+reg_int_bec_summary <- read.csv("data/reg_interests_bec_summary.csv")
 
 # Intersect terrestrial CARTS and BEC and get area
 prot_areas_bec <- raster::intersect(bec_t, prot_areas_agg)
@@ -138,7 +138,11 @@ bec_t_summary <- bec_t@data %>%
 prot_areas_bec_summary <- prot_areas_bec@data %>%
   group_by(ZONE_NAME) %>%
   summarize(prot_area = sum(prot_area)) %>%
+  left_join(reg_int_bec_summary, by = "ZONE_NAME") %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
-  mutate(percent_protected = prot_area / total_area * 100)
+  mutate(prot_area.y = ifelse(is.na(prot_area.y), 0, prot_area.y),
+         prot_area = prot_area.x + prot_area.y,
+         percent_protected = prot_area / total_area * 100) %>%
+  select(-prot_area.x, -prot_area.y)
 
 save.image(file = "tmp/analyzed.rda")
