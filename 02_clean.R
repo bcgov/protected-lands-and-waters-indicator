@@ -173,13 +173,16 @@ if (any(!gIsValid(bec_t, byid = TRUE))) {
 
 bec_t$poly_id <- row.names(bec_t)
 
-bec_t$area <- gArea(bec_t, byid = TRUE) * 1e-4 # convert to hectares (makes field too wide for writing as shp)
 unlink("data/bec_t*")
 writeOGR(bec_t, "data", "bec_t", "ESRI Shapefile")
 system("mapshaper data/bec_t.shp -simplify 0.01 keep-shapes -o data/bec_t_simp.shp")
 bec_t_simp <- readOGR("data", "bec_t_simp", stringsAsFactors = FALSE)
 ## Repair orphaned holes
 bec_t_simp <- gBuffer(bec_t_simp, byid = TRUE, width = 0)
+
+## Put area back in m2
+bec_t$area <- gArea(bec_t, byid = TRUE)
+bec_t_simp$area <- bec_t$area
 
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
