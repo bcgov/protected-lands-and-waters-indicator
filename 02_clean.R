@@ -186,4 +186,4 @@ bec_t_simp$area <- bec_t$area
 
 # bec_t_simp <- ms_simplify(bec_t, keep = 0.01, keep_shapes = TRUE)
 
-save(list = ls(), file = "tmp/bec_clean.rda")
+save("bec_t", "bec_t_simp", file = "tmp/bec_clean.rda")
