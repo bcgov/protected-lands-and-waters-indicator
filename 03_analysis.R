@@ -75,29 +75,6 @@ cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_sum
 
 # Marine Ecoregion analysis ----------------------------------------------------
 
-## Set the IUCN category as an ordered factor:
-# bc_carts_m$IUCN_CAT = factor_iucn_cats(bc_carts_m$IUCN_CAT)
-
-## Get the earliest year of protection for polygon segments that overlap
-# bc_carts_m_unioned$prot_date <- get_poly_attribute(bc_carts_unioned$union_df,
-#                                                       "PROTDATE", min, na.rm = TRUE)
-
-# ## Get the minimum iucn category
-# bc_carts_m_unioned$iucn <- get_poly_attribute(bc_carts_unioned$union_df,
-#                                                  "IUCN_CAT", min, na.rm = TRUE)
-
-# ## Get the row.names of the polygon with the minimum iucn category
-# bc_carts_m_unioned$carts_id_min_iucn <- get_poly_attribute(bc_carts_unioned$union_df, "IUCN_CAT",
-#                                                               which_min)
-
-## Get areas of unioned polygons
-# bc_carts_m_unioned$prot_area <- gArea(bc_carts_m_unioned, byid = TRUE)
-
-## Aggregate the protected areas by their protected date
-# bc_carts_m_agg <- aggregate(bc_carts_m_unioned[, "prot_date"], by = c("prot_date"))
-
-###
-
 ## Intersect ecoregions with protected areas
 prot_areas_eco_m <- raster::intersect(ecoregions_m, prot_areas_agg)
 prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon holes are properly identified
@@ -146,6 +123,7 @@ cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_sum
 ## Get a simple percent protected of each Biogeoclimatic Zone
 
 load("tmp/bec_clean.rda")
+
 
 # Intersect terrestrial CARTS and BEC and get area
 prot_areas_bec <- raster::intersect(bec_t, prot_areas_agg)
