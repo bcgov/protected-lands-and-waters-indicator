@@ -206,11 +206,11 @@ annotated_m_map <- current_m_map +
 
 # BEC ---------------------------------------------------------------------
 
-# aggregate carts_bec by poly_id
-carts_bec_agg <- raster::aggregate(carts_bec, by = "poly_id",
+# aggregate prot_areas_bec by poly_id
+prot_areas_bec_agg <- raster::aggregate(prot_areas_bec, by = "poly_id",
                                    sums = list(list(sum, "prot_area")))
 
-bec_t_prot_simp <- merge(bec_t_simp, carts_bec_agg, by = "poly_id")
+bec_t_prot_simp <- merge(bec_t_simp, prot_areas_bec_agg, by = "poly_id")
 bec_t_prot_simp$poly_id <- as.character(bec_t_prot_simp$poly_id)
 bec_t_prot_simp$percent_protected <- bec_t_prot_simp$prot_area / bec_t_prot_simp$area * 100
 
