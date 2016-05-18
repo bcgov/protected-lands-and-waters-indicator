@@ -88,7 +88,7 @@ prot_areas_eco_m$prot_area <- rgeos::gArea(prot_areas_eco_m, byid = TRUE)
 missing_m_ecoregions <- ecoregions_m@data %>%
   select(CRGNNM, CRGNCD, area) %>%
   filter(CRGNCD %in% c("TPC", "SBC")) %>%
-  mutate(prot_date = 2013, prot_area = 0)
+  mutate(prot_date = max(prot_areas_eco_m$prot_date), prot_area = 0)
 
 prot_areas_eco_m_summary_by_year <- prot_areas_eco_m@data %>%
   filter(prot_date > 0) %>%
