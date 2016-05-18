@@ -145,4 +145,11 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
          percent_protected = prot_area / total_area * 100) %>%
   select(-prot_area.x, -prot_area.y)
 
-save.image(file = "tmp/analyzed.rda")
+to_save <- c("reg_int_ecoreg_summary", "prot_areas_eco_t",
+             "prot_areas_eco_t_summary_by_year", "prot_areas_bc_t_summary_by_year",
+             "cum_summary_t", "prot_areas_eco_m", "missing_m_ecoregions",
+             "prot_areas_eco_m_summary_by_year", "prot_areas_bc_m_summary_by_year",
+             "cum_summary_m", "reg_int_bec_summary", "prot_areas_bec",
+             "bec_t_summary", "prot_areas_bec_summary")
+
+save(list = to_save, file = "tmp/analyzed.rda")
