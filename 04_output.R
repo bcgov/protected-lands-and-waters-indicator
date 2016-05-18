@@ -367,7 +367,7 @@ wma_summary <- bc_carts@data[bc_carts$TYPE_E == "Wildlife Management Area", ] %>
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
                                 total_area_ha / bc_m_area_ha * 100))
 
-foo <- bind_rows(carts_summary, bc_admin_lands_summary, wma_summary, ngo_summary)
+designations_summary <- bind_rows(carts_summary, bc_admin_lands_summary, wma_summary, ngo_summary)
 
 # Output data summaries and charts ----------------------------------------
 
@@ -396,6 +396,7 @@ write_csv(carts_designation_summary, path = "out/bc_carts_designation_summary.cs
 write_csv(carts_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
 write_csv(carts_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")
 write_csv(zone_summary, path = "out/zone_summary.csv")
+write_csv(designations_summary, path = "out/designations_summary.csv")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
 ecoregions_t_out <- ecoregions_t_simp[, "CRGNCD"]
