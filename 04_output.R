@@ -27,7 +27,7 @@ load("tmp/prot_areas_clean.rda")
 load("tmp/ecoregions_clean.rda")
 load("tmp/bec_clean.rda")
 load("tmp/analyzed.rda")
-ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv", col_types = "cdcdc")
+ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv", col_types = "cdcdci")
 
 # Terrestrial -------------------------------------------------------------
 
@@ -336,6 +336,9 @@ carts_iucn_summary <- bc_carts@data %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
                                 total_area_ha / bc_m_area_ha * 100))
 
+
+# Summarize all protected areas from all sources in one spot -------------------
+
 carts_summary <- bc_carts@data %>%
   filter(TYPE_E != "Wildlife Management Area") %>%
   mutate(designation_type = ifelse(OWNER_E == "Government of British Columbia",
@@ -348,8 +351,6 @@ carts_summary <- bc_carts@data %>%
                                 total_area_ha / bc_m_area_ha * 100),
          percent_of_bc = round(percent_of_bc, 4))
 
-# BC Administered Conservation Lands Summaries ----------------------------
-
 # bc_admin_less_ngo <- raster::erase(bc_admin_lands_unioned, fee_simple_ngo_lands_unioned)
 # bc_admin_less_ngo$prot_area <- gArea(bc_admin_less_ngo, byid = TRUE)
 
@@ -357,13 +358,18 @@ bc_admin_lands_summary <- bc_admin_lands_unioned@data %>%
   mutate(BIOME = "T") %>%
   group_by(BIOME, designation_type, designation) %>%
   summarise(total_area_ha = sum(prot_area) * 1e-4,
-            percent_of_bc = total_area_ha / (bc_area_ha) * 100)
+            percent_of_bc = total_area_ha / (bc_area_ha) * 100) %>%
+  left_join(bc_admin_lands@data %>%
+              group_by(TENURE_TYPE) %>%
+              summarize(n = n()),
+            by = c("designation" = "TENURE_TYPE"))
 
 wma_summary <- bc_carts@data[bc_carts$TYPE_E == "Wildlife Management Area", ] %>%
   mutate(designation = "Wildlife Management Area",
          designation_type = "BC Administered Conservation Lands") %>%
   group_by(BIOME, designation_type, designation) %>%
-  summarise(total_area_ha = sum(area_ha)) %>%
+  summarise(total_area_ha = sum(area_ha),
+            n = n()) %>%
   mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
                                 total_area_ha / bc_m_area_ha * 100))
 
@@ -371,8 +377,8 @@ designations_summary <- bind_rows(carts_summary, bc_admin_lands_summary, wma_sum
 
 # Output data summaries and charts ----------------------------------------
 
-png("out/carts_map.png", width = 600, height = 550, units = "px", type = "cairo-png")
-plot(carts_map)
+png("out/prot_map.png", width = 600, height = 550, units = "px", type = "cairo-png")
+plot(prot_map)
 dev.off()
 
 ## Multiplot of marine map and bar chart
