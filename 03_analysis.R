@@ -48,10 +48,11 @@ prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   ungroup() %>%
   left_join(select(reg_int_ecoreg_summary, ecoregion_code, prot_date, tot_protected),
             by = c("ecoregion_code", "prot_date")) %>%
-  mutate(tot_protected.y = ifelse(is.na(tot_protected.y), 0, tot_protected.y),
-         tot_protected = (tot_protected.x + tot_protected.y),
+  mutate(tot_protected_overlaps_remoted = ifelse(is.na(tot_protected_overlaps_removed),
+                                                 0, tot_protected_overlaps_removed),
+         tot_protected = (tot_protected + tot_protected_overlaps_removed),
          percent_protected = tot_protected / ecoregion_area * 100) %>%
-  select(-tot_protected.x, -tot_protected.y)
+  select(-tot_protected_overlaps_removed)
 
 
 ## Provincial summary
@@ -140,10 +141,11 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
   summarize(prot_area = sum(prot_area)) %>%
   left_join(reg_int_bec_summary, by = "ZONE_NAME") %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
-  mutate(prot_area.y = ifelse(is.na(prot_area.y), 0, prot_area.y),
-         prot_area = prot_area.x + prot_area.y,
+  mutate(prot_area_overlaps_removed = ifelse(is.na(prot_area_overlaps_removed),
+                                             0, prot_area_overlaps_removed),
+         prot_area = prot_area + prot_area_overlaps_removed,
          percent_protected = prot_area / total_area * 100) %>%
-  select(-prot_area.x, -prot_area.y)
+  select(-prot_area_overlaps_removed)
 
 to_save <- c("reg_int_ecoreg_summary", "prot_areas_eco_t",
              "prot_areas_eco_t_summary_by_year", "prot_areas_bc_t_summary_by_year",
