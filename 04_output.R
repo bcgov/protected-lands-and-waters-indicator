@@ -410,3 +410,12 @@ names(ecoregions_t_out) <- "ECOREGION_CODE"
 file.remove("out/ecoregions.geojson")
 spTransform(ecoregions_t_out, CRS("+init=epsg:4326")) %>%
   geojson_write(file = "out/ecoregions.geojson", precision = 5)
+
+# Function to list objects of a certain class in the global environment
+ls_class <- function(cls) {
+  ls(.GlobalEnv)[sapply(ls(.GlobalEnv),function(x) cls %in% class(get(x)))]
+}
+
+save(list = ls_class("ggplot"), file = "tmp/out_gg.rda")
+save(list = ls_class("SpatialPolygonsDataFrame"), file = "tmp/out_spatial.rda")
+save(list = ls_class("data.frame"), file = "tmp/out_data.rda")
