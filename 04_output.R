@@ -29,6 +29,8 @@ load("tmp/bec_clean.rda")
 load("tmp/analyzed.rda")
 ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv", col_types = "cdcdci")
 
+source("fun.R")
+
 # Terrestrial -------------------------------------------------------------
 
 ## Prep data frame for visualizations
@@ -277,6 +279,8 @@ zone_summary <- bec_t_prot_simp@data %>%
 
 ## Plot protected areas
 
+
+bc_bound_hres <- fix_self_intersect(bc_bound_hres)
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
 
 (gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
@@ -285,11 +289,12 @@ bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
   coord_fixed())
 
 ## Make a simplified spdf of terrestrial and marine protected areas
-prot_areas_t <- raster::aggregate(prot_areas_eco_t)
+prot_areas_t <- rmapshaper::ms_dissolve(prot_areas_eco_t)
 prot_areas_t$BIOME <- "Terrestrial"
-prot_areas_m <- raster::aggregate(prot_areas_eco_m)
+prot_areas_m <- rmapshaper::ms_dissolve(prot_areas_eco_m)
 prot_areas_m$BIOME <- "Marine"
 prot_areas_map <- bind_spdf(prot_areas_t, prot_areas_m)
+prot_areas_map <- fix_self_intersect(prot_areas_map)
 
 gg_prot <- gg_fortify(prot_areas_map)
 
