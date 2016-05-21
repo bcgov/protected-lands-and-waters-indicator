@@ -46,9 +46,9 @@ prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   summarise(ecoregion_area = min(area),
             tot_protected = sum(prot_area)) %>%
   ungroup() %>%
-  left_join(select(reg_int_ecoreg_summary, ecoregion_code, prot_date, tot_protected),
+  left_join(select(reg_int_ecoreg_summary, ecoregion_code, prot_date, tot_protected_overlaps_removed),
             by = c("ecoregion_code", "prot_date")) %>%
-  mutate(tot_protected_overlaps_remoted = ifelse(is.na(tot_protected_overlaps_removed),
+  mutate(tot_protected_overlaps_removed = ifelse(is.na(tot_protected_overlaps_removed),
                                                  0, tot_protected_overlaps_removed),
          tot_protected = (tot_protected + tot_protected_overlaps_removed),
          percent_protected = tot_protected / ecoregion_area * 100) %>%
@@ -139,7 +139,7 @@ bec_t_summary <- bec_t@data %>%
 prot_areas_bec_summary <- prot_areas_bec@data %>%
   group_by(ZONE_NAME) %>%
   summarize(prot_area = sum(prot_area)) %>%
-  left_join(reg_int_bec_summary, by = "ZONE_NAME") %>%
+  left_join(select(reg_int_bec_summary, ZONE_NAME, prot_area_overlaps_removed), by = "ZONE_NAME") %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(prot_area_overlaps_removed = ifelse(is.na(prot_area_overlaps_removed),
                                              0, prot_area_overlaps_removed),
