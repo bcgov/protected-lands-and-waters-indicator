@@ -124,6 +124,8 @@ rm(list = ls())
 ## Marine ecoregions
 m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
 
+data("ecoregions")
+
 ## Extract the terrestrial and marine portions of GPB
 gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
                            bc_bound_hres)
