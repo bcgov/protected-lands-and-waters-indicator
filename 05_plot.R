@@ -34,7 +34,6 @@ source("fun.R")
 # Terrestrial -------------------------------------------------------------
 
 ## Prep data frame for visualizations
-cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 cum_summary_t$is_bc <- ifelse(cum_summary_t$ecoregion == "British Columbia", TRUE, FALSE)
 cum_summary_t$decade <- floor(cum_summary_t$prot_date / 10) * 10
@@ -400,9 +399,6 @@ png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg 
 plot(bec_prot_map)
 dev.off()
 
-## Output csv files
-cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
-write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
 write_csv(carts_designation_summary, path = "out/bc_carts_designation_summary.csv")
 write_csv(carts_iucn_summary, path = "out/bc_carts_iucn_summary.csv")
 write_csv(carts_designation_iucn_summary, path = "out/bc_carts_designation_iucn_summary.csv")

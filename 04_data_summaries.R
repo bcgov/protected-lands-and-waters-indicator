@@ -1,21 +1,29 @@
-library(dplyr)
-library(readr)
 library(sp)
 library(raster)
 library(rgeos)
+library(dplyr)
+library(readr)
 
 options(scipen = 5)
 
-load("C:/_dev/protected_areas_analysis/tmp/bec_clean.rda")
-load("C:/_dev/protected_areas_analysis/tmp/prot_areas_clean_new.rda")
-reg_int_bec <- read_csv("data/reg_interests_bec_summary.csv")
+load("tmp/prot_areas_clean.rda")
+load("tmp/ecoregions_clean.rda")
+load("tmp/bec_clean.rda")
+load("tmp/analyzed.rda")
+ngo_summary <- read_csv("data/ngo_fee_simple_reg_int_summary.csv", col_types = "cdcdci")
 
-# bec_zones <- raster::aggregate(bec_t, by = "ZONE_NAME")
-# bec_zones$area <- rgeos::gArea(bec_zones, byid = TRUE)
+
+
+
+
 
 bc_carts_des <- raster::aggregate(bc_carts, by = "TYPE_E")
-
 fee_simple_des <- raster::aggregate(fee_simple_ngo_lands, by = "SecType1")
+
+
+
+
+# Individual land designations by BEC -------------------------------------
 
 fee_simple_bec <- raster::intersect(bec_t, fee_simple_des)
 fee_simple_bec$prot_area <- rgeos::gArea(fee_simple_bec, byid = TRUE)
@@ -70,16 +78,11 @@ designations_bec <- bind_rows(reg_int_bec_summary, fee_simple_bec_summary,
            nesting(category, designation),
            fill = list(prot_area_ha = 0, percent_protected = 0))
 
-## Just the private lands:
-private_lands_summary <- filter(designations_bec,
-                                category == "Private Conservation Lands")
-
-private_lands_summary <- private_lands_summary %>%
-  group_by(ZONE_NAME, total_zone_area_ha, category) %>%
-  summarize(designation = "All private conservation lands",
-            prot_area_ha = sum(prot_area_ha)) %>%
-  mutate(percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4)) %>%
-  bind_rows(private_lands_summary)
+## Output csv files
+## Prep summary for interactive web viz
+cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
+cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
+write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
 
 write_csv(designations_bec, "out/land_designations_bec_zone.csv")
 write_csv(private_lands_summary, "out/private_lands_summary_bec_zone.csv")
