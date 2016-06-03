@@ -65,13 +65,10 @@ bc_carts_bec_summary <- bc_carts_bec@data %>%
          percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
 designations_bec <- bind_rows(reg_int_bec_summary, fee_simple_bec_summary,
-                              admin_lands_bec_summary, bc_carts_bec_summary)
-
-
-designations_bec <- complete(designations_bec,
-         nesting(ZONE_NAME, total_zone_area_ha),
-         nesting(category, designation),
-         fill = list(prot_area_ha = 0, percent_protected = 0))
+                              admin_lands_bec_summary, bc_carts_bec_summary) %>%
+  complete(nesting(ZONE_NAME, total_zone_area_ha),
+           nesting(category, designation),
+           fill = list(prot_area_ha = 0, percent_protected = 0))
 
 ## Just the private lands:
 private_lands_summary <- filter(designations_bec,
