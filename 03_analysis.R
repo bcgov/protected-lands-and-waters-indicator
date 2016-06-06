@@ -18,6 +18,7 @@ library(bcmaps)
 # data manipulation packages
 library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
+library(readr)
 
 ## Load the functions we need
 source("fun.R")
@@ -263,7 +264,13 @@ to_save <- c("reg_int_ecoreg_summary", "prot_areas_eco_t",
              "cum_summary_t", "prot_areas_eco_m", "missing_m_ecoregions",
              "prot_areas_eco_m_summary_by_year", "prot_areas_bc_m_summary_by_year",
              "cum_summary_m", "reg_int_bec_summary", "prot_areas_bec",
-             "bec_t_summary", "prot_areas_bec_summary", "designations_bec",
+             "bec_t_summary", "prot_areas_bec_summary", "bc_carts_des",
+             "fee_simple_bec", "bc_admin_lands_bec", "bc_carts_bec",
+             "reg_int_bec_summary", "fee_simple_bec_summary",
+             "admin_lands_bec_summary", "bc_carts_bec_summary",
+             "designations_bec", "fee_simple_eco","bc_admin_lands_eco",
+             "bc_carts_eco", "fee_simple_eco_summary", "bc_carts_eco_summary",
+             "reg_int_eco_summary", "admin_lands_eco_summary", "designations_bec",
              "designations_eco")
 
 save(list = to_save, file = "tmp/analyzed.rda")
