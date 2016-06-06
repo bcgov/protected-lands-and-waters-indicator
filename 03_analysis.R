@@ -23,12 +23,14 @@ library(readr)
 ## Load the functions we need
 source("fun.R")
 
-## Load the cleanup up data from 02_clean.R
-load("tmp/prot_areas_clean.rda")
-load("tmp/ecoregions_clean.rda")
-load("tmp/bec_clean.rda")
+## Load the cleanup up data from 02_clean.R, save the names so we don't re-save them later
+cleaned_prot_areas_objs <- load("tmp/prot_areas_clean.rda")
+cleaned_ecoreg_objs <- load("tmp/ecoregions_clean.rda")
+cleaned_bec_objs <- load("tmp/bec_clean.rda")
+
 reg_int_bec_summary <- read.csv("data/reg_interests_bec_summary.csv", stringsAsFactors = FALSE)
 reg_int_ecoreg_summary <- read.csv("data/reg_interests_ecoreg_summary_year.csv", stringsAsFactors = FALSE)
+bc_reg_int_summary <- read_csv("data/bc_reg_int_summary.csv", col_types = "cdcci")
 
 # Terrestrial Ecoregion analysis -----------------------------------------------
 
@@ -259,31 +261,60 @@ designations_eco <- bind_rows(reg_int_eco_summary, fee_simple_eco_summary,
          ecoregion_code = ifelse(is.na(ecoregion_code), CRGNCD, ecoregion_code)) %>%
   select(-CRGNNM, -CRGNCD)
 
-to_save <- c("reg_int_ecoreg_summary", "prot_areas_eco_t",
-             "prot_areas_eco_t_summary_by_year", "prot_areas_bc_t_summary_by_year",
-             "cum_summary_t", "prot_areas_eco_m", "missing_m_ecoregions",
-             "prot_areas_eco_m_summary_by_year", "prot_areas_bc_m_summary_by_year",
-             "cum_summary_m", "reg_int_bec_summary", "prot_areas_bec",
-             "bec_t_summary", "prot_areas_bec_summary", "bc_carts_des",
-             "fee_simple_bec", "bc_admin_lands_bec", "bc_carts_bec",
-             "reg_int_bec_summary", "fee_simple_bec_summary",
-             "admin_lands_bec_summary", "bc_carts_bec_summary",
-             "designations_bec", "fee_simple_eco","bc_admin_lands_eco",
-             "bc_carts_eco", "fee_simple_eco_summary", "bc_carts_eco_summary",
-             "reg_int_eco_summary", "admin_lands_eco_summary", "designations_bec",
-             "designations_eco")
 
+# Provincial Designation Summary ------------------------------------------
+
+bc_carts$area <- rgeos::gArea(bc_carts, byid = TRUE)
+
+bc_area_ha <- bc_area(units = "ha")
+bc_m_area_ha <- 453602787832 * 1e-4
+
+bc_carts_summary <- bc_carts@data %>%
+  mutate(category = "Provincial and Federal Protected Lands") %>%
+  group_by(BIOME, category, designation = TYPE_E) %>%
+  summarise(total_area_ha = sum(area) * 1e-4,
+            n = n()) %>%
+  ungroup() %>%
+  mutate(percent_of_bc = ifelse(BIOME == "T", total_area_ha / (bc_area_ha) * 100,
+                                total_area_ha / bc_m_area_ha * 100),
+         percent_of_bc = round(percent_of_bc, 4))
+
+bc_admin_lands_summary <- bc_admin_lands_unioned@data %>%
+  mutate(BIOME = "T") %>%
+  group_by(BIOME, category = designation_type, designation) %>%
+  summarise(total_area_ha = sum(prot_area) * 1e-4,
+            percent_of_bc = total_area_ha / (bc_area_ha) * 100) %>%
+  left_join(bc_admin_lands@data %>%
+              group_by(TENURE_TYPE) %>%
+              summarize(n = n()),
+            by = c("designation" = "TENURE_TYPE"))
+
+bc_fee_simple_summary <- fee_simple_ngo_lands_unioned@data %>%
+  summarize(BIOME = "T",
+            category = "Private Conservation Lands",
+            designation = "Fee Simple",
+            total_area_ha = sum(prot_area) * 1e-4,
+            percent_of_bc = total_area_ha / (bc_area_ha) * 100,
+            n = length(fee_simple_ngo_lands))
+
+bc_reg_int_summary$percent_of_bc <- bc_reg_int_summary$total_area_ha / bc_area_ha
+
+bc_designations_summary <- bind_rows(bc_carts_summary, bc_admin_lands_summary,
+                                     bc_fee_simple_summary, bc_reg_int_summary)
+
+## Prep summary for interactive web viz
+cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
+cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
+
+## Save things that weren't loaded at the beginning
+to_save <- setdiff(ls(), c(cleaned_bec_objs, cleaned_ecoreg_objs, cleaned_prot_areas_objs))
 save(list = to_save, file = "tmp/analyzed.rda")
 
 ## Output csv files
 options(scipen = 5)
 
-## Prep summary for interactive web viz
-cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
-cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
 write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
-
-
-## Write out designation by BEC/Ecoregion summaries
 write_csv(designations_bec, "out/land_designations_bec_zone.csv")
 write_csv(designations_eco, "out/land_designations_ecoregion.csv")
+write_csv(bc_designations_summary, path = "out/bc_designations_summary.csv")
+
