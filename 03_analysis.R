@@ -23,6 +23,8 @@ library(readr)
 ## Load the functions we need
 source("fun.R")
 
+m_to_ha <- function(x) x * 1e-4
+
 ## Load the cleanup up data from 02_clean.R, save the names so we don't re-save them later
 cleaned_prot_areas_objs <- load("tmp/prot_areas_clean.rda")
 cleaned_ecoreg_objs <- load("tmp/ecoregions_clean.rda")
@@ -40,8 +42,6 @@ prot_areas_eco_t <- rgeos::createSPComment(prot_areas_eco_t) # Ensure polygon ho
 
 ## Calculate size of protected areas in each ecoregion
 prot_areas_eco_t$prot_area <- rgeos::gArea(prot_areas_eco_t, byid = TRUE)
-
-bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
 prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
@@ -65,7 +65,7 @@ prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
             ecoregion_code = "BC",
-            ecoregion_area = bc_area_sq_m,
+            ecoregion_area = sum(ecoregion_area),
             tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
@@ -87,8 +87,6 @@ prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon ho
 
 ## Calculate size of protected areas in each ecoregion
 prot_areas_eco_m$prot_area <- rgeos::gArea(prot_areas_eco_m, byid = TRUE)
-
-#bc_area_sq_m <- bc_area(units = "m2")
 
 ## Summarize
 missing_m_ecoregions <- ecoregions_m@data %>%
@@ -145,8 +143,9 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
   mutate(prot_area_overlaps_removed = ifelse(is.na(prot_area_overlaps_removed),
                                              0, prot_area_overlaps_removed),
          prot_area = prot_area + prot_area_overlaps_removed,
-         percent_protected = prot_area / total_area * 100) %>%
-  select(-prot_area_overlaps_removed) %>%
+         prot_area_ha = m_to_ha(prot_area),
+         percent_protected = round(prot_area / total_area * 100, 2)) %>%
+  select(-prot_area_overlaps_removed, -prot_area, -total_area) %>%
   mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME))
 
 
@@ -267,7 +266,7 @@ designations_eco <- bind_rows(reg_int_eco_summary, fee_simple_eco_summary,
 
 bc_carts$area <- rgeos::gArea(bc_carts, byid = TRUE)
 
-bc_area_ha <- bc_area(units = "ha")
+bc_area_ha <- gArea(bc_bound_hres) * 1e-4
 bc_m_area_ha <- 453602787832 * 1e-4
 
 bc_carts_summary <- bc_carts@data %>%
@@ -307,6 +306,26 @@ bc_designations_summary <- bind_rows(bc_carts_summary, bc_admin_lands_summary,
 cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
 
+cum_summary_m$ecoregion <- tools::toTitleCase(tolower(cum_summary_m$ecoregion))
+
+
+## Get a current summary of ecoregion protection
+current_eco_summary <- function(cum_eco_summary, biome) {
+  cum_eco_summary %>%
+    filter(prot_date == max(prot_date),
+           ecoregion_code != "BC") %>%
+    select(ecoregion, ecoregion_code, ecoregion_area, cum_area_protected,
+           cum_percent_protected) %>%
+    mutate_each(funs(m_to_ha), ecoregion_area, cum_area_protected) %>%
+    rename(ecoregion_area_ha = ecoregion_area, prot_area_ha = cum_area_protected,
+           percent_protected = cum_percent_protected) %>%
+    mutate_(biome = ~biome) %>%
+    mutate(percent_protected = round(percent_protected, 2))
+}
+
+prot_areas_eco_t_summary <- current_eco_summary(cum_summary_t, "Terrestrial")
+prot_areas_eco_m_summary <- current_eco_summary(cum_summary_m, "Marine")
+
 ## Save things that weren't loaded at the beginning
 to_save <- setdiff(ls(), c(cleaned_bec_objs, cleaned_ecoreg_objs, cleaned_prot_areas_objs))
 save(list = to_save, file = "tmp/analyzed.rda")
@@ -314,9 +333,13 @@ save(list = to_save, file = "tmp/analyzed.rda")
 ## Output csv files
 options(scipen = 5)
 
+bind_rows(prot_areas_eco_t_summary, prot_areas_eco_m_summary) %>%
+  write_csv("out/ecoregions_protected_land_water_summary.csv")
+write_csv(prot_areas_bec_summary,
+          path = "out/bec_zone_protected_land_water_summary.csv")
+
 write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
-write_csv(designations_bec, "out/land_designations_bec_zone.csv")
-write_csv(designations_eco, "out/land_designations_ecoregion.csv")
-write_csv(bc_designations_summary, path = "out/bc_designations_summary.csv")
-write_csv(prot_areas_bec_summary, path = "out/zone_summary.csv")
+write_csv(designations_bec, "out/bec_zone_protected_land_water_designations_summary.csv")
+write_csv(designations_eco, "out/ecoregion_protected_land_water_designations_summary.csv")
+write_csv(bc_designations_summary, path = "out/bc_protected_land_water_designations_summary.csv")
 

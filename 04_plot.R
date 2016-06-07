@@ -51,14 +51,14 @@ current_eco_t <- cum_summary_t[cum_summary_t$prot_date == max(cum_summary_t$prot
   geom_path(colour = "forestgreen") +
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
   scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
-  scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
+  scale_y_continuous(breaks = seq(0,100, length.out = 3)) +
   labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
   theme_minimal() +
   theme(panel.margin.x = unit(1.5, "lines"),
         axis.text = element_text(size = 8)) +
-  geom_text(data = current_eco_t, x = 2003, y = 80,
+  geom_text(data = current_eco_t, x = 2002, y = 80,
             aes(label = paste0(round(cum_percent_protected, 1), "%")),
-            size = 3))
+            size = 2.5))
   # theme_soe_facet() +
   # theme(panel.margin = unit(1, "mm"))
 
@@ -111,7 +111,6 @@ ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id"
 
 
 ## Prep data frame for visualizations
-cum_summary_m$ecoregion <- tools::toTitleCase(tolower(cum_summary_m$ecoregion))
 cum_summary_m <- order_df(cum_summary_m, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 cum_summary_m$is_bc <- ifelse(cum_summary_m$ecoregion == "British Columbia", TRUE, FALSE)
 cum_summary_m$decade <- floor(cum_summary_m$prot_date / 10) * 10
@@ -321,9 +320,9 @@ png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
 multiplot(zone_barplot, bec_zone_map, cols = 2)
 dev.off()
 
-png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
-plot(bec_prot_map)
-dev.off()
+# png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
+# plot(bec_prot_map)
+# dev.off()
 
 
 ## Output terrestrial ecoregions as geojson for the visualization:
