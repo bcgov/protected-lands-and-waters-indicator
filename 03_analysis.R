@@ -138,7 +138,7 @@ prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE)
 
 # Summarize
 prot_areas_bec_summary <- prot_areas_bec@data %>%
-  group_by(ZONE_NAME) %>%
+  group_by(ZONE, ZONE_NAME) %>%
   summarize(prot_area = sum(prot_area)) %>%
   left_join(select(reg_int_bec_summary, ZONE_NAME, prot_area_overlaps_removed), by = "ZONE_NAME") %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
@@ -146,7 +146,8 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
                                              0, prot_area_overlaps_removed),
          prot_area = prot_area + prot_area_overlaps_removed,
          percent_protected = prot_area / total_area * 100) %>%
-  select(-prot_area_overlaps_removed)
+  select(-prot_area_overlaps_removed) %>%
+  mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME))
 
 
 # Individual land designations by BEC -------------------------------------
@@ -317,4 +318,5 @@ write_csv(cum_summary_t_viz, path = "out/ecoregion_cons_lands_trends.csv")
 write_csv(designations_bec, "out/land_designations_bec_zone.csv")
 write_csv(designations_eco, "out/land_designations_ecoregion.csv")
 write_csv(bc_designations_summary, path = "out/bc_designations_summary.csv")
+write_csv(prot_areas_bec_summary, path = "out/zone_summary.csv")
 

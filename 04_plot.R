@@ -10,18 +10,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-library(dplyr)
-library(ggplot2)
-library(envreportutils) # for order_df and theme_soe
-library(geojsonio)
-library(rmapshaper)
-library(readr)
+## General and plotting packages
+library(readr) # write_csv
+library(dplyr) # data muanipulation and summaries
+library(ggplot2) # Plottiong
+library(envreportutils) # for order_df and theme_soe ###
+library(RColorBrewer) # Colour for plotting
+library(ggthemes) # theme_map
+
+## Spatial packages
 library(sp)
-library(ggthemes)
-library(maptools)
-library(bcmaps)
-library(rgeos)
-library(RColorBrewer)
+library(geojsonio) # writing out geojson file of ecoregions
+library(rmapshaper) # ms_dissolve
+library(maptools) ###
+library(bcmaps) ###
+library(rgeos) ###
 
 load("tmp/prot_areas_clean.rda")
 load("tmp/ecoregions_clean.rda")
@@ -210,31 +213,31 @@ endeavour <- coordinates(bc_carts[bc_carts$ZONE_ID == "700020100", ])
 # BEC ---------------------------------------------------------------------
 
 # aggregate prot_areas_bec by poly_id
-prot_areas_bec_agg <- raster::aggregate(prot_areas_bec, by = "poly_id",
-                                   sums = list(list(sum, "prot_area")))
-
-bec_t_prot_simp <- merge(bec_t_simp, prot_areas_bec_agg, by = "poly_id")
-bec_t_prot_simp$poly_id <- as.character(bec_t_prot_simp$poly_id)
-bec_t_prot_simp$percent_protected <- bec_t_prot_simp$prot_area / bec_t_prot_simp$area * 100
-
-bec_t_gg <- fortify(bec_t_prot_simp, region = "poly_id")
-
-bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "poly_id"))
-bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
-
-(bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
-  geom_polygon() +
-  scale_fill_distiller(palette = "YlGn", direction = 1) +
-  guides(fill = guide_colourbar(title = "Percent of\nEcosystem\nProtected",
-                                title.position = "left", label.position = "right")) +
-  coord_fixed() +
-  theme_map() +
-  theme(legend.title = element_text(size = 12, vjust = 1),
-        legend.text = element_text(size = 11), legend.position = c(0,0.03),
-        legend.background = element_rect(fill = NA),
-        legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"),
-        # panel.background = element_rect(fill = "grey90", colour = NA),
-        plot.margin = margin(0,0,0,0)))
+# prot_areas_bec_agg <- raster::aggregate(prot_areas_bec, by = "poly_id",
+#                                    sums = list(list(sum, "prot_area")))
+#
+# bec_t_prot_simp <- merge(bec_t_simp, prot_areas_bec_agg, by = "poly_id")
+# bec_t_prot_simp$poly_id <- as.character(bec_t_prot_simp$poly_id)
+# bec_t_prot_simp$percent_protected <- bec_t_prot_simp$prot_area / bec_t_prot_simp$area * 100
+#
+# bec_t_gg <- fortify(bec_t_prot_simp, region = "poly_id")
+#
+# bec_t_gg <- left_join(bec_t_gg, bec_t_prot_simp@data, by = c("id" = "poly_id"))
+# bec_t_gg$percent_protected[is.na(bec_t_gg$percent_protected)] <- 0
+#
+# (bec_prot_map <- ggplot(bec_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+#   geom_polygon() +
+#   scale_fill_distiller(palette = "YlGn", direction = 1) +
+#   guides(fill = guide_colourbar(title = "Percent of\nEcosystem\nProtected",
+#                                 title.position = "left", label.position = "right")) +
+#   coord_fixed() +
+#   theme_map() +
+#   theme(legend.title = element_text(size = 12, vjust = 1),
+#         legend.text = element_text(size = 11), legend.position = c(0,0.03),
+#         legend.background = element_rect(fill = NA),
+#         legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm"),
+#         # panel.background = element_rect(fill = "grey90", colour = NA),
+#         plot.margin = margin(0,0,0,0)))
 
 #plot(bec_prot_map)
 
@@ -250,13 +253,7 @@ bec_zone_gg <- fortify(bec_zone_simp, region = "ZONE")
         plot.title = element_text(hjust = 0.3, size = 13,
                                   margin = margin(0,0,0,0, "pt"))))
 
-zone_summary <- bec_t_prot_simp@data %>%
-  group_by(ZONE, ZONE_NAME) %>%
-  summarize(prot_area = sum(prot_area, na.rm = TRUE),
-            total_area = sum(area),
-            percent_protected = prot_area / total_area * 100) %>%
-  ungroup() %>%
-  mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME)) %>%
+zone_summary <- prot_areas_bec_summary  %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
 
 (zone_barplot <- ggplot(zone_summary, aes(x = ZONE_NAME, y = percent_protected,
@@ -327,8 +324,6 @@ dev.off()
 png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
 plot(bec_prot_map)
 dev.off()
-
-write_csv(zone_summary, path = "out/zone_summary.csv")
 
 
 ## Output terrestrial ecoregions as geojson for the visualization:
