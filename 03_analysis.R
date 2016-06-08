@@ -177,7 +177,7 @@ reg_int_bec_summary <- reg_int_bec_summary %>%
 
 # Summarize fee simple
 fee_simple_bec_summary <- fee_simple_bec@data %>%
-  group_by(ZONE_NAME) %>%
+  group_by(ZONE, ZONE_NAME) %>%
   summarize(prot_area_ha = round(sum(prot_area) * 1e-4, 3)) %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(category = "Private Conservation Lands",
@@ -186,7 +186,7 @@ fee_simple_bec_summary <- fee_simple_bec@data %>%
 
 # Summarize admin areas
 admin_lands_bec_summary <- bc_admin_lands_bec@data %>%
-  group_by(ZONE_NAME, designation = TENURE_TYPE) %>%
+  group_by(ZONE, ZONE_NAME, designation = TENURE_TYPE) %>%
   summarize(prot_area_ha = round(sum(prot_area) * 1e-4, 3)) %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(category = "BC Administered Lands",
@@ -194,14 +194,15 @@ admin_lands_bec_summary <- bc_admin_lands_bec@data %>%
 
 # Summarize carts data
 bc_carts_bec_summary <- bc_carts_bec@data %>%
-  group_by(ZONE_NAME, designation = TYPE_E) %>%
+  group_by(ZONE, ZONE_NAME, designation = TYPE_E) %>%
   summarize(prot_area_ha = round(sum(prot_area) * 1e-4, 3)) %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(category = "Provincial and Federal Protected Lands",
          percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
 designations_bec <- bind_rows(reg_int_bec_summary, fee_simple_bec_summary,
-                              admin_lands_bec_summary, bc_carts_bec_summary)
+                              admin_lands_bec_summary, bc_carts_bec_summary) %>%
+  select(-total_area)
 
 # Individual Designations with Ecoregions ---------------------------------
 
