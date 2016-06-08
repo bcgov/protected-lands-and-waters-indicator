@@ -69,7 +69,7 @@ prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
             tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_summary_by_year) %>%
+cum_summary_t_eco <- prot_areas_eco_t_summary_by_year %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
   mutate(cum_area_protected = cumsum(tot_protected),
@@ -77,7 +77,20 @@ cum_summary_t <- bind_rows(prot_areas_eco_t_summary_by_year, prot_areas_bc_t_sum
          type = "All conservation lands",
          prot_date_full = paste0(prot_date, "-01-01")) %>%
   filter(!is.na(cum_area_protected)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(ecoregion = tools::toTitleCase(tolower(ecoregion)))
+
+cum_summary_t_bc <- prot_areas_bc_t_summary_by_year %>%
+  arrange(prot_date) %>%
+  mutate(cum_area_protected = cumsum(tot_protected),
+         cum_percent_protected = cumsum(percent_protected),
+         type = "All conservation lands",
+         prot_date_full = paste0(prot_date, "-01-01")) %>%
+  filter(!is.na(cum_area_protected)) %>%
+  ungroup() %>%
+  mutate(ecoregion = tools::toTitleCase(tolower(ecoregion)))
+
+cum_summary_t <- bind_rows(cum_summary_t_eco, cum_summary_t_bc)
 
 # Marine Ecoregion analysis ----------------------------------------------------
 
@@ -112,15 +125,28 @@ prot_areas_bc_m_summary_by_year <- prot_areas_eco_m_summary_by_year %>%
             tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-cum_summary_m <- bind_rows(prot_areas_eco_m_summary_by_year, prot_areas_bc_m_summary_by_year) %>%
+cum_summary_m_eco <- prot_areas_eco_m_summary_by_year %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
   mutate(cum_area_protected = cumsum(tot_protected),
          cum_percent_protected = cumsum(percent_protected),
          type = "All conservation lands",
          prot_date_full = paste0(prot_date, "-01-01")) %>%
-  filter(!is.na(cum_area_protected))
+  filter(!is.na(cum_area_protected)) %>%
+  ungroup() %>%
+  mutate(ecoregion = tools::toTitleCase(tolower(ecoregion)))
 
+cum_summary_m_bc <- prot_areas_bc_m_summary_by_year %>%
+  arrange(prot_date) %>%
+  mutate(cum_area_protected = cumsum(tot_protected),
+         cum_percent_protected = cumsum(percent_protected),
+         type = "All conservation lands",
+         prot_date_full = paste0(prot_date, "-01-01")) %>%
+  filter(!is.na(cum_area_protected)) %>%
+  ungroup() %>%
+  mutate(ecoregion = tools::toTitleCase(tolower(ecoregion)))
+
+cum_summary_m <- bind_rows(cum_summary_m_eco, cum_summary_m_bc)
 
 # Terrrestrial BEC -------------------------------------------------------------
 ## Get a simple percent protected of each Biogeoclimatic Zone
@@ -304,17 +330,12 @@ bc_designations_summary <- bind_rows(bc_carts_summary, bc_admin_lands_summary,
                                      bc_fee_simple_summary, bc_reg_int_summary)
 
 ## Prep summary for interactive web viz
-cum_summary_t$ecoregion <- tools::toTitleCase(tolower(cum_summary_t$ecoregion))
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
-
-cum_summary_m$ecoregion <- tools::toTitleCase(tolower(cum_summary_m$ecoregion))
-
 
 ## Get a current summary of ecoregion protection
 current_eco_summary <- function(cum_eco_summary, biome) {
   cum_eco_summary %>%
-    filter(prot_date == max(prot_date),
-           ecoregion_code != "BC") %>%
+    filter(prot_date == max(prot_date)) %>%
     select(ecoregion, ecoregion_code, ecoregion_area, cum_area_protected,
            cum_percent_protected) %>%
     mutate_each(funs(m_to_ha), ecoregion_area, cum_area_protected) %>%
@@ -324,8 +345,8 @@ current_eco_summary <- function(cum_eco_summary, biome) {
     mutate(percent_protected = round(percent_protected, 2))
 }
 
-prot_areas_eco_t_summary <- current_eco_summary(cum_summary_t, "Terrestrial")
-prot_areas_eco_m_summary <- current_eco_summary(cum_summary_m, "Marine")
+prot_areas_eco_t_summary <- current_eco_summary(cum_summary_t_eco, "Terrestrial")
+prot_areas_eco_m_summary <- current_eco_summary(cum_summary_m_eco, "Marine")
 
 ## Save things that weren't loaded at the beginning
 to_save <- setdiff(ls(), c(cleaned_bec_objs, cleaned_ecoreg_objs, cleaned_prot_areas_objs))
