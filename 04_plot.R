@@ -36,8 +36,9 @@ source("fun.R")
 # Terrestrial -------------------------------------------------------------
 
 ## Prep data frame for visualizations
-cum_summary_t_eco <- order_df(cum_summary_t, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
-cum_summary_t_eco$decade <- floor(cum_summary_t$prot_date / 10) * 10
+cum_summary_t_eco <- order_df(cum_summary_t_eco, "ecoregion", "cum_percent_protected",
+                              max, na.rm = TRUE, desc = TRUE)
+cum_summary_t_eco$decade <- floor(cum_summary_t_eco$prot_date / 10) * 10
 
 ###############################################################################
 ## Facet line-chart by ecoregion of cumulative percent protected over time
@@ -119,7 +120,7 @@ cum_summary_m_eco$decade <- floor(cum_summary_m_eco$prot_date / 10) * 10
 # Make a data frame of labels for current % protected
 current_eco_m <- cum_summary_m_eco[cum_summary_m_eco$prot_date == max(cum_summary_m_eco$prot_date), ]
 
-(ecoregion_m_facet_plot <- ggplot(cum_summary_m,
+(ecoregion_m_facet_plot <- ggplot(cum_summary_m_eco,
                                aes(x = prot_date, y = cum_percent_protected)) +
   geom_path(colour = "#253494") +
   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
