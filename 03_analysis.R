@@ -218,13 +218,20 @@ admin_lands_bec_summary <- bc_admin_lands_bec@data %>%
   mutate(category = "BC Administered Lands",
          percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
+bc_carts_designations_categories <- bc_carts@data %>%
+  mutate(category = ifelse(OWNER_E == "Government of British Columbia",
+                           "Provincial Protected Lands & Waters",
+                           "Federal Protected Lands & Waters")) %>%
+  group_by(category, designation = TYPE_E) %>%
+  summarise(n = n())
+
 # Summarize carts data
 bc_carts_bec_summary <- bc_carts_bec@data %>%
-  group_by(ZONE, ZONE_NAME, designation = TYPE_E) %>%
+  left_join(bc_carts_designations_categories[, -3], by = c("TYPE_E" = "designation")) %>%
+  group_by(category, designation = TYPE_E, ZONE, ZONE_NAME) %>%
   summarize(prot_area_ha = round(sum(prot_area) * 1e-4, 3)) %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
-  mutate(category = "Provincial and Federal Protected Lands",
-         percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
+  mutate(percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
 designations_bec <- bind_rows(reg_int_bec_summary, fee_simple_bec_summary,
                               admin_lands_bec_summary, bc_carts_bec_summary) %>%
@@ -276,11 +283,11 @@ admin_lands_eco_summary <- bc_admin_lands_eco@data %>%
 
 # Summarize carts data
 bc_carts_eco_summary <- bc_carts_eco@data %>%
-  group_by(CRGNNM, CRGNCD, designation = TYPE_E) %>%
+  left_join(bc_carts_designations_categories[, -3], by = c("TYPE_E" = "designation")) %>%
+  group_by(category, CRGNNM, CRGNCD, designation = TYPE_E) %>%
   summarize(prot_area_ha = round(sum(prot_area) * 1e-4, 3)) %>%
   left_join(ecoregion_summary, by = "CRGNCD") %>%
-  mutate(category = "Provincial and Federal Protected Lands",
-         percent_protected = round((prot_area_ha / total_ecoregion_area_ha * 100), 4))
+  mutate(percent_protected = round((prot_area_ha / total_ecoregion_area_ha * 100), 4))
 
 designations_eco <- bind_rows(reg_int_eco_summary, fee_simple_eco_summary,
                               admin_lands_eco_summary, bc_carts_eco_summary) %>%
@@ -297,7 +304,7 @@ bc_area_ha <- gArea(bc_bound_hres) * 1e-4
 bc_m_area_ha <- 453602787832 * 1e-4
 
 bc_carts_summary <- bc_carts@data %>%
-  mutate(category = "Provincial and Federal Protected Lands") %>%
+  left_join(bc_carts_designations_categories[, -3], by = c("TYPE_E" = "designation")) %>%
   group_by(BIOME, category, designation = TYPE_E) %>%
   summarise(total_area_ha = sum(area) * 1e-4,
             n = n()) %>%
