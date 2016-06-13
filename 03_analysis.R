@@ -331,7 +331,9 @@ bc_fee_simple_summary <- fee_simple_ngo_lands_unioned@data %>%
             percent_of_bc = total_area_ha / (bc_area_ha) * 100,
             n = length(fee_simple_ngo_lands))
 
-bc_reg_int_summary$percent_of_bc <- bc_reg_int_summary$total_area_ha / bc_area_ha
+bc_reg_int_summary <- mutate(bc_reg_int_summary,
+                             percent_of_bc = total_area_ha / bc_area_ha,
+                             category = "Private Conservation Lands")
 
 bc_designations_summary <- bind_rows(bc_carts_summary, bc_admin_lands_summary,
                                      bc_fee_simple_summary, bc_reg_int_summary)
