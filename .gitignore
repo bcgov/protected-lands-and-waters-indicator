@@ -6,3 +6,4 @@ out/*
 tmp/*
 .*.Rnb.cached
 README.html
+print_ver/*.pdf
