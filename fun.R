@@ -10,47 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
-#' Get the desried attribute of overlapping polygons from a spdf that is the
-#' the result of raster::union on a single SPDF
-#'
-#' @param unioned_sp the SPDF that is the result of running raster::union on \code{orig_sp}
-#' @param orig_sp the original SPDF containing the desired attributes
-#' @param col the column in \code{orig_sp} from which to retrieve attributes
-#' @param fun function to determine the resulting single attribute from overlapping polygons
-#' @param return_type The type of data expected to be returned. One of:
-#'    "logical", "character", "numeric", "double", "integer", "complex".
-#' @param ... other paramaters passed on to \code{fun}
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_unioned_attribute <- function(unioned_sp, orig_sp, col, fun, return_type, ...) {
-  if (return_type %in% c("logical", "character", "numeric", "double", "integer", "complex")) {
-    return_call <- call(return_type, 1)
-    fac <- FALSE
-  } else if (return_type == "factor") {
-    lvls <- sort(unique(orig_sp[[col]]))
-    fac <- TRUE
-    return_call <- expression(factor(1, levels = lvls))
-  } else {
-    stop(return_type, "is not a valid data type")
-  }
-
-  unioned_ids <- get_unioned_ids(unioned_sp)
-
-  ret <- vapply(unioned_ids, function(x) {
-    fun(orig_sp[[col]][x], ...)
-  }, eval(return_call))
-
-  if (fac) {
-    ret <- lvls[ret]
-  }
-
-  ret
-
-}
-
 which_min <- function(x) {
   if (all(is.na(x))) {
     fun <- first
@@ -58,20 +17,6 @@ which_min <- function(x) {
     fun <- which.min
   }
   fun(x)
-}
-
-
-## Function to get the original polygon ids that make up each new polygon in the
-## unioned product (the result of raster:union(SPDF, missing))
-get_unioned_ids <- function(unioned_sp) {
-  id_cols <- grep("^ID\\.", names(unioned_sp@data))
-  unioned_sp_data <- as.matrix(unioned_sp@data[, id_cols])
-  colnames(unioned_sp_data) <- gsub("ID\\.", "", colnames(unioned_sp_data))
-  unioned_ids <- apply(unioned_sp_data, 1, function(i) {
-    as.numeric(colnames(unioned_sp_data)[i > 0])
-  })
-  names(unioned_ids) <- rownames(unioned_sp_data)
-  unioned_ids
 }
 
 ## Given a vector of values, if the first n values are 0 or NA, make them NA up
@@ -89,4 +34,34 @@ iucn_cats <- function() ordered(c("Ia", "Ib", "II", "III", "IV", "V", "VI"))
 
 factor_iucn_cats <- function(x) {
   factor(x, levels = iucn_cats(), ordered = TRUE)
+}
+
+get_gov_level <- function(x) {
+  if (any(grepl("federal", x, ignore.case = TRUE))) { # let federal take precedence ??
+    gov <- "Federal"
+  } else if (any(grepl("sub-national", x, ignore.case = TRUE))) {
+    gov <- "Provincial"
+  } else {
+    gov <- NA_character_
+  }
+
+  gov
+}
+
+bind_spdf <- function(x, y) {
+  len_x <- length(x)
+  len_y <- length(y)
+  x <- spChFIDs(x, as.character(1:len_x))
+  y <- spChFIDs(y, as.character((len_x + 1):(len_x + len_y)))
+  rbind(x, y)
+}
+
+gg_fortify <- function(x) {
+  if (!require("maptools")) stop("maptools is not installed")
+  if (!requireNamespace("ggplot2")) stop("ggplot2 is not installed.")
+  if (!requireNamespace("dplyr")) stop("dplyr is not installed.")
+  x@data$ggid <- rownames(x@data)
+  x_points <- ggplot2::fortify(x, region = "ggid")
+  x_df <- dplyr::left_join(x_points, x@data, by = c("id" = "ggid"))
+  x_df
 }

@@ -19,3 +19,6 @@ bec_zip <- "data/BCGW_78757263_1452205526815_4528.zip"
 
 unzip(bec_zip, exdir = "data", overwrite = TRUE)
 
+ngo_conservation_lands_zip <- "data/BC_NGO_ConsDB_FeeSimple_31Dec2014_updated02Nov2015.zip"
+
+unzip(ngo_conservation_lands_zip, exdir = "data", overwrite = TRUE)
