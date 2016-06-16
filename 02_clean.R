@@ -34,9 +34,10 @@ rm(cl_gdb)
 ## Read in NGO conservation lands
 fee_simple_ngo_lands <- readOGR("data", "BC_NGO_ConsDB_FeeSimple_31Dec2014_updated02Nov2015", stringsAsFactors = FALSE)
 
+## Extract the year of SecDate (securement date) and store in prot_date
 fee_simple_ngo_lands$prot_date <- as.numeric(substr(fee_simple_ngo_lands$SecDate1, 1, 4))
 
-## Extract just BC from CARTS
+## Extract just BC from CARTS database
 bc_carts <- carts[carts$LOC_E %in% c("British Columbia", "Offshore Pacific Marine"), ]
 rm(carts)
 
@@ -59,7 +60,7 @@ fee_simple_ngo_lands <- transform_bc_albers(fee_simple_ngo_lands)
 # ecoregions <- ms_simplify(ecoregions, 0.01, keep_shapes = TRUE)
 ####
 
-## Check validity of polygons of bc_carts, fix with gBuffer trick, and check again:
+## Check validity of polygons of bc_carts, and fix:
 bc_carts <- fix_self_intersect(bc_carts)
 bc_admin_lands <- fix_self_intersect(bc_admin_lands)
 fee_simple_ngo_lands <- fix_self_intersect(fee_simple_ngo_lands)
@@ -67,11 +68,13 @@ fee_simple_ngo_lands <- fix_self_intersect(fee_simple_ngo_lands)
 ## Convert IUCN category to an ordered factor
 bc_carts$IUCN_CAT <- factor_iucn_cats(bc_carts$IUCN_CAT)
 
-## Union CARTS
+## Union CARTS with itself to eliminate overlaps
 bc_carts_agg <- raster::aggregate(bc_carts, by = "PROTDATE")
 bc_carts_agg <- fix_self_intersect(bc_carts_agg)
 bc_carts_agg_unioned <- self_union(bc_carts_agg) # This takes over a day to run
-## Get the earliest year of protection for polygon segments that overlap
+
+## Get the earliest year of protection for polygon segments that overlap,
+## then aggregate by protected date
 bc_carts_agg_unioned$prot_date <- sapply(bc_carts_agg_unioned$union_df, min, na.rm = TRUE)
 bc_carts_agg_unioned <- raster::aggregate(bc_carts_agg_unioned, by = "prot_date")
 
@@ -101,19 +104,17 @@ admin_fee_simple_unioned$prot_date <- pmin(admin_fee_simple_unioned$prot_date.1,
                                            admin_fee_simple_unioned$prot_date.2, na.rm = TRUE)
 admin_fee_simple_unioned <- raster::aggregate(admin_fee_simple_unioned, by = "prot_date")
 
-## Finally add the CARTS data for BC
+## Finally union the BC CARTS data with the previously unioned other layers
 prot_areas_unioned <- raster::union(bc_carts_agg_unioned, admin_fee_simple_unioned)
 prot_areas_unioned$prot_date <- pmin(prot_areas_unioned$prot_date.1,
                                      prot_areas_unioned$prot_date.2, na.rm = TRUE)
 prot_areas_unioned$prot_date[is.infinite(prot_areas_unioned$prot_date)] <- max(c(bc_carts_agg_unioned$prot_date,
                                                                                  fee_simple_ngo_lands_unioned$prot_date), na.rm = TRUE)
-prot_areas_agg <- raster::aggregate(prot_areas_unioned, by = "prot_date")
 
-# saveRDS(fee_simple_ngo_lands_unioned, "tmp/fee_simple_ngo_lands_unioned.rds")
-# saveRDS(bc_admin_lands_unioned, "tmp/bc_admin_lands_unioned.rds")
-# saveRDS(bc_carts_agg_unioned, "tmp/bc_carts_agg_unioned.rds")
-# saveRDS(admin_fee_simple_unioned, "tmp/admin_fee_simple_unioned.rds")
-# saveRDS(prot_areas_unioned, "tmp/prot_areas_unioned.rds")
+## Aggregate the final unioned product by prot_date, so we have a unified layer
+## of protected lands and waters for the province, with overlaps removed,
+## grouped by date of protection
+prot_areas_agg <- raster::aggregate(prot_areas_unioned, by = "prot_date")
 
 save(list = ls(), file = "tmp/prot_areas_clean.rda")
 rm(list = ls())
@@ -124,9 +125,10 @@ rm(list = ls())
 ## Marine ecoregions
 m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
 
+## load ecoregions data from bcmaps package
 data("ecoregions")
 
-## Extract the terrestrial and marine portions of GPB
+## Extract the terrestrial and marine portions of GPB into separate objects
 gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
                            bc_bound_hres)
 gpb_marine <- ms_erase(ecoregions[ecoregions$CRGNCD == "GPB",],
@@ -143,6 +145,7 @@ ecoregions_t <- rbind(ecoregions[!ecoregions$CRGNCD %in% c("GPB", m_ecoregions),
 ecoregions_m <- rbind(ecoregions[ecoregions$CRGNCD %in% m_ecoregions, ],
                       gpb_marine[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
 
+## Calcualte the area of the polygons
 ecoregions_t$area <- gArea(ecoregions_t, byid = TRUE)
 ecoregions_m$area <- gArea(ecoregions_m, byid = TRUE)
 
@@ -156,6 +159,8 @@ rm(list = ls())
 
 # BEC ---------------------------------------------------------------------
 
+## First clip the bec shapefile to the terrestrial BC boundaries
+
 ## Using rmapshaper - runs out of memory
 # bec <- readOGR("data/BEC_POLY", "BEC_POLY_polygon", stringsAsFactors = FALSE)
 # bec_t <- rmapshaper::ms_clip(bec, bc_bound_hres)
@@ -163,18 +168,18 @@ rm(list = ls())
 ## Using mapshaper on the command line. Requires Node installed (https://nodejs.org),
 ## and install mapshaper with: 'npm install -g mapshaper'
 unlink(paste0("data/", c("bc_bound.geojson", "bec_clip*")))
-geojsonio::geojson_write(bc_bound_hres, file = "data/bc_bound.geojson")
+geojsonio::geojson_write(bc_bound_hres, file = "data/bc_bound.geojson") # bc_bound_hres is from bcmaps package
 system("mapshaper data/BEC_POLY/BEC_POLY_polygon.shp -clip data/bc_bound.geojson -explode -o data/bec_clip.shp")
 
+## Check for validity of bec polygons
 bec_t <- readOGR("data", "bec_clip", stringsAsFactors = FALSE)
 if (any(!gIsValid(bec_t, byid = TRUE))) {
   bec_t <- gBuffer(bec_t, byid = TRUE, width = 0)
-  # bec_t <- createSPComment(bec_t)
   any(!gIsValid(bec_t, byid = TRUE))
 }
 
+## Simplify BEC pologyons for use in display
 bec_t$poly_id <- row.names(bec_t)
-
 unlink("data/bec_t*")
 writeOGR(bec_t, "data", "bec_t", "ESRI Shapefile")
 system("mapshaper data/bec_t.shp -simplify 0.01 keep-shapes -o data/bec_t_simp.shp")
