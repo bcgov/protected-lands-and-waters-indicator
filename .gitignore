@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 internal.R
-data/*
 out/*
 tmp/*
 .*.Rnb.cached
