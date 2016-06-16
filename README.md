@@ -10,7 +10,7 @@ A set of R scripts to complete the analysis behind the Environmental Indicator [
 
 ### Data
 
-The analysis uses data from several sources:
+The analysis uses data from several sources; they should be downloaded and stored in the `data` folder:
 
 -   [Canadian Council on Ecological Areas (CCEA) shapefile database of protected areas in Canada](http://www.ccea.org/download-carts-data/)
 -   [B.C. Government Conservation Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
@@ -20,7 +20,7 @@ The analysis uses data from several sources:
 
 ### Code
 
-There are four core scripts that are required for the analysis, they need to be run in order:
+There are four core scripts that are required for the analysis; they need to be run in order:
 
 -   `01_load.R` - unzips the data files in the data folder
 -   `02_clean.R` - cleans and prepares the spatial data for analysis, especially resolving overlaps among types of protected area designations
