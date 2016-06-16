@@ -20,12 +20,12 @@ library(dplyr) # summarizing data frames
 library(tidyr) # for 'complete' function
 library(readr)
 
-## Load the functions we need
+## Load some miscellaneous functions we need
 source("fun.R")
 
 m_to_ha <- function(x) x * 1e-4
 
-## Load the cleanup up data from 02_clean.R, save the names so we don't re-save them later
+## Load the cleanup up data from 02_clean.R, saving the names so we don't re-save them later
 cleaned_prot_areas_objs <- load("tmp/prot_areas_clean.rda")
 cleaned_ecoreg_objs <- load("tmp/ecoregions_clean.rda")
 cleaned_bec_objs <- load("tmp/bec_clean.rda")
@@ -43,7 +43,7 @@ prot_areas_eco_t <- rgeos::createSPComment(prot_areas_eco_t) # Ensure polygon ho
 ## Calculate size of protected areas in each ecoregion
 prot_areas_eco_t$prot_area <- rgeos::gArea(prot_areas_eco_t, byid = TRUE)
 
-## Summarize
+## Summarize amount of area protected in each region each year
 prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   filter(prot_date > 0) %>%
   complete(nesting(CRGNNM, CRGNCD, area), prot_date, fill = list(prot_area = 0)) %>%
@@ -60,7 +60,7 @@ prot_areas_eco_t_summary_by_year <- prot_areas_eco_t@data %>%
   select(-tot_protected_overlaps_removed)
 
 
-## Provincial summary
+## Provincial summary of protected areas by year
 prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
@@ -69,6 +69,8 @@ prot_areas_bc_t_summary_by_year <- prot_areas_eco_t_summary_by_year %>%
             tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
+## Calculate cumulative amound and percent protected over time, then
+## combine provincial and ecoregional trend summaries
 cum_summary_t_eco <- prot_areas_eco_t_summary_by_year %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
@@ -101,7 +103,8 @@ prot_areas_eco_m <- rgeos::createSPComment(prot_areas_eco_m) # Ensure polygon ho
 ## Calculate size of protected areas in each ecoregion
 prot_areas_eco_m$prot_area <- rgeos::gArea(prot_areas_eco_m, byid = TRUE)
 
-## Summarize
+## Summarize amount of area protected in each region each year, adding zeros for
+## the ecoregions that have no protection
 missing_m_ecoregions <- ecoregions_m@data %>%
   select(CRGNNM, CRGNCD, area) %>%
   filter(CRGNCD %in% c("TPC", "SBC")) %>%
@@ -116,7 +119,7 @@ prot_areas_eco_m_summary_by_year <- prot_areas_eco_m@data %>%
             tot_protected = sum(prot_area),
             percent_protected = tot_protected / ecoregion_area * 100)
 
-## Provincial summary
+## Provincial summary of marine protected area by year
 prot_areas_bc_m_summary_by_year <- prot_areas_eco_m_summary_by_year %>%
   group_by(prot_date) %>%
   summarise(ecoregion = "British Columbia",
@@ -125,6 +128,8 @@ prot_areas_bc_m_summary_by_year <- prot_areas_eco_m_summary_by_year %>%
             tot_protected = sum(tot_protected),
             percent_protected = tot_protected / ecoregion_area * 100)
 
+## Calculate cumulative amound and percent protected over time, then
+## combine provincial and ecoregional trend summaries
 cum_summary_m_eco <- prot_areas_eco_m_summary_by_year %>%
   group_by(ecoregion, ecoregion_code) %>%
   arrange(prot_date) %>%
@@ -160,7 +165,7 @@ bec_t_summary <- bec_t@data %>%
 prot_areas_bec <- raster::intersect(bec_t, prot_areas_agg)
 prot_areas_bec$prot_area <- rgeos::gArea(prot_areas_bec, byid = TRUE)
 
-# Summarize
+## Summarize amount of area protected in each zone each year
 prot_areas_bec_summary <- prot_areas_bec@data %>%
   group_by(ZONE, ZONE_NAME) %>%
   summarize(prot_area = sum(prot_area)) %>%
@@ -177,6 +182,7 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
 
 # Individual land designations by BEC -------------------------------------
 
+## Get zone area in hectares
 bec_t_summary$total_zone_area_ha <- bec_t_summary$total_area * 1e-4
 
 ## Aggregate layers by designation (bc_admin_lands_agg already done)
@@ -193,6 +199,8 @@ bc_admin_lands_bec$prot_area <- rgeos::gArea(bc_admin_lands_bec, byid = TRUE)
 bc_carts_bec <- raster::intersect(bec_t, bc_carts_des)
 bc_carts_bec$prot_area <- rgeos::gArea(bc_carts_bec, byid = TRUE)
 
+## Convert the registerable interests summary into same format so can be combined
+## with other designation summaries
 reg_int_bec_summary <- reg_int_bec_summary %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(category = "Private Conservation Lands",
@@ -218,6 +226,7 @@ admin_lands_bec_summary <- bc_admin_lands_bec@data %>%
   mutate(category = "BC Administered Lands",
          percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
+# Summarize carts data
 bc_carts_designations_categories <- bc_carts@data %>%
   mutate(category = ifelse(OWNER_E == "Government of British Columbia",
                            "Provincial Protected Lands & Waters",
@@ -225,7 +234,6 @@ bc_carts_designations_categories <- bc_carts@data %>%
   group_by(category, designation = TYPE_E) %>%
   summarise(n = n())
 
-# Summarize carts data
 bc_carts_bec_summary <- bc_carts_bec@data %>%
   left_join(bc_carts_designations_categories[, -3], by = c("TYPE_E" = "designation")) %>%
   group_by(category, designation = TYPE_E, ZONE, ZONE_NAME) %>%
@@ -233,12 +241,15 @@ bc_carts_bec_summary <- bc_carts_bec@data %>%
   left_join(bec_t_summary, by = "ZONE_NAME") %>%
   mutate(percent_protected = round((prot_area_ha / total_zone_area_ha * 100), 4))
 
+
+## Combine them all
 designations_bec <- bind_rows(reg_int_bec_summary, fee_simple_bec_summary,
                               admin_lands_bec_summary, bc_carts_bec_summary) %>%
   select(-total_area)
 
 # Individual Designations with Ecoregions ---------------------------------
 
+## Calculate area of ecoregions
 ecoregions$area <- rgeos::gArea(ecoregions, byid = TRUE)
 ecoregion_summary <- ecoregions@data %>%
   group_by(CRGNCD) %>%
@@ -254,6 +265,8 @@ bc_admin_lands_eco$prot_area <- rgeos::gArea(bc_admin_lands_eco, byid = TRUE)
 bc_carts_eco <- raster::intersect(ecoregions, bc_carts_des)
 bc_carts_eco$prot_area <- rgeos::gArea(bc_carts_eco, byid = TRUE)
 
+## Convert the registerable interests summary into same format so can be combined
+## with other designation summaries
 reg_int_eco_summary <- reg_int_ecoreg_summary %>%
   group_by(ecoregion, ecoregion_code) %>%
   summarize(tot_protected = sum(tot_protected)) %>%
@@ -289,6 +302,8 @@ bc_carts_eco_summary <- bc_carts_eco@data %>%
   left_join(ecoregion_summary, by = "CRGNCD") %>%
   mutate(percent_protected = round((prot_area_ha / total_ecoregion_area_ha * 100), 4))
 
+
+## Combine them all, & combine columns with same information but different names
 designations_eco <- bind_rows(reg_int_eco_summary, fee_simple_eco_summary,
                               admin_lands_eco_summary, bc_carts_eco_summary) %>%
   mutate(ecoregion = ifelse(is.na(ecoregion), CRGNNM, ecoregion),
@@ -338,7 +353,7 @@ bc_reg_int_summary <- mutate(bc_reg_int_summary,
 bc_designations_summary <- bind_rows(bc_carts_summary, bc_admin_lands_summary,
                                      bc_fee_simple_summary, bc_reg_int_summary)
 
-## Prep summary for interactive web viz
+## Prep summary for interactive web viz by removing the zeros (they are handled in the viz)
 cum_summary_t_viz <- cum_summary_t[cum_summary_t$tot_protected > 0, ]
 
 ## Get a current summary of ecoregion protection
