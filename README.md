@@ -3,8 +3,8 @@
 
 ------------------------------------------------------------------------
 
-Analysis of trends and current amounts of protected lands and waters in B.C. ecosystems
----------------------------------------------------------------------------------------
+Analysis of trends and current amounts of protected lands and waters in B.C.
+----------------------------------------------------------------------------
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/) in June 2016.
 
