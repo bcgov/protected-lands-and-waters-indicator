@@ -22,10 +22,12 @@ The analysis uses data from several sources:
 
 There are four core scripts that are required for the analysis, they need to be run in order:
 
--   `01_load.R` - unzips the data files in the data folder.
--   `02_clean.R` - cleans and prepares the data for analysis.
+-   `01_load.R` - unzips the data files in the data folder
+-   `02_clean.R` - cleans and prepares the spatial data for analysis, especially resolving overlaps among types of protected area designations
 -   `03_analysis.R` - performs the spatial intersections and creates data summaries
 -   `04_plot.R` - creates plots for communicating the results
+
+The file `fun.R` contains a few custom functions required for the analysis.
 
 #### Required R packages:
 
@@ -35,10 +37,10 @@ Spatial packages:
     rgdal
     rgeos
     raster
-    bcmaps
-    rmapshaper
     maptools
     geojsonio
+    bcmaps
+    rmapshaper
 
 General data manipulation packages:
 
@@ -49,9 +51,9 @@ General data manipulation packages:
 Plotting packages:
 
     ggplot2
-    envreportutils
     RColorBrewer
     ggthemes
+    envreportutils
 
 Most packages used in the analysis can be installed from CRAN using `install.packages()`, but there are a few you will need to install using devtools:
 
