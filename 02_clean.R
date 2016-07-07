@@ -16,7 +16,7 @@ library(sp)
 library(rgeos)
 library(raster)
 library(bcmaps) # install using devtools::install_github("bcgov/bcmaps")
-library(rmapshaper) # install using devtools::install_github("ateucher/rmapshaper")
+library(rmapshaper)
 
 source("fun.R")
 
@@ -54,8 +54,6 @@ bc_admin_lands <- transform_bc_albers(bc_admin_lands)
 fee_simple_ngo_lands <- transform_bc_albers(fee_simple_ngo_lands)
 
 #### Simplify for testing
-## devtools::install_github("ateucher/rmapshaper")
-# library(rmapshaper)
 # bc_carts <- ms_simplify(bc_carts, 0.01, keep_shapes = TRUE)
 # ecoregions <- ms_simplify(ecoregions, 0.01, keep_shapes = TRUE)
 ####
