@@ -6,7 +6,7 @@
 Analysis of trends and current amounts of protected lands and waters in B.C.
 ----------------------------------------------------------------------------
 
-A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/) in June 2016.
+A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in June 2016.
 
 ### Data
 
@@ -15,8 +15,8 @@ The analysis uses data from several sources; they should be downloaded and store
 -   [Canadian Council on Ecological Areas (CCEA) shapefile database of protected areas in Canada](http://www.ccea.org/download-carts-data/)
 -   [B.C. Government Conservation Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 -   [B.C. NGO Conservation Areas Database — Fee Simple Areas](http://ltabc.ca/resources/2012-02-05-22-20-02)
--   [Ecoregions - Ecoregion Ecosystem Classification of British Columbia](http://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
--   [Biogeoclimatic Ecosystem Classification (BEC) Map](http://catalogue.data.gov.bc.ca/dataset/biogeoclimatic-ecosystem-classification-bec-map) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+-   [Ecoregions - Ecoregion Ecosystem Classification of British Columbia](https://catalogue.data.gov.bc.ca/dataset/d00389e0-66da-4895-bd56-39a0dd64aa78) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+-   [Biogeoclimatic Ecosystem Classification (BEC) Map](https://catalogue.data.gov.bc.ca/dataset/f358a53b-ffde-4830-a325-a5a03ff672c3) (License: [OGL-BC](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
 ### Code
 
@@ -97,4 +97,4 @@ Please note that this project is released with a [Contributor Code of Conduct](C
     See the License for the specific language governing permissions and
     limitations under the License.
 
-This repository is maintained by [Environmental Reporting BC](http://www.env.gov.bc.ca/soe/). Click [here](https://github.com/bcgov/EnvReportBC-RepoList) for a complete list of our repositories on GitHub.
+This repository is maintained by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B). Click [here](https://github.com/bcgov/EnvReportBC-RepoList) for a complete list of our repositories on GitHub.
