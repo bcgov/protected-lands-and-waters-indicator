@@ -14,9 +14,16 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+  ```{r echo=FALSE, results='asis'}
+  ## Insert 'inspiration', 'exploration', or 'delivery'
+  envreportutils::devex_badge('delivery')
+  ```
+  
+
+
 ```{r, echo=FALSE, results='asis', message=FALSE}
 library("envreportutils")
-devex_badge("delivery")
 ```
 
 ---
