@@ -1,12 +1,13 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <a rel="Delivery" href="https://github.com/BCDevExchange/docs/blob/master/discussion/projectstates.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a>
 
-------------------------------------------------------------------------
-
 Analysis of trends and current amounts of protected lands and waters in B.C.
-----------------------------------------------------------------------------
+============================================================================
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in June 2016.
+
+Usage
+-----
 
 ### Data
 
@@ -71,17 +72,20 @@ You will also need the [mapshaper](https://github.com/mbloch/mapshaper) node pac
 
     npm install -g mapshaper
 
-### Getting Help or Reporting an Issue
+Getting Help or Reporting an Issue
+----------------------------------
 
 To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/bc_population_indicator/issues/).
 
-### How to Contribute
+How to Contribute
+-----------------
 
 If you would like to contribute, please see our [CONTRIBUTING](CONTRIBUTING.md) guidelines.
 
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
-### License
+License
+-------
 
     Copyright 2016 Province of British Columbia
 

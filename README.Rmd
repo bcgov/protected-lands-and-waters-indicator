@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 
-  ```{r echo=FALSE, results='asis'}
-  ## Insert 'inspiration', 'exploration', or 'delivery'
-  bcgovr::devex_badge('delivery')
-  ```
+```{r echo=FALSE, results='asis'}
+## Insert 'inspiration', 'exploration', or 'delivery'
+bcgovr::devex_badge('delivery')
+```
   
 
 
@@ -26,11 +26,12 @@ knitr::opts_chunk$set(
 library("envreportutils")
 ```
 
----
 
-## Analysis of trends and current amounts of protected lands and waters in B.C.
+# Analysis of trends and current amounts of protected lands and waters in B.C.
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in June 2016.
+
+## Usage
 
 ### Data
 
@@ -107,17 +108,17 @@ npm install -g mapshaper
 ```
 
 
-### Getting Help or Reporting an Issue
+## Getting Help or Reporting an Issue
 
 To report bugs/issues/feature requests, please file an [issue](https://github.com/bcgov/bc_population_indicator/issues/).
 
-### How to Contribute
+## How to Contribute
 
 If you would like to contribute, please see our [CONTRIBUTING](CONTRIBUTING.md) guidelines.
 
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
-### License
+## License
 
     Copyright 2016 Province of British Columbia
 
