@@ -273,7 +273,7 @@ zone_summary <- prot_areas_bec_summary  %>%
 ## Plot protected areas
 
 
-bc_bound_hres <- fix_self_intersect(bc_bound_hres)
+bc_bound_hres <- fix_geo_problems(bc_bound_hres)
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
 
 (gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
@@ -287,7 +287,7 @@ prot_areas_t$BIOME <- "Terrestrial"
 prot_areas_m <- rmapshaper::ms_dissolve(prot_areas_eco_m)
 prot_areas_m$BIOME <- "Marine"
 prot_areas_map <- bind_spdf(prot_areas_t, prot_areas_m)
-prot_areas_map <- fix_self_intersect(prot_areas_map)
+prot_areas_map <- fix_geo_problems(prot_areas_map)
 
 gg_prot <- gg_fortify(prot_areas_map)
 
