@@ -177,7 +177,7 @@ prot_areas_bec_summary <- prot_areas_bec@data %>%
          prot_area_ha = m_to_ha(prot_area),
          percent_protected = round(prot_area / total_area * 100, 2)) %>%
   select(-prot_area_overlaps_removed, -prot_area, -total_area) %>%
-  mutate(ZONE_NAME = gsub("--", "—", ZONE_NAME))
+  mutate(ZONE_NAME = gsub("--", "\u2013", ZONE_NAME))
 
 
 # Individual land designations by BEC -------------------------------------
