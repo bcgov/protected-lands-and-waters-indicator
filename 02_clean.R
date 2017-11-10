@@ -59,16 +59,16 @@ fee_simple_ngo_lands <- transform_bc_albers(fee_simple_ngo_lands)
 ####
 
 ## Check validity of polygons of bc_carts, and fix:
-bc_carts <- fix_self_intersect(bc_carts)
-bc_admin_lands <- fix_self_intersect(bc_admin_lands)
-fee_simple_ngo_lands <- fix_self_intersect(fee_simple_ngo_lands)
+bc_carts <- fix_geo_problems(bc_carts)
+bc_admin_lands <- fix_geo_problems(bc_admin_lands)
+fee_simple_ngo_lands <- fix_geo_problems(fee_simple_ngo_lands)
 
 ## Convert IUCN category to an ordered factor
 bc_carts$IUCN_CAT <- factor_iucn_cats(bc_carts$IUCN_CAT)
 
 ## Union CARTS with itself to eliminate overlaps
 bc_carts_agg <- raster::aggregate(bc_carts, by = "PROTDATE")
-bc_carts_agg <- fix_self_intersect(bc_carts_agg)
+bc_carts_agg <- fix_geo_problems(bc_carts_agg)
 bc_carts_agg_unioned <- self_union(bc_carts_agg) # This takes over a day to run
 
 ## Get the earliest year of protection for polygon segments that overlap,
@@ -132,8 +132,8 @@ gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
 gpb_marine <- ms_erase(ecoregions[ecoregions$CRGNCD == "GPB",],
                        bc_bound_hres)
 ## Fix it up:
-gpb_terrestrial <- fix_self_intersect(gpb_terrestrial)
-gpb_marine <- fix_self_intersect(gpb_marine)
+gpb_terrestrial <- fix_geo_problems(gpb_terrestrial)
+gpb_marine <- fix_geo_problems(gpb_marine)
 
 ## Add terrestrial portion of GPB back to terrestrial ecoregions
 ecoregions_t <- rbind(ecoregions[!ecoregions$CRGNCD %in% c("GPB", m_ecoregions), ],
