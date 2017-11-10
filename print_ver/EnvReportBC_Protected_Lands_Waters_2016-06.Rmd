@@ -26,10 +26,7 @@ This indicator reports on the trends in the establishment and status of
 protected lands and waters in British Columbia.
 
 -   **Protected lands and waters cover 15.4% of B.C.'s land base and
-    3.2% of B.C.'s marine areas.** In the terrestrial realm, 15.1% is in
-    provincial and federal parks and protected areas, while the
-    remaining 0.3% is in other provincial designations such as Wildlife
-    Management Areas, and private conservation lands.
+    3.2% of B.C.'s marine areas.** In the terrestrial realm, 15.0% is in provincial and federal parks and     protected areas, while the remaining 0.4% is in other provincial and federal designations such as Wildlife Management Areas and National Wildlife Areas, and private conservation lands.
 -   The amount of recognized protected land in B.C. has more than
     doubled since the early 1990s.
 -   The amount of protected land and water varies across
