@@ -10,7 +10,7 @@ library(envreportutils)
 
 root <- rprojroot::is_rstudio_project
 
-knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE)
 load(root$find_file("tmp/out_gg.rda"))
 load(root$find_file("tmp/out_data.rda"))
 ```
@@ -53,6 +53,8 @@ provincially administered conservation lands such as Wildlife Management
 Areas, and British Columbia's private conservation lands. Details on
 specific designations and legal tools are provided below.
 
+\vspace{16pt}
+
 ```{r prot-areas-map, fig.height=8, dev='png', dpi=300}
 prot_map
 ```
@@ -65,6 +67,8 @@ The map below shows how much land is protected within each of
 B.C.'s 44 terrestrial ecoregions. The following series of plots show how that has changed over time.
 [Ecoregions](http://www.env.gov.bc.ca/ecology/ecoregions/) are areas
 with similar climate and geologic features.
+
+\vspace{16pt}
 
 ```{r ecoregion-map, fig.height=8}
 current_t_map + 
@@ -116,6 +120,8 @@ Georgia-Puget Basin ecoregion is represented on this map.
     of Haida Gwaii. Protected areas in the Spruce – Willow – Birch zone
     are more evenly distributed.
 
+\vspace{16pt}
+
 ```{r bec-bar-chart, fig.height=5}
 zone_barplot
 ```
@@ -135,6 +141,8 @@ bec_zone_map
     Area](http://www.pac.dfo-mpo.gc.ca/oceans/protection/mpa-zpm/endeavour/index-eng.html)
     was established in B.C. waters in 2003 &mdash; the first marine protected
     area in Canada.
+
+\vspace{16pt}
 
 ```{r marine-map-bar-chart}
 current_m_map + 
