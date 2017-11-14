@@ -252,7 +252,7 @@ bec_zone_gg <- fortify(bec_zone_simp, region = "ZONE")
                                   margin = margin(0,0,0,0, "pt"))))
 
 # Temp fix for UTF8 chars in Zone Summary
-prot_areas_bec_summary$ZONE_NAME <- gsub("\x97", "--", prot_areas_bec_summary$ZONE_NAME)
+prot_areas_bec_summary$ZONE_NAME <- gsub(" \x97 ", "--", prot_areas_bec_summary$ZONE_NAME)
 
 zone_summary <- prot_areas_bec_summary  %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
