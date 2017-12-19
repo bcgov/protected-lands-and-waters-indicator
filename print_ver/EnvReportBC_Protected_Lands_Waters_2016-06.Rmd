@@ -1,7 +1,7 @@
 ---
 topic: "land"
 title: "Protected Lands & Waters in B.C."
-output: envreportbc::print_ver
+output: envreportutils.internal::print_ver
 ---
 
 ```{r setup, include=FALSE}
@@ -76,7 +76,7 @@ current_t_map +
        fill = "Percent of\nEcoregion Protected")
 ```
 
-```{r ecoregion-facet-line-plot, fig.height=10}
+```{r ecoregion-facet-line-plot, fig.height=12, fig.width=9}
 ggplot(cum_summary_t_eco, 
        aes(x = prot_date, y = cum_percent_protected)) +
   geom_path(colour = "forestgreen") +
@@ -85,16 +85,22 @@ ggplot(cum_summary_t_eco,
   scale_y_continuous(breaks = seq(0,100, length.out = 3)) +
   labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
   # theme_minimal() +
-  theme(panel.margin.x = unit(1, "lines"),
-        axis.text = element_text(size = 8), 
-        axis.text.x = element_text(size = 8, angle = 45),
-        strip.text = element_text(size = 8), strip.background = element_rect(fill = "white")) +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        plot.title = element_text(size = 14, face = "bold"),
+        panel.margin.x = unit(1, "lines"),
+        plot.margin = unit(c(5,5,5,5),"mm"),
+        axis.text.x = element_text(size = 9, angle = 45),
+        strip.text = element_text(size = 12),
+        strip.background = element_rect(fill = "white")) +
   geom_text(data = current_eco_t, x = 2001, y = 80,
             aes(label = paste0(round(cum_percent_protected, 1), "%")),
-            size = 2.5) +
+            size = 3) +
   ggtitle("Trends in Land and Water Protection in B.C. Ecoregions")
 ```
 
+
+\newpage
 
 **Interpreting the Trend Information:** The charts above do not reflect
 changes to the size of *individual* protected areas over time. They
