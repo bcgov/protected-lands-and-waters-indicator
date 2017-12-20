@@ -153,7 +153,7 @@ current_eco_m <- cum_summary_m_eco[cum_summary_m_eco$prot_date == max(cum_summar
   labs(x = "Marine Ecoregion", y = "Percent Protected") +
   theme_soe() +
   theme(axis.line = element_blank(), panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(2,0,2,0), "lines"),
+        plot.margin = unit(c(1,1,1,1), "lines"),
         axis.title = element_text(size = 14),
         axis.text = element_text(size = 12)))
 
@@ -280,7 +280,7 @@ zone_summary <- prot_areas_bec_summary  %>%
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey90"),
         panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(2,0,1,1), "lines"),
+        plot.margin = unit(c(1,1,1,1), "lines"),
         axis.title = element_text(size = 14),
         axis.text = element_text(size = 12))
   )
