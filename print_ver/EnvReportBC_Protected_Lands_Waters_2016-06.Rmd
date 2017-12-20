@@ -73,7 +73,8 @@ with similar climate and geologic features.
 ```{r ecoregion-map, fig.height=8}
 current_t_map + 
   labs(title = "Amount of Land and Water Protected in B.C. Ecoregions", 
-       fill = "Percent of\nEcoregion Protected")
+       fill = "Percent of\nEcoregion Protected") +
+  theme(plot.title = element_text(size = 12, face = "bold"))
 ```
 
 ```{r ecoregion-facet-line-plot, fig.height=12, fig.width=9}
@@ -129,11 +130,13 @@ Georgia-Puget Basin ecoregion is represented on this map.
 \vspace{16pt}
 
 ```{r bec-bar-chart, fig.height=5}
-zone_barplot
+zone_barplot +
+  theme(plot.margin = unit(c(1,1,1,1), "lines"))
 ```
 
 ```{r bec-zone-map, fig.height=6}
-bec_zone_map
+bec_zone_map +
+  theme(plot.title = element_text(size = 12, face = "bold"))
 ```
 
 \newpage
@@ -150,12 +153,17 @@ bec_zone_map
 
 \vspace{16pt}
 
-```{r marine-map-bar-chart}
+```{r marine-map-chart}
 current_m_map + 
-  theme(legend.position = "left", legend.direction = "vertical")
-summary_eco_m_plot
+  theme(legend.position = "left", legend.direction = "vertical", legend.title = element_text(size = 13, face = "bold"), legend.text = element_text(size = 13), plot.margin = unit(c(1,1,1,1), "lines"))
 ```
 
+\newpage
+
+```{r marine-bar-chart}
+summary_eco_m_plot +
+  theme(plot.margin = unit(c(1,1,1,1), "lines"))
+```
 
 ### Details of Protected Land & Water Designations in B.C.
 
