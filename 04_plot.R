@@ -336,9 +336,14 @@ dev.off()
 # multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
 # dev.off()
 
+
 png_retina(filename = "out/marine_map.png", width = 600, height = 600, units = "px", type = "cairo-png")
 annotated_m_map
 dev.off()
+
+# png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
+# summary_eco_m_plot
+# dev.off()
 
 # png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
 # summary_eco_m_plot
@@ -360,6 +365,7 @@ dev.off()
 png_retina("out/bec_zone_map.png", width = 500, height = 500, units = "px")
 plot(bec_zone_map)
 dev.off()
+
 
 library(magick)
 beczomemap <- image_read("out/bec_zone_map.png")
