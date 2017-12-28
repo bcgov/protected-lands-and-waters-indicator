@@ -200,7 +200,7 @@ eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "eco
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
         legend.title = element_text(size = 13, face = "bold"), legend.text = element_text(size = 13),
-        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.8, "cm"),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.7, "cm"),
         plot.margin = unit(c(0,0,0,0), "lines")))
 # plot(current_m_map)
 
@@ -280,7 +280,7 @@ zone_summary <- prot_areas_bec_summary  %>%
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey90"),
         panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(1,1,1,1), "lines"),
+        plot.margin = unit(c(3,1,1,1), "lines"),
         axis.title = element_text(size = 14),
         axis.text = element_text(size = 12))
   )
@@ -336,23 +336,30 @@ dev.off()
 # multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
 # dev.off()
 
-png_retina(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
-multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+png_retina(filename = "out/marine_map.png", width = 600, height = 500, units = "px", type = "cairo-png")
+annotated_m_map
 dev.off()
 
+png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
+summary_eco_m_plot
+dev.off()
+
+svg_px(file = "out/marine_chart.svg", width = 400, height = 500)
+summary_eco_m_plot
+dev.off()
 
 ## BGC plots
 # png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
 # multiplot(zone_barplot, bec_zone_map, cols = 2)
 # dev.off()
 
-png_retina("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
-multiplot(zone_barplot, bec_zone_map, cols = 2)
+svg_px("out/bec_zone_chart.svg", width = 500, height = 500)
+zone_barplot
 dev.off()
 
-# png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
-# plot(bec_prot_map)
-# dev.off()
+png_retina("out/bec_zone_map.png", width = 500, height = 500, units = "px")
+plot(bec_zone_map)
+dev.off()
 
 
 ## Output terrestrial ecoregions as geojson for the visualization:
