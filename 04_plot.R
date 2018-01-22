@@ -200,7 +200,7 @@ eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "eco
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
         legend.title = element_text(size = 14, face = "bold"), legend.text = element_text(size = 14),
-        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.7, "cm"),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.58, "cm"),
         plot.margin = unit(c(0,0,0,0), "lines")))
 # plot(current_m_map)
 
@@ -210,7 +210,7 @@ endeavour <- coordinates(bc_carts[bc_carts$ZONE_ID == "700020100", ])
 (annotated_m_map <- current_m_map +
   geom_point(aes(x = endeavour[1], y = endeavour[2]), inherit.aes = FALSE,
              colour = "#253494", size = 2) +
-  annotate("text", x = endeavour[1], y = endeavour[2] - 40000, hjust = 0.2, size = 5.5,
+  annotate("text", x = endeavour[1], y = endeavour[2] - 40000, hjust = 0.2, size = 4.5,
            label = "Endeavour Hydrothermal Vents\nMarine Protected Area"))
 
 # BEC ---------------------------------------------------------------------
@@ -337,19 +337,23 @@ dev.off()
 # dev.off()
 
 
-png_retina(filename = "out/marine_map.png", width = 600, height = 600, units = "px", type = "cairo-png")
+png_retina(filename = "out/marine_map.png", width = 500, height = 500, units = "px", type = "cairo-png")
 annotated_m_map
 dev.off()
 
-# png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
-# summary_eco_m_plot
+# svg_px(file = "out/marine_map.svg", width = 500, height = 500)
+# annotated_m_map
 # dev.off()
 
 # png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
 # summary_eco_m_plot
 # dev.off()
 
-svg_px(file = "out/marine_chart.svg", width = 400, height = 500)
+# png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
+# summary_eco_m_plot
+# dev.off()
+
+svg_px(file = "out/marine_chart.svg", width = 500, height = 500)
 summary_eco_m_plot
 dev.off()
 
