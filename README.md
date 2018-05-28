@@ -1,10 +1,12 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<a rel="Delivery" href="https://github.com/BCDevExchange/docs/blob/master/discussion/projectstates.md"><img alt="In production, but maybe in Alpha or Beta. Intended to persist and be supported." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/delivery.svg" title="In production, but maybe in Alpha or Beta. Intended to persist and be supported." /></a>
+<a rel="Retired" href="https://github.com/BCDevExchange/assets/blob/master/README.md"><img alt="No longer being used or supported, recommend not using an alternative option." style="border-width:0" src="https://assets.bcdevexchange.org/images/badges/retired.svg" title="No longer being used or supported, recommend not using an alternative option." /></a>
 
 Analysis of trends and current amounts of protected lands and waters in B.C.
 ============================================================================
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in June 2016.
+
+**Note**: Moving forward this analysis and indicator will be updated using the analysis and approach found [here](https://github.com/bcgov/land-designations-indicator).
 
 Usage
 -----

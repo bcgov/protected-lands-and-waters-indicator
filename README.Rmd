@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 ```{r echo=FALSE, results='asis'}
 ## Insert 'inspiration', 'exploration', or 'delivery'
-bcgovr::devex_badge('delivery')
+bcgovr::devex_badge('retired')
 ```
   
 
@@ -30,6 +30,8 @@ library("envreportutils")
 # Analysis of trends and current amounts of protected lands and waters in B.C.
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Protected Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in June 2016.
+
+**Note**: Moving forward this analysis and indicator will be updated using the analysis and approach found [here](https://github.com/bcgov/land-designations-indicator).
 
 ## Usage
 

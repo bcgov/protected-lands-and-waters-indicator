@@ -33,15 +33,15 @@ load("tmp/analyzed.rda")
 
 source("fun.R")
 
-# Terrestrial -------------------------------------------------------------
+## Terrestrial ---------------------------------------------------------------------
 
 ## Prep data frame for visualizations
 cum_summary_t_eco <- order_df(cum_summary_t_eco, "ecoregion", "cum_percent_protected",
                               max, na.rm = TRUE, desc = TRUE)
 cum_summary_t_eco$decade <- floor(cum_summary_t_eco$prot_date / 10) * 10
 
-###############################################################################
-## Facet line-chart by ecoregion of cumulative percent protected over time
+#########################################################################################
+## Facet line-chart by ecoregion of cumulative percent protected over time (Print)
 
 # Make a data frame of labels for current % protected
 current_eco_t <- cum_summary_t_eco[cum_summary_t_eco$prot_date == max(cum_summary_t_eco$prot_date), ]
@@ -54,8 +54,9 @@ current_eco_t <- cum_summary_t_eco[cum_summary_t_eco$prot_date == max(cum_summar
   scale_y_continuous(breaks = seq(0,100, length.out = 3)) +
   labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
   theme_minimal() +
-  theme(panel.margin.x = unit(1.5, "lines"),
-        axis.text = element_text(size = 8)) +
+  theme(axis.text = element_text(size = 8),
+        plot.margin = unit(c(5,5,5,5),"mm"),
+        panel.margin.x = unit(1, "lines")) +
   geom_text(data = current_eco_t, x = 2002, y = 80,
             aes(label = paste0(round(cum_percent_protected, 1), "%")),
             size = 2.5))
@@ -75,28 +76,27 @@ current_eco_t <- cum_summary_t_eco[cum_summary_t_eco$prot_date == max(cum_summar
 #   theme_soe() +
 #   theme(axis.text.y = element_text(colour = ifelse(current_eco_t$is_bc, "royalblue3", "black")),
 #         axis.line = element_blank(), panel.grid.major.y = element_blank()))
-
 # plot(summary_eco_t_plot)
 
 ###############################################################################
-## Make a facetted map of protection level by decade
+## Make a facetted map of protection level by decade (Print)
 carts_eco_t_by_decade <- cum_summary_t_eco %>%
   group_by(ecoregion_code, ecoregion, decade) %>%
   summarise(percent_protected = max(cum_percent_protected))
 
 ecoregions_t_gg <- fortify(ecoregions_t_simp, region = "CRGNCD")
 ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id" = "ecoregion_code"))
-
-(decade_t_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
-  facet_wrap(~decade) +
-  geom_polygon(colour = "grey80") +
-  scale_fill_continuous(low = "white", high = "#008000") +
-  coord_equal() +
-  theme_map())
+#
+# (decade_t_facet_map <- ggplot(ecoregions_t_gg, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+#   facet_wrap(~decade) +
+#   geom_polygon(colour = "grey80") +
+#   scale_fill_continuous(low = "white", high = "#008000") +
+#   coord_equal() +
+#   theme_map())
 # plot(decade_t_facet_map)
 
 ###############################################################################
-## Map of current level of protection by ecoregion
+## Map of current level of protection by ecoregion (Print)
 (current_t_map <- ecoregions_t_gg %>%
   filter(decade == 2010) %>%
   ggplot(aes(x = long, y = lat, group = group, fill = percent_protected)) +
@@ -114,32 +114,33 @@ ecoregions_t_gg <- left_join(ecoregions_t_gg, carts_eco_t_by_decade, by = c("id"
 cum_summary_m_eco <- order_df(cum_summary_m_eco, "ecoregion", "cum_percent_protected", max, na.rm = TRUE, desc = TRUE)
 cum_summary_m_eco$decade <- floor(cum_summary_m_eco$prot_date / 10) * 10
 
-###############################################################################
-## Facet line-chart by ecoregion of cumulative percent protected over time
-
 # Make a data frame of labels for current % protected
 current_eco_m <- cum_summary_m_eco[cum_summary_m_eco$prot_date == max(cum_summary_m_eco$prot_date), ]
 
-(ecoregion_m_facet_plot <- ggplot(cum_summary_m_eco,
-                               aes(x = prot_date, y = cum_percent_protected)) +
-  geom_path(colour = "#253494") +
-  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
-  scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
-  # scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
-  labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
-  theme_minimal() +
-  theme(panel.margin.x = unit(1.5, "lines"),
-        axis.text = element_text(size = 8)) +
-  geom_text(data = current_eco_m, x = 1980, y = 80,
-            aes(label = paste(round(cum_percent_protected, 1), "%")),
-            size = 3))
+
+###############################################################################
+## Facet line-chart by ecoregion of cumulative percent protected over time (Print)
+#
+# (ecoregion_m_facet_plot <- ggplot(cum_summary_m_eco,
+#                                aes(x = prot_date, y = cum_percent_protected)) +
+#   geom_path(colour = "#253494") +
+#   facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 6) +
+#   scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
+#   # scale_y_continuous(breaks = seq(0,100, length.out = 5)) +
+#   labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
+#   theme_minimal() +
+#   theme(panel.margin.x = unit(1.5, "lines"),
+#         axis.text = element_text(size = 8)) +
+#   geom_text(data = current_eco_m, x = 1980, y = 80,
+#             aes(label = paste(round(cum_percent_protected, 1), "%")),
+#             size = 3))
   # theme_soe_facet() +
   # theme(panel.margin = unit(1, "mm"))
 
 # plot(ecoregion_m_facet_plot)
 
 ###############################################################################
-## Bar chart of current protection by ecoregion
+## Bar chart of current protection by ecoregion (Print & Web)
 (summary_eco_m_plot <- ggplot(current_eco_m,
                              aes(x = ecoregion, y = cum_percent_protected, fill = cum_percent_protected)) +
   scale_fill_distiller(limits = c(0, max(current_eco_m$cum_percent_protected, na.rm = TRUE)),
@@ -152,7 +153,9 @@ current_eco_m <- cum_summary_m_eco[cum_summary_m_eco$prot_date == max(cum_summar
   labs(x = "Marine Ecoregion", y = "Percent Protected") +
   theme_soe() +
   theme(axis.line = element_blank(), panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(2,0,2,0), "lines")))
+        plot.margin = unit(c(2,1,1,1), "lines"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12)))
 
 # plot(summary_eco_m_plot)
 
@@ -165,25 +168,26 @@ carts_eco_m_by_decade <- cum_summary_m_eco %>%
 ecoregions_m_gg <- fortify(ecoregions_m_simp, region = "CRGNCD")
 ecoregions_m_gg_decade <- left_join(ecoregions_m_gg, carts_eco_m_by_decade, by = c("id" = "ecoregion_code"))
 
-(decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, group = group, fill = percent_protected)) +
-  facet_wrap(~decade) +
-  geom_polygon(data = ecoregions_m_gg_decade[!ecoregions_m_gg_decade$hole, ],
-               aes(fill = percent_protected), colour = "grey70") +
-  geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
-               colour = "grey70") +
-  scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
-                       palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
-  coord_equal() +
-  labs(fill = "Percent of Marine\nEcoregion Protected\n") +
-  theme_map() +
-  theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 11), legend.position = c(0.7,0.1)))
+# (decade_m_facet_map <- ggplot(ecoregions_m_gg_decade, aes(x = long, y = lat, group = group, fill = percent_protected)) +
+#   facet_wrap(~decade) +
+#   geom_polygon(data = ecoregions_m_gg_decade[!ecoregions_m_gg_decade$hole, ],
+#                aes(fill = percent_protected), colour = "grey70") +
+#   geom_polygon(data = ecoregions_m_gg_decade[ecoregions_m_gg_decade$hole, ], fill = "white",
+#                colour = "grey70") +
+#   scale_fill_distiller(limits = c(0, max(ecoregions_m_gg_decade$percent_protected, na.rm = TRUE)),
+#                        palette = "YlGnBu", direction = 1, na.value = brewer.pal(6, "YlGnBu")[1]) +
+#   coord_equal() +
+#   labs(fill = "Percent of Marine\nEcoregion Protected\n") +
+#   theme_map() +
+#   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
+#         legend.title = element_text(size = 11), legend.position = c(0.7,0.1)))
 # plot(decade_m_facet_map)
 
 ###############################################################################
-## Map of current level of protection by ecoregion
+## Map of current level of marine protection by ecoregion (Print & Web)
 eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "ecoregion_code"))
 
+## Print Version
 (current_m_map <- ggplot(eco_m_gg_current, aes(x = long, y = lat, group = group)) +
   geom_polygon(data = eco_m_gg_current[!eco_m_gg_current$hole, ],
                aes(fill = cum_percent_protected), colour = "grey70") +
@@ -195,17 +199,18 @@ eco_m_gg_current <- left_join(ecoregions_m_gg, current_eco_m, by = c("id" = "eco
   labs(fill = "Percent of Marine\nEcoregion Protected\n") +
   theme_map() +
   theme(legend.key = element_rect(colour = "grey70", size = 2), legend.direction = "horizontal",
-        legend.title = element_text(size = 12), legend.text = element_text(size = 11),
-        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.8, "cm"),
+        legend.title = element_text(size = 14, face = "bold"), legend.text = element_text(size = 14),
+        legend.key.height = unit(1, "cm"), legend.key.width = unit(0.58, "cm"),
         plot.margin = unit(c(0,0,0,0), "lines")))
 # plot(current_m_map)
 
+## Web Version
 endeavour <- coordinates(bc_carts[bc_carts$ZONE_ID == "700020100", ])
 
 (annotated_m_map <- current_m_map +
   geom_point(aes(x = endeavour[1], y = endeavour[2]), inherit.aes = FALSE,
              colour = "#253494", size = 2) +
-  annotate("text", x = endeavour[1], y = endeavour[2] - 40000, hjust = 0.2,
+  annotate("text", x = endeavour[1], y = endeavour[2] - 40000, hjust = 0.2, size = 4.5,
            label = "Endeavour Hydrothermal Vents\nMarine Protected Area"))
 
 # BEC ---------------------------------------------------------------------
@@ -239,6 +244,9 @@ endeavour <- coordinates(bc_carts[bc_carts$ZONE_ID == "700020100", ])
 
 #plot(bec_prot_map)
 
+#####################################################
+## Biogeoclimatic Zones for BC (Print & Web)
+
 bec_zone_gg <- fortify(bec_zone_simp, region = "ZONE")
 
 (bec_zone_map <- ggplot(bec_zone_gg, aes(x = long, y = lat, group = group, fill = id)) +
@@ -248,12 +256,14 @@ bec_zone_gg <- fortify(bec_zone_simp, region = "ZONE")
   ggtitle("Biogeoclimatic Zones of B.C.") +
   theme_map() +
   theme(plot.margin = margin(2,0,1,0, "lines"),
-        plot.title = element_text(hjust = 0.3, size = 13,
+        plot.title = element_text(hjust = 0.3, size = 14,
                                   margin = margin(0,0,0,0, "pt"))))
 
 # Temp fix for UTF8 chars in Zone Summary
-prot_areas_bec_summary$ZONE_NAME <- gsub("\x97", "\u2013", prot_areas_bec_summary$ZONE_NAME)
+## Status of PPA by BGZ bar chart (Print and Web)
+prot_areas_bec_summary$ZONE_NAME <- gsub(" \x97 ", "--", prot_areas_bec_summary$ZONE_NAME)
 
+prot_areas_bec_summary$ZONE_NAME <- gsub("--", " — ", prot_areas_bec_summary$ZONE_NAME)
 
 zone_summary <- prot_areas_bec_summary  %>%
   order_df("ZONE_NAME", "percent_protected", fun = max)
@@ -270,20 +280,23 @@ zone_summary <- prot_areas_bec_summary  %>%
         panel.grid.major.x = element_line(colour = "grey85"),
         panel.grid.minor.x = element_line(colour = "grey90"),
         panel.grid.major.y = element_blank(),
-        plot.margin = unit(c(2,0,1,0), "lines")))
+        plot.margin = unit(c(3,1,1,1), "lines"),
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12))
+  )
 
 #plot(zone_barplot)
 
 ## Plot protected areas
 
-
+bc_bound_hres <- bc_bound_hres(class = "sp")
 bc_bound_hres <- fix_geo_problems(bc_bound_hres)
 bc_fortified <- fortify(bc_bound_hres, region = "PRUID")
 
-(gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
-  geom_polygon(fill = NA, colour = "grey70", size = 0.5) +
-  theme_map() +
-  coord_fixed())
+# (gg_bc <- ggplot(bc_fortified, aes(x = long, y = lat, group = group)) +
+#   geom_polygon(fill = NA, colour = "grey70", size = 0.5) +
+#   theme_map() +
+#   coord_fixed())
 
 ## Make a simplified spdf of terrestrial and marine protected areas
 prot_areas_t <- rmapshaper::ms_dissolve(prot_areas_eco_t)
@@ -301,32 +314,71 @@ gg_prot <- gg_fortify(prot_areas_map)
                     values = c("Terrestrial" = "#006837", "Marine" = "#253494")) +
   coord_fixed() +
   theme_map() +
-  theme(legend.title = element_text(size = 12, vjust = 1),
-        legend.text = element_text(size = 11), legend.position = c(0.05,0.05),
+  theme(legend.title = element_text(size = 14, vjust = 1, face = "bold"),
+        legend.text = element_text(size = 14),
+        legend.position = c(0.05,0.05),
         legend.background = element_rect(fill = NA),
         legend.key.width = unit(1, "cm"), legend.key.height = unit(1, "cm")))
 
 
 # Output charts ----------------------------------------
 
-png("out/prot_map.png", width = 600, height = 550, units = "px", type = "cairo-png")
+# png("out/prot_map.png", width = 600, height = 550, units = "px", type = "cairo-png")
+# plot(prot_map)
+# dev.off()
+
+png_retina("out/prot_map.png", width = 600, height = 550, units = "px", type = "cairo-png")
 plot(prot_map)
 dev.off()
 
 ## Multiplot of marine map and bar chart
-png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
-multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+# png(filename = "out/marine_chart.png", width = 900, height = 550, units = "px", type = "cairo-png")
+# multiplot(annotated_m_map, summary_eco_m_plot, cols = 2, widths = c(3,2))
+# dev.off()
+
+
+png_retina(filename = "out/marine_map.png", width = 500, height = 500, units = "px", type = "cairo-png")
+annotated_m_map
+dev.off()
+
+# svg_px(file = "out/marine_map.svg", width = 500, height = 500)
+# annotated_m_map
+# dev.off()
+
+# png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
+# summary_eco_m_plot
+# dev.off()
+
+# png_retina(filename = "out/marine_chart.png", width = 500, height = 500, units = "px", type = "cairo-png")
+# summary_eco_m_plot
+# dev.off()
+
+svg_px(file = "out/marine_chart.svg", width = 500, height = 500)
+summary_eco_m_plot
 dev.off()
 
 ## BGC plots
-png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
-multiplot(zone_barplot, bec_zone_map, cols = 2)
-dev.off()
-
-# png("out/bgc_finescale_map.png", width = 600, height = 550, units = "px") #, bg = bec_prot_map$theme$panel.background$fill)
-# plot(bec_prot_map)
+# png("out/bgc_multiplot.png", width = 930, height = 430, units = "px")
+# multiplot(zone_barplot, bec_zone_map, cols = 2)
 # dev.off()
 
+svg_px("out/bec_zone_chart.svg", width = 500, height = 500)
+zone_barplot
+dev.off()
+
+png_retina("out/bec_zone_map.png", width = 500, height = 500, units = "px")
+plot(bec_zone_map)
+dev.off()
+
+
+library(magick)
+beczomemap <- image_read("out/bec_zone_map.png")
+
+(bec_zone_map_small <- image_resize(beczomemap, "1000x1000"))
+
+image_write(bec_zone_map_small,
+            path = "out/bec_zone_map_small.png",
+            format = "jpg")
 
 ## Output terrestrial ecoregions as geojson for the visualization:
 ecoregions_t_out <- ecoregions_t_simp[, "CRGNCD"]
