@@ -124,7 +124,8 @@ rm(list = ls())
 m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
 
 ## load ecoregions data from bcmaps package
-data("ecoregions")
+ecoregions <- bcmaps::ecoregions()
+bc_bound_hres <- bcmaps::bc_bound_hres()
 
 ## Extract the terrestrial and marine portions of GPB into separate objects
 gpb_terrestrial <- ms_clip(ecoregions[ecoregions$CRGNCD == "GPB",],
