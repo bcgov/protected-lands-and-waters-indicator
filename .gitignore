@@ -9,3 +9,4 @@ data/*
 README.html
 print_ver/*.pdf
 .DS_Store
+docs/*

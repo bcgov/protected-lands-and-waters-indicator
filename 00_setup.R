@@ -13,3 +13,4 @@
 # the License.
 
 if(!dir.exists("data")) dir.create("data")
+if(!dir.exists("out")) dir.create("out")
