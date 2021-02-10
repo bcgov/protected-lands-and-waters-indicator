@@ -14,7 +14,7 @@
 #'
 #' > Render this file with:
 #' >
-#' > rmarkdown::render(input = "99_checks.R", output_dir = "out")
+#' > rmarkdown::render(input = "99_checks.R", output_dir = "share")
 #'
 #' ## Preamble
 #' This file checks that the `st_difference()` actually correctly removed overlapping
