@@ -4,6 +4,7 @@
 internal.R
 out/*
 tmp/*
+data/*
 .*.Rnb.cached
 README.html
 print_ver/*.pdf
