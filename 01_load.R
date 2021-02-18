@@ -39,4 +39,4 @@ if(!dir.exists(ff)){
 cache <- show_cached_files()$file
 if(!any(str_detect(cache, "ecoregion"))) ecoregions(ask = FALSE)
 if(!any(str_detect(cache, "bec"))) bec(ask = FALSE)
-if(!any(str_detect(cache, "bc_bound"))) bc_bound(ask = FALSE)
+if(!any(str_detect(cache, "bc_bound_hres"))) bc_bound_hres(ask = FALSE)
