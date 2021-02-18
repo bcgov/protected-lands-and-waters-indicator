@@ -14,3 +14,9 @@
 
 if(!dir.exists("data")) dir.create("data")
 if(!dir.exists("share")) dir.create("share")
+
+library(tidyverse)
+library(sf)
+library(janitor)
+library(bcmaps)
+library(fasterize)

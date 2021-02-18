@@ -12,9 +12,7 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-library(tidyverse)
-library(sf)
-library(assertr)
+# Setup ----------------------------------------------------------------------
 source("00_setup.R")
 
 # Load data

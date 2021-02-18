@@ -13,9 +13,7 @@
 # the License.
 
 # Setup ----------------------------------------------------------------------
-library(stringr)
-library(bcmaps)
-library(janitor)
+source("00_setup.R")
 
 # Data is downloaded only if it doesn't already exist,
 # optionally, clear existing data first
