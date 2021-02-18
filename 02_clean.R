@@ -14,6 +14,7 @@
 
 # Setup ----------------------------------------------------------------------
 source("00_setup.R")
+write(as.character(Sys.time()), "time.log")
 
 # Load and fix -------------------------------------------------------------
 # Load data
@@ -28,29 +29,62 @@ unique(pa$loc_e)
 pa <- filter(pa, str_detect(loc_e, "Pacific|British Columbia"))
 unique(pa$loc_e)
 
-# Fix Ring Self-intersections
-pa <- st_make_valid(pa)
+# Remove those that are NOT AICHI_T11 and NOT OECM
+filter(pa, (aichi_t11 == "No" & oecm == "No")) %>%
+  pull(shape_area) %>%
+  sum() / 10000 # Total removed in hectares
 
+pa <- filter(pa, !(aichi_t11 == "No" & oecm == "No"))
+
+# Fix problems
+pa <- st_make_valid(pa)        # Fix Ring Self-intersections
+
+# Clean Up --------------------------------------------------------------------
+# - Calculate actual area, order IUCN codes
+# - Sort in order of priority (most to least interesting)
+#    oecm (No > Yes), iucn_cat (Ia > Ib > II etc.), protdate (older > earlier),
+#    area_all (smaller > bigger)
 pa <- pa %>%
-  # Fix geometry
-  st_cast(type = "MULTIPOLYGON") %>%
-  # Clean up - calculate actual area, order IUCN codes
-  mutate(area1 = as.numeric(st_area(.)),
+  mutate(area_all = as.numeric(st_area(.)),
          iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
                                                 "V", "VI", "Yes", "N/A")),
-         name_e = str_replace(name_e, "Widllife", "Wildlife"))
-  # check that shape_area accurate - effectively the same size within 1 m^2
-  verify(abs(shape_area - as.numeric(st_area(.))) < 1) %>%
-  # Put in reverse order (start with least interesting)
-  arrange(desc(oecm), desc(iucn_cat), protdate, desc(area1))
+         name_e = str_replace(name_e, "Widllife", "Wildlife")) %>%
+  arrange(desc(oecm), iucn_cat, protdate, area_all)
 
 # Save file for comparisons
 write_rds(pa, "data/CPCAD_Dec2020_BC_clean.rds")
 
+# Remove overlaps -------------------------------------------------------------
 # Split multipolygons
 # (faster to split - https://github.com/r-spatial/sf/issues/575#issuecomment-368960968)
 
-m <- st_cast(pa, to = "POLYGON", warn = FALSE)
-m_diff <- st_difference(m) # ~40min
-write_rds(m_diff, "data/CPCAD_Dec2019_BC_clean_no_ovlps.rds")
+#pa <- read_rds("data/CPCAD_Dec2020_BC_clean.rds")
 
+pa_mult <- pa %>%
+  st_cast(to = "POLYGON", warn = FALSE) %>%        # Split geometries
+  mutate(area_single = as.numeric(st_area(.))) %>% # Calculate indiv area
+  st_difference()                                  # Remove overlaps (~45min)
+write_rds(pa_mult, "data/CPCAD_Dec2020_BC_no_ovlps.rds")
+
+#pa_mult <- read_rds("data/CPCAD_Dec2020_BC_no_ovlps.rds")
+
+# Add ecoregions ------------------------------------------------------------
+eco <- ecoregions(ask = FALSE)
+pa_mult <- st_transform(pa_mult, crs = st_crs(eco)) %>%
+  st_make_valid()        # Fix Self-intersections (again!)
+write_rds(pa_mult, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
+
+pa_eco <- eco %>%
+  clean_names() %>%
+  select(ecoregion_code, ecoregion_name) %>%
+  st_intersection(pa_mult)
+write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
+
+# Add bec zones ------------------------------------------------------------
+pa_bec <- bec(ask = FALSE) %>%
+  clean_names() %>%
+  select(zone, subzone, zone_name, subzone_name, natural_disturbance_name) %>%
+  st_intersection(pa_mult)
+write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+
+write(as.character(Sys.time()), "time.log", append = TRUE)
