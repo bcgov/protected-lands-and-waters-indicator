@@ -26,7 +26,7 @@ if(FALSE) {
 # Get Protected Areas -----------------------------------------------------
 # See https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html#toc1 for the current database
 
-f <- "CPCAD-BDCAPC_Dec2019.gdb.zip"
+f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
 ff <- file.path("data", str_remove(f, ".zip"))
 if(!dir.exists(ff)){
   download.file(file.path("https://cws-scf.ca", f), destfile = f)

@@ -15,11 +15,12 @@
 # Setup ----------------------------------------------------------------------
 source("00_setup.R")
 
+# Load and fix -------------------------------------------------------------
 # Load data
-ff <- "data/CPCAD_Dec2019_BC_fixed.rds"
+ff <- "data/CPCAD-BDCAPC_Dec2020.gdb"
 st_layers(ff)
 
-pa <- st_read(ff, layer = "CPCAD_Dec2019") %>%
+pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
   clean_names()
 
 # Filter to listed in BC or Pacific Ocean
@@ -43,7 +44,8 @@ pa <- pa %>%
   # Put in reverse order (start with least interesting)
   arrange(desc(oecm), desc(iucn_cat), protdate, desc(area1))
 
-write_rds(pa, "data/CPCAD_Dec2019_BC_clean.rds")
+# Save file for comparisons
+write_rds(pa, "data/CPCAD_Dec2020_BC_clean.rds")
 
 # Split multipolygons
 # (faster to split - https://github.com/r-spatial/sf/issues/575#issuecomment-368960968)
