@@ -17,6 +17,7 @@ if(!dir.exists("share")) dir.create("share")
 
 library(tidyverse)
 library(sf)
-library(janitor)
 library(bcmaps)
 library(fasterize)
+library(assertr)
+library(glue)

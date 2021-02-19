@@ -14,7 +14,6 @@
 
 # Setup ----------------------------------------------------------------------
 source("00_setup.R")
-write(as.character(Sys.time()), "time.log")
 
 # Load and fix -------------------------------------------------------------
 # Load data
@@ -22,7 +21,7 @@ ff <- "data/CPCAD-BDCAPC_Dec2020.gdb"
 st_layers(ff)
 
 pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
-  clean_names()
+  rename_all(tolower)
 
 # Filter to listed in BC or Pacific Ocean
 unique(pa$loc_e)
