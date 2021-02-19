@@ -45,7 +45,7 @@ pa1 <- read_rds("data/CPCAD_Dec2020_BC_clean.rds") %>%
 #' pa1 = original clean, pa2 with overlaps removed
 
 pa2_df <- st_set_geometry(pa2, NULL) %>%
-  group_by(zone_id, name_e) %>%
+  group_by(zone_id, name_e, oecm) %>%
   summarize(o_area = unique(o_area),
             area_all = unique(area_all),
             area_all2 = sum(area_single2),
@@ -166,7 +166,7 @@ bbx <- filter(pa2, zone_id == 591104501) %>%
 sub_pa1 <- st_crop(pa1, bbx)
 sub_pa2 <- st_crop(pa2, bbx)
 
-select(sub_pa2, zone_id, name_e, oecm, iucn_cat, protdate) %>%
+select(sub_pa2, zone_id, name_e, oecm, iucn_cat, protdate, delisdate) %>%
   kable() %>%
   kable_styling()
 
@@ -222,6 +222,14 @@ compare <- pa2_df %>%
          area_diff = area_diff / 10000,
          o_diff1 = o_area - area_all,
          o_diff2 = o_area - area_all2)
+
+compare %>%
+  group_by(oecm) %>%
+  summarize(o_area = sum(o_area),
+            area_all = sum(area_all),
+            area_all2 = sum(area_all2))
+
+
 
 compare %>%
   filter(abs(o_diff2) > 5) %>%
