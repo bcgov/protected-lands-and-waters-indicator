@@ -65,25 +65,8 @@ pa_mult <- pa %>%
   st_difference()                                  # Remove overlaps (~45min)
 write_rds(pa_mult, "data/CPCAD_Dec2020_BC_no_ovlps.rds")
 
-#pa_mult <- read_rds("data/CPCAD_Dec2020_BC_no_ovlps.rds")
-
-# Add ecoregions ------------------------------------------------------------
-eco <- ecoregions(ask = FALSE)
-pa_mult <- st_transform(pa_mult, crs = st_crs(eco)) %>%
+crs <- st_crs(ecoregions(ask = FALSE))
+pa_mult <- pa_mult %>%
+  st_transform(crs = crs) %>%
   st_make_valid()        # Fix Self-intersections (again!)
 write_rds(pa_mult, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
-
-pa_eco <- eco %>%
-  clean_names() %>%
-  select(ecoregion_code, ecoregion_name) %>%
-  st_intersection(pa_mult)
-write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-
-# Add bec zones ------------------------------------------------------------
-pa_bec <- bec(ask = FALSE) %>%
-  clean_names() %>%
-  select(zone, subzone, zone_name, subzone_name, natural_disturbance_name) %>%
-  st_intersection(pa_mult)
-write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
-
-write(as.character(Sys.time()), "time.log", append = TRUE)
