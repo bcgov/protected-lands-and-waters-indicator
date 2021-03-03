@@ -79,9 +79,11 @@ message("Simplify - Eco regions")
 eco_simp <- data.frame()
 for(e in unique(pa_eco$ecoregion_code)) {
   message(e)
-  region <- rmapshaper::ms_simplify(filter(pa_eco, ecoregion_code == e))
+  region <- rmapshaper::ms_simplify(filter(pa_eco, ecoregion_code == e),
+                                    keep_shapes = TRUE)
   eco_simp <- rbind(eco_simp, region)
 }
+eco_simp <- filter(eco_simp, !st_is_empty(eco_simp))
 rm(pa_eco)
 write_rds(eco_simp, "data/CPCAD_Dec2020_eco_simp.rds")
 
@@ -89,9 +91,12 @@ message("Simplify - Bec Zones")
 bec_simp <- data.frame()
 for(z in unique(pa_bec$zone)) {
   message(z)
-  zone <- rmapshaper::ms_simplify(filter(pa_bec, zone == z))
+  zone <- rmapshaper::ms_simplify(filter(pa_bec, zone == z),
+                                  keep_shapes = TRUE)
   bec_simp <- rbind(bec_simp, zone)
 }
+# remove empty geometries
+bec_simp <- filter(bec_simp, !st_is_empty(bec_simp))
 rm(pa_bec)
 write_rds(bec_simp, "data/CPCAD_Dec2020_bec_simp.rds")
 
