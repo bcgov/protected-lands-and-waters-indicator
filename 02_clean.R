@@ -47,7 +47,8 @@ pa <- pa %>%
   mutate(area_all = as.numeric(st_area(.)),
          iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
                                                 "V", "VI", "Yes", "N/A")),
-         name_e = str_replace(name_e, "Widllife", "Wildlife")) %>%
+         name_e = str_replace(name_e, "Widllife", "Wildlife"),
+         park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
   arrange(desc(oecm), iucn_cat, protdate, area_all)
 
 # Save file for comparisons

@@ -12,25 +12,23 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-# Questions
-# - Some parks are not in an ecoregion but just tiny little spots overhanging
-
 # Load packages etc.
 source("00_setup.R")
+
+marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
 # Load data
 eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower) %>%
-  mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name))) %>%
-  select(ecoregion_code, ecoregion_name)
+  select(ecoregion_code, ecoregion_name) %>%
+  mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
+         type = if_else(ecoregion_code %in% marine_eco, "water", "land"))
 
 bec <- bec(ask = FALSE) %>%
   rename_all(tolower) %>%
   select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
 
-pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") %>%
-  # Define water vs. land
-  mutate(type = if_else(loc_e == "British Columbia", "land", "water"))
+pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
 
 # Add ecoregions ------------------------------------------------------------
 message("Add eco regions")
