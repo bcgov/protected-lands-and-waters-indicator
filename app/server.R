@@ -66,17 +66,17 @@ shinyServer(function(input, output) {
 
     r <- filter(eco_area, ecoregion_code == input$top_left_selected)
     if(r$type[1] == "land") s <- scale_land else s <- scale_water
-    d <- min(r$protdate, na.rm = TRUE):max(r$protdate, na.rm = TRUE)
-    r <- complete(r, protdate = full_seq(na.omit(protdate), 1),
+    d <- min(r$date, na.rm = TRUE):max(r$date, na.rm = TRUE)
+    r <- complete(r, date = full_seq(na.omit(date), 1),
                   park_type = c("OECM", "PPA"),
                   fill = list(total_area = 0))
 
-    g1 <- ggplot(data = r, aes(x = as.integer(protdate),
+    g1 <- ggplot(data = r, aes(x = as.integer(date),
                                y = total_area, colour = park_type)) +
       theme_classic() +
       geom_line(size = 2, na.rm = TRUE) +
       geom_point_interactive(aes(tooltip = tooltip,
-                                 data_id = glue("{protdate} {park_type}")),
+                                 data_id = glue("{date} {park_type}")),
                              size = 3, na.rm = TRUE) +
       labs(x = lab_year, y = lab_growth,
            subtitle = "Excludes areas missing date of protection") +

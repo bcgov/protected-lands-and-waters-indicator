@@ -15,59 +15,77 @@
 # Setup ----------------------------------------------------------------------
 source("00_setup.R")
 
-# Load and fix -------------------------------------------------------------
-# Load data
-ff <- "data/CPCAD-BDCAPC_Dec2020.gdb"
-st_layers(ff)
+# Load -----------------------------------------------------------------------
+wha <- read_rds("data/wha.rds") %>%
+  rename_with(tolower)
 
-pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
-  rename_all(tolower)
+ogma <- read_rds("data/ogma.rds") %>%
+  rename_with(tolower)
 
-# Filter to listed in BC or Pacific Ocean
-unique(pa$loc_e)
-pa <- filter(pa, str_detect(loc_e, "Pacific|British Columbia"))
-unique(pa$loc_e)
+pa <- read_rds("data/CPCAD_Dec2020_BC_fixed.rds") %>%
+  st_transform(st_crs(wha)) %>%
+  mutate(area_all = as.numeric(st_area(.)))
 
-# Remove those that are NOT AICHI_T11 and NOT OECM
-filter(pa, (aichi_t11 == "No" & oecm == "No")) %>%
-  pull(shape_area) %>%
-  sum() / 10000 # Total removed in hectares
+# Add in missing dates where possible -----------------------------------------
+# Split multipolygons
+# - Split to match specific polygon to specific area with dates
+# - Split anyway for removing overlaps below
+#   (faster - https://github.com/r-spatial/sf/issues/575#issuecomment-368960968)
 
-pa <- filter(pa, !(aichi_t11 == "No" & oecm == "No"))
+pa <- st_cast(pa, to = "POLYGON", warn = FALSE)
 
-# Fix problems
-pa <- st_make_valid(pa)        # Fix Ring Self-intersections
+pa_wha <- wha %>%
+  select(approval_date) %>%
+  filter(!is.na(approval_date)) %>%
+  st_cast(to = "POLYGON", warn = FALSE) %>%
+  st_centroid() %>%
+  st_join(filter(pa, name_e == "Wildlife Habitat Areas"), .)
+
+pa_ogma <- ogma %>%
+  select(legalization_frpa_date) %>%  # Other two dates are numeric, not date
+  filter(!is.na(legalization_frpa_date)) %>%
+  st_cast(to = "POLYGON", warn = FALSE) %>%
+  st_centroid() %>%
+  st_join(filter(pa, name_e == "Old Growth Management Areas (Mapped Legal)"), .)
+
+pa <- pa %>%
+  filter(!name_e %in% c("Wildlife Habitat Areas",
+                        "Old Growth Management Areas (Mapped Legal)")) %>%
+  bind_rows(pa_wha, pa_ogma)
 
 # Clean Up --------------------------------------------------------------------
-# - Calculate actual area, order IUCN codes
+# - Pick best dates
+# - Order IUCN codes, calculate actual area,
 # - Sort in order of priority (most to least interesting)
-#    oecm (No > Yes), iucn_cat (Ia > Ib > II etc.), protdate (older > earlier),
+#    oecm (No > Yes), iucn_cat (Ia > Ib > II etc.), date (older > earlier),
 #    area_all (smaller > bigger)
+
 pa <- pa %>%
-  mutate(area_all = as.numeric(st_area(.)),
-         iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
-                                                "V", "VI", "Yes", "N/A")),
-         name_e = str_replace(name_e, "Widllife", "Wildlife"),
-         park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
-  arrange(desc(oecm), iucn_cat, protdate, area_all)
+  mutate(
+    date = case_when(!is.na(protdate) ~ protdate,
+                     !is.na(approval_date) ~ as.integer(year(approval_date)),
+                     !is.na(legalization_frpa_date) ~ as.integer(year(legalization_frpa_date)),
+                     name_e == "Lazo Marsh-North East Comox Wildlife Management Area" ~ 2001L,
+                     name_e == "S'Amunu Wildlife Management Area" ~ 2018L,
+                     name_e == "Swan Lake Wildlife Management Area" ~ 2018L,
+                     name_e == "Mctaggart-Cowan/Nsek'Iniw'T Wildlife Management Area" ~ 2013L),
+    iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
+                                           "V", "VI", "Yes", "N/A")),
+    name_e = str_replace(name_e, "Widllife", "Wildlife"),
+    park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
+  arrange(desc(oecm), iucn_cat, date, area_all)
 
 # Save file for comparisons
 write_rds(pa, "data/CPCAD_Dec2020_BC_clean.rds")
 
 # Remove overlaps -------------------------------------------------------------
-# Split multipolygons
-# (faster to split - https://github.com/r-spatial/sf/issues/575#issuecomment-368960968)
-
 #pa <- read_rds("data/CPCAD_Dec2020_BC_clean.rds")
 
 pa_mult <- pa %>%
-  st_cast(to = "POLYGON", warn = FALSE) %>%        # Split geometries
   mutate(area_single = as.numeric(st_area(.))) %>% # Calculate indiv area
   st_difference()                                  # Remove overlaps (~45min)
 write_rds(pa_mult, "data/CPCAD_Dec2020_BC_no_ovlps.rds")
 
-crs <- st_crs(ecoregions(ask = FALSE))
 pa_mult <- pa_mult %>%
-  st_transform(crs = crs) %>%
   st_make_valid()        # Fix Self-intersections (again!)
 write_rds(pa_mult, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
