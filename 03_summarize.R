@@ -12,12 +12,21 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+# NOTES
+# - Working with BEC zones requires using mapshaper-xl on the command line
+# - Install Node (https://nodejs.org)
+# - Then install mapshaper (includes mapshaper-xl)
+#   'npm install -g mapshaper'
+
+
 # Load packages etc.
 source("00_setup.R")
 
 marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
 # Load data
+pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
+
 eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower) %>%
   select(ecoregion_code, ecoregion_name) %>%
@@ -28,77 +37,113 @@ bec <- bec(ask = FALSE) %>%
   rename_all(tolower) %>%
   select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
 
-pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
+bc <- bc_bound_hres(ask = FALSE)
 
-# Add ecoregions ------------------------------------------------------------
+# Clip BEC to BC outline ----------------------------------------------------
+# We'll need simplified becs for plotting later
+
+geojson_write(bec, file = "data/bec.geojson")
+geojson_write(bc, file = "data/bc.geojson")
+
+system(glue("mapshaper-xl data/bec.geojson ",
+            "-clip data/bc.geojson remove-slivers ",
+            "-o data/bec_clipped.geojson"))
+
+system(glue("mapshaper-xl data/bec_clipped.geojson ",
+            "-simplify dp 50% ",
+            "-o data/bec_clipped_simp.geojson"))
+
+bec <- st_read("data/bec_clipped_simp.geojson")
+
+# Add ecoregions to PA ------------------------------------------------------
 message("Add eco regions")
 pa_eco <- st_intersection(eco, pa)
-write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 
-# Add bec zones ------------------------------------------------------------
+# Add bec zones to PA -------------------------------------------------------
 message("Add bec zones")
 pa_bec <- st_intersection(bec, pa)
-write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
 # Remove LINESTRING shapes ------------------------------------------------
 # see share/99_checks_non_polygons.html for rational
-#pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-#pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
 message("Fix linestrings")
 pa_eco_poly <- pa_eco %>%
-  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>% # Get GEOMETRYCOLLECTIONS
-  st_collection_extract(type = "POLYGON")  # Get only POLYGONS from collections (omit LINESTRINGS)
+  # Get GEOMETRYCOLLECTIONS
+  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>%
+  # Get only POLYGONS from collections (omit LINESTRINGS)
+  st_collection_extract(type = "POLYGON")
 
 pa_eco <- pa_eco %>%
-  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%  # Remove GEOMETRYCOLLECTIONS
-  rbind(pa_eco_poly) %>%                                  # Add POLYGONS from collections
-  verify(all(str_detect(st_geometry_type(.), "POLYGON"))) # Double check
-
-rm(pa_eco_poly)
+  # Remove GEOMETRYCOLLECTIONS
+  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%
+  # Add POLYGONS from collections
+  rbind(pa_eco_poly) %>%
+  # Double check
+  verify(all(str_detect(st_geometry_type(.), "POLYGON")))
 
 pa_bec_poly <- pa_bec %>%
-  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>% # Get GEOMETRYCOLLECTIONS
-  st_collection_extract(type = "POLYGON")  # Get only POLYGONS from collections (omit LINESTRINGS)
+  # Get GEOMETRYCOLLECTIONS
+  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>%
+  # Get only POLYGONS from collections (omit LINESTRINGS)
+  st_collection_extract(type = "POLYGON")
 
 pa_bec <- pa_bec %>%
-  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%  # Remove GEOMETRYCOLLECTIONS
-  rbind(pa_bec_poly) %>%                                  # Add POLYGONS from collections
-  verify(all(str_detect(st_geometry_type(.), "POLYGON"))) # Double check
+  # Remove GEOMETRYCOLLECTIONS
+  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%
+  # Add POLYGONS from collections
+  rbind(pa_bec_poly) %>%
+  # Double check
+  verify(all(str_detect(st_geometry_type(.), "POLYGON")))
 
+rm(pa_eco_poly)
 rm(pa_bec_poly)
 
-# Simplify data for plotting  ---------------------------------------------
+write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
+write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+
+#pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
+#pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+
+
+# Simplify ecoregions for plotting  -------------------------------------------
 #
-# Simplification is great for plotting - see ./share/99_checks_simplification.html
-# for justification
+# Simplification is great for plotting
+#  - see ./share/99_checks_simplification.html for justification
 #
-# Run by region/zone - Much faster and no crashing (on my computer at least)
+# Run by region/zone
+#  - Much faster and no crashing (on my computer at least)
+#  - Allows simplifying to different degrees for different regions
 
 message("Simplify - Eco regions")
-eco_simp <- data.frame()
+
 for(e in unique(pa_eco$ecoregion_code)) {
   message(e)
-  region <- rmapshaper::ms_simplify(filter(pa_eco, ecoregion_code == e),
-                                    keep_shapes = TRUE)
+  temp <- filter(pa_eco, ecoregion_code == e)
+  keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
+  keep <- case_when(nrow(temp) < 500 ~ 0.5,
+                    nrow(temp) < 1000 ~ 0.25,
+                    TRUE ~ 0.05)
+  region <- ms_simplify(temp, keep = keep, keep_shapes = keep_shapes)
   eco_simp <- rbind(eco_simp, region)
 }
 eco_simp <- filter(eco_simp, !st_is_empty(eco_simp))
+write_rds(eco_simp, "out/CPCAD_Dec2020_eco_simp.rds")
 rm(pa_eco)
-write_rds(eco_simp, "data/CPCAD_Dec2020_eco_simp.rds")
 
+# Simplify bec zones for plotting  --------------------------------------------
 message("Simplify - Bec Zones")
-bec_simp <- data.frame()
-for(z in unique(pa_bec$zone)) {
-  message(z)
-  zone <- rmapshaper::ms_simplify(filter(pa_bec, zone == z),
-                                  keep_shapes = TRUE)
-  bec_simp <- rbind(bec_simp, zone)
-}
-# remove empty geometries
-bec_simp <- filter(bec_simp, !st_is_empty(bec_simp))
-rm(pa_bec)
-write_rds(bec_simp, "data/CPCAD_Dec2020_bec_simp.rds")
 
-eco <- rmapshaper::ms_simplify(eco)
-write_rds(eco, "data/eco_simp.rds")
+geojson_write(pa_bec, file = "data/pa_bec.geojson")
+
+system(glue("mapshaper-xl data/pa_bec.geojson ",
+            "-simplify 5% keep-shapes ",
+            "-o out/CPCAD_Dec2020_bec_simp.geojson"))
+
+# Simplify ecoregions background map ------------------------------------------
+eco <- ms_simplify(eco)
+write_rds(eco, "out/eco_simp.rds")
+
+# Simplify bec zones background map ------------------------------------------
+system(glue("mapshaper-xl data/bec_clipped.geojson ",
+            "-simplify 5% keep-shapes ",
+            "-o data/bec_simp.geojson"))
