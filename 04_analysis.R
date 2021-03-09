@@ -19,7 +19,19 @@ source("00_setup.R")
 pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
+eco <- ecoregions(ask = FALSE) %>%
+  rename_all(tolower) %>%
+  mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)))
+
+bec <- read_rds("data/bec_clipped.rds")
+
 # Summarize by eco region
+eco_totals <- eco %>%
+  mutate(area = as.numeric(st_area(geometry))) %>%
+  st_set_geometry(NULL) %>%
+  group_by(ecoregion_code) %>%
+  summarize(total = sum(area) / 10000, .groups = "drop")
+
 pa_eco_df <- pa_eco %>%
   mutate(total_area = st_area(geometry)) %>%
   st_set_geometry(NULL) %>%
@@ -27,19 +39,35 @@ pa_eco_df <- pa_eco %>%
   arrange(date) %>%
   summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
   mutate(tooltip = glue("{format(round(total_area), big.mark = ',')} ha"))
-write_rds(pa_eco_df, "data/eco_area.rds")
+write_rds(pa_eco_df, "out/eco_area.rds")
 
 pa_eco_sum_df <- pa_eco_df %>%
   group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
   summarize(total_area = sum(total_area), .groups = "drop") %>%
   mutate(tooltip = glue("{format(round(total_area), big.mark = ',')} ha"),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"))
-write_rds(pa_eco_sum_df, "data/eco_area_sum.rds")
+write_rds(pa_eco_sum_df, "out/eco_area_sum.rds")
 
 # Summarize by bec zone region
+bec_totals <- bec %>%
+  mutate(area = as.numeric(st_area(geometry))) %>%
+  st_set_geometry(NULL) %>%
+  group_by(zone) %>%
+  summarize(total = sum(area) / 10000, .groups = "drop")
+
 pa_bec_df <- pa_bec %>%
   mutate(total_area = st_area(geometry)) %>%
   st_set_geometry(NULL) %>%
   group_by(zone, zone_name, park_type) %>%
-  summarize(total_area = as.numeric(sum(total_area) / 10000), .groups = "drop")
-write_rds(pa_bec_df, "data/bec_area.rds")
+  summarize(total_area = as.numeric(sum(total_area) / 10000), .groups = "drop") %>%
+  group_by(zone_name) %>%
+  mutate(total_zone = sum(total_area)) %>%
+  ungroup() %>%
+  left_join(bec_totals, by = "zone") %>%
+  mutate(p_area = total_area / total * 100,
+         p_zone = total_zone / total * 100) %>%
+  arrange(p_zone) %>%
+  mutate(zone_name = str_replace(zone_name, "--", " — "),
+         zone_name = factor(zone_name, levels = unique(zone_name)))
+
+write_rds(pa_bec_df, "out/bec_area.rds")

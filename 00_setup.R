@@ -14,6 +14,7 @@
 
 if(!dir.exists("data")) dir.create("data")
 if(!dir.exists("share")) dir.create("share")
+if(!dir.exists("out")) dir.create("out")
 
 library(tidyverse)
 library(sf)
@@ -23,3 +24,6 @@ library(glue)
 library(bcdata)
 library(lubridate)
 library(rmapshaper)
+library(geojsonio)
+
+

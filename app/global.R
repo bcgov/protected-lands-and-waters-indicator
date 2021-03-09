@@ -37,11 +37,11 @@ bottom_height <- 200
 
 
 # Data
-eco <- readRDS("../data/eco_simp.rds")
-pa_eco <- readRDS("../data/CPCAD_Dec2020_eco_simp.rds") %>%
+eco <- readRDS("../out/eco_simp.rds")
+pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
-eco_area <- readRDS("../data/area_eco.rds")
-eco_area_sum <- readRDS("../data/area_eco_sum.rds") %>%
+eco_area <- readRDS("../out/eco_area.rds")
+eco_area_sum <- readRDS("../out/eco_area_sum.rds") %>%
   mutate(eco_names = factor(ecoregion_name, levels = rev(sort(unique(ecoregion_name)))))
 
 # Colours

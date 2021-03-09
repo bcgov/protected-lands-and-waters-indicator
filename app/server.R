@@ -99,7 +99,7 @@ shinyServer(function(input, output) {
 
     girafe(ggobj = g,
            options = list(opts_hover(css = glue("fill:{hover};")),
-                          opts_selection(css = ""),
+                          opts_selection(css = "", type = "single"),
                           opts_toolbar(saveaspng = FALSE)),
            height_svg = bottom_height/72,
            width_svg = app_width/72)

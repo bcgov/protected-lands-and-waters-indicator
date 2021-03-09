@@ -83,9 +83,6 @@ write_rds(pa, "data/CPCAD_Dec2020_BC_clean.rds")
 
 pa_mult <- pa %>%
   mutate(area_single = as.numeric(st_area(.))) %>% # Calculate indiv area
-  st_difference()                                  # Remove overlaps (~45min)
-write_rds(pa_mult, "data/CPCAD_Dec2020_BC_no_ovlps.rds")
-
-pa_mult <- pa_mult %>%
+  st_difference() %>%                             # Remove overlaps (~45min)
   st_make_valid()        # Fix Self-intersections (again!)
 write_rds(pa_mult, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
