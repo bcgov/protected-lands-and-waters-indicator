@@ -29,10 +29,9 @@ options(scipen = 999) # No scientific notation in plots
 
 # Sizes
 app_width <- 900
-top_left_width <- 500
-top_right_width <- 400
+bottom_width <- 700
 
-top_height <- 650
+top_height <- 400
 bottom_height <- 200
 
 
@@ -40,9 +39,16 @@ bottom_height <- 200
 eco <- readRDS("../out/eco_simp.rds")
 pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
-eco_area <- readRDS("../out/eco_area.rds")
-eco_area_sum <- readRDS("../out/eco_area_sum.rds") %>%
-  mutate(eco_names = factor(ecoregion_name, levels = rev(sort(unique(ecoregion_name)))))
+
+eco_area <- readRDS("../out/eco_area.rds") %>%
+  mutate(tooltip_bar = glue("{format(round(p_region, 1), big.mark = ',')}%"),
+         tooltip_line = glue("{format(round(cum_region), big.mark = ',')}"))
+
+eco_area_sum <- eco_area %>%
+  select(ecoregion_code, ecoregion_name, park_type, type, p_region) %>%
+  distinct() %>%
+  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         tooltip = glue("{format(round(p_region, 1), big.mark = ',')}%"))
 
 # Colours
 scale_land <- c("OECM" = "#004529", "PPA" = "#93c288")
@@ -64,10 +70,16 @@ lab_oecm <- "Type"
 
 
 
-
 # Functions ---------------------------------------------------------------
 
-
-
 # https://stackoverflow.com/a/39877048/3362144
-break_int <- function(x) unique(floor(pretty(seq(min(x), (max(x) + 1)))))
+breaks_int <- function(x) {
+  unique(floor(pretty(seq(min(x), (max(x) + 1)))))
+}
+
+labs_int <- function(x) x
+
+labs_int_na <- function(x) {
+  x[length(x)] <- "NA"
+  x
+}

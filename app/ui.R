@@ -13,21 +13,21 @@
 # the License.
 
 shinyUI(fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+  ),
 
-    titlePanel("Protected Lands and Waters Indicator"),
+  titlePanel("Protected Lands and Waters Indicator"),
 
-    fixedRow(
-      align = "center",
-      div(style = glue("width: {app_width}px;"),
-          column(width = 7, girafeOutput("top_left", height = glue("{top_height}px"))),
-          column(width = 5, girafeOutput("top_right", height = glue("{top_height}px")))
-      )),
-    fixedRow(
-      align = "center",
-      div(style = glue("width: {app_width}px;"),
-          column(width = 12,
-                 girafeOutput("bottom",
-                              height = glue("{bottom_height}px")))
-      ))
+  fixedRow(
+    align = "center",
+    div(style = glue("width: {app_width}px"),
+        column(width = 12, girafeOutput("top", height = glue("{top_height}px")))
+    )),
+  fixedRow(
+    align = "center",
+    div(style = glue("width: {app_width}px"),
+        column(width = 12, girafeOutput("bottom", height = glue("{bottom_height}px")))
     ))
+))
 
