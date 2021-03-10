@@ -70,7 +70,7 @@ pa_bec_df <- pa_bec %>%
   mutate(p_area = total_area / total * 100,
          p_zone = total_zone / total * 100) %>%
   arrange(p_zone) %>%
-  mutate(zone_name = str_replace(zone_name, "--", " — "),
+  mutate(zone_name = str_replace_all(zone_name, "--", " — "),
          zone_name = factor(zone_name, levels = unique(zone_name)))
 
 write_rds(pa_bec_df, "out/bec_area.rds")
