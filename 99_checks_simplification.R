@@ -36,14 +36,16 @@ pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
 #' Simplified
-pa_eco_simp <- read_rds("data/CPCAD_Dec2020_eco_simp.rds")
-pa_bec_simp <- read_rds("data/CPCAD_Dec2020_bec_simp.rds")
+pa_eco_simp <- read_rds("out/CPCAD_Dec2020_eco_simp.rds")
+pa_bec_simp <- st_read("out/CPCAD_Dec2020_bec_simp.geojson", crs = 3005)
 
 #' Background
 eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower)
-bec <- bec(ask = FALSE)%>%
-  rename_all(tolower)
+bec <- st_read("data/bec_clipped_simp.geojson", crs = 3005)
+eco_simp <- read_rds("out/eco_simp.rds")
+bec_simp <- st_read("out/bec_simp.geojson", crs = 3005)
+
 
 #' ## Compare figures - Eco Regions
 cnts <- count(st_set_geometry(pa_eco, NULL), ecoregion_code, ecoregion_name) %>%
@@ -53,25 +55,27 @@ cnts %>%
   kable_styling()
 
 #+ fig.width = 12, fig.asp = 0.5
-for(r in c("YSH", "LOM", "PAC", "TPC", "FAP")) {
+for(r in c("YSH", "LOM", "PAC", "TPC", "SBC", "FAP")) {
 
   temp <- filter(pa_eco, ecoregion_code == r)
 
   keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
-  keep <- case_when(nrow(temp) < 500 ~ 0.5,
+  keep <- case_when(nrow(temp) < 50 ~ 1,
+                    nrow(temp) < 500 ~ 0.5,
                     nrow(temp) < 1000 ~ 0.25,
                     TRUE ~ 0.05)
 
   g <- ggplot() +
     theme_void() +
-    geom_sf(data = filter(eco, ecoregion_code == r), fill = "grey80", colour = NA) +
     scale_fill_manual(values = c("Yes" = "#004529", "No" = "#93c288"), guide = FALSE)
 
   g1 <- g +
+    geom_sf(data = filter(eco, ecoregion_code == r), fill = "grey80", colour = NA) +
     geom_sf(data = temp, aes(fill = oecm), colour = NA) +
     labs(title = "Hi-res")
 
   g2 <- g +
+    geom_sf(data = filter(eco_simp, ecoregion_code == r), fill = "grey80", colour = NA) +
     geom_sf(data = filter(pa_eco_simp, ecoregion_code == r), aes(fill = oecm), colour = NA) +
     labs(title = "Simplified")
 
@@ -90,14 +94,15 @@ count(st_set_geometry(pa_bec, NULL), zone) %>%
 for(z in c("BG", "IMA", "CWH")) {
   g <- ggplot() +
     theme_void() +
-    geom_sf(data = filter(bec, zone == z), fill = "grey80", colour = NA) +
     scale_fill_manual(values = c("Yes" = "#004529", "No" = "#93c288"), guide = FALSE)
 
   g1 <- g +
+    geom_sf(data = filter(bec, zone == z), fill = "grey80", colour = NA) +
     geom_sf(data = filter(pa_bec, zone == z), aes(fill = oecm), colour = NA) +
     labs(title = "Hi-res")
 
   g2 <- g +
+    geom_sf(data = filter(bec_simp, zone == z), fill = "grey80", colour = NA) +
     geom_sf(data = filter(pa_bec_simp, zone == z), aes(fill = oecm), colour = NA) +
     labs(title = "Simplified")
 

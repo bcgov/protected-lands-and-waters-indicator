@@ -124,10 +124,12 @@ for(e in unique(pa_eco$ecoregion_code)) {
   message(e)
   temp <- filter(pa_eco, ecoregion_code == e)
   keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
-  keep <- case_when(nrow(temp) < 500 ~ 0.5,
+  keep <- case_when(nrow(temp) < 50 ~ 1,
+                    nrow(temp) < 500 ~ 0.5,
                     nrow(temp) < 1000 ~ 0.25,
                     TRUE ~ 0.05)
-  region <- ms_simplify(temp, keep = keep, keep_shapes = keep_shapes)
+  if(keep == 1) region <- temp else region <- ms_simplify(temp, keep = keep,
+                                                          keep_shapes = keep_shapes)
   eco_simp <- rbind(eco_simp, region)
 }
 eco_simp <- filter(eco_simp, !st_is_empty(eco_simp))
@@ -140,7 +142,7 @@ message("Simplify - Bec Zones")
 geojson_write(pa_bec, file = "data/pa_bec.geojson")
 
 system(glue("mapshaper-xl data/pa_bec.geojson ",
-            "-simplify 5% keep-shapes ",
+            "-simplify dp 10% keep-shapes ",
             "-o out/CPCAD_Dec2020_bec_simp.geojson"))
 
 # Simplify ecoregions background map ------------------------------------------
@@ -149,5 +151,5 @@ write_rds(eco, "out/eco_simp.rds")
 
 # Simplify bec zones background map ------------------------------------------
 system(glue("mapshaper-xl data/bec_clipped.geojson ",
-            "-simplify 5% keep-shapes ",
+            "-simplify dp 5% keep-shapes ",
             "-o out/bec_simp.geojson"))
