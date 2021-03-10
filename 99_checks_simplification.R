@@ -46,27 +46,37 @@ bec <- bec(ask = FALSE)%>%
   rename_all(tolower)
 
 #' ## Compare figures - Eco Regions
-count(st_set_geometry(pa_eco, NULL), ecoregion_code) %>%
-  arrange(desc(n)) %>%
+cnts <- count(st_set_geometry(pa_eco, NULL), ecoregion_code, ecoregion_name) %>%
+  arrange(desc(n))
+cnts %>%
   kable() %>%
   kable_styling()
 
-#+ fig.width = 12, fig.asp = 1.5
-for(r in c("YSH", "LOM", "PAC")) {
+#+ fig.width = 12, fig.asp = 0.5
+for(r in c("YSH", "LOM", "PAC", "TPC", "FAP")) {
+
+  temp <- filter(pa_eco, ecoregion_code == r)
+
+  keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
+  keep <- case_when(nrow(temp) < 500 ~ 0.5,
+                    nrow(temp) < 1000 ~ 0.25,
+                    TRUE ~ 0.05)
+
   g <- ggplot() +
     theme_void() +
     geom_sf(data = filter(eco, ecoregion_code == r), fill = "grey80", colour = NA) +
     scale_fill_manual(values = c("Yes" = "#004529", "No" = "#93c288"), guide = FALSE)
 
   g1 <- g +
-    geom_sf(data = filter(pa_eco, ecoregion_code == r), aes(fill = oecm), colour = NA) +
+    geom_sf(data = temp, aes(fill = oecm), colour = NA) +
     labs(title = "Hi-res")
 
   g2 <- g +
     geom_sf(data = filter(pa_eco_simp, ecoregion_code == r), aes(fill = oecm), colour = NA) +
     labs(title = "Simplified")
 
-  print(g1 / g2 + plot_annotation(caption = glue("Eco Region: {r}")))
+  cap <- glue("Eco Region: {r}; keep_shapes = {keep_shapes}; keep = {keep}")
+  print(g1 + g2 + plot_annotation(caption = cap))
 }
 
 
@@ -76,7 +86,7 @@ count(st_set_geometry(pa_bec, NULL), zone) %>%
   kable() %>%
   kable_styling()
 
-#+ fig.width = 12, fig.asp = 1.5
+#+ fig.width = 12, fig.asp = 0.5
 for(z in c("BG", "IMA", "CWH")) {
   g <- ggplot() +
     theme_void() +
@@ -91,5 +101,5 @@ for(z in c("BG", "IMA", "CWH")) {
     geom_sf(data = filter(pa_bec_simp, zone == z), aes(fill = oecm), colour = NA) +
     labs(title = "Simplified")
 
-  print(g1 / g2 + plot_annotation(caption = glue("BEC Zone: {z}")))
+  print(g1 + g2 + plot_annotation(caption = glue("BEC Zone: {z}")))
 }
