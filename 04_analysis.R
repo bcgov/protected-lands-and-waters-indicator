@@ -36,15 +36,17 @@ pa_eco_df <- pa_eco %>%
   mutate(total_area = st_area(geometry)) %>%
   st_set_geometry(NULL) %>%
   group_by(ecoregion_code, ecoregion_name, park_type, type, date) %>%
-  arrange(date) %>%
+  arrange(date, .by_group = TRUE) %>%
   summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop_last") %>%
   mutate(cum_region = cumsum(total_area)) %>%
+  group_by(ecoregion_name, park_type) %>%
+  mutate(total_type = sum(total_area)) %>%
   group_by(ecoregion_name) %>%
-  arrange(date) %>%
   mutate(total_region = sum(total_area)) %>%
   ungroup() %>%
   left_join(eco_totals, by = "ecoregion_code") %>%
   mutate(p_area = total_area / total * 100,
+         p_type = total_type / total * 100,
          p_region = total_region / total * 100) %>%
   arrange(p_region) %>%
   mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
