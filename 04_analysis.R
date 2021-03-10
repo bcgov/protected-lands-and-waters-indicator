@@ -23,7 +23,7 @@ eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower) %>%
   mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)))
 
-bec <- read_rds("data/bec_clipped.rds")
+bec <- st_read("data/bec_clipped_simp.geojson", crs = 3005)
 
 # Summarize by eco region
 eco_totals <- eco %>%
@@ -37,16 +37,19 @@ pa_eco_df <- pa_eco %>%
   st_set_geometry(NULL) %>%
   group_by(ecoregion_code, ecoregion_name, park_type, type, date) %>%
   arrange(date) %>%
-  summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
-  mutate(tooltip = glue("{format(round(total_area), big.mark = ',')} ha"))
+  summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop_last") %>%
+  mutate(cum_region = cumsum(total_area)) %>%
+  group_by(ecoregion_name) %>%
+  arrange(date) %>%
+  mutate(total_region = sum(total_area)) %>%
+  ungroup() %>%
+  left_join(eco_totals, by = "ecoregion_code") %>%
+  mutate(p_area = total_area / total * 100,
+         p_region = total_region / total * 100) %>%
+  arrange(p_region) %>%
+  mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
 write_rds(pa_eco_df, "out/eco_area.rds")
 
-pa_eco_sum_df <- pa_eco_df %>%
-  group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
-  summarize(total_area = sum(total_area), .groups = "drop") %>%
-  mutate(tooltip = glue("{format(round(total_area), big.mark = ',')} ha"),
-         type_combo = glue("{tools::toTitleCase(type)} - {park_type}"))
-write_rds(pa_eco_sum_df, "out/eco_area_sum.rds")
 
 # Summarize by bec zone region
 bec_totals <- bec %>%
