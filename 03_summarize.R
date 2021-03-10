@@ -41,6 +41,9 @@ bc <- bc_bound_hres(ask = FALSE)
 
 # Clip BEC to BC outline ----------------------------------------------------
 # We'll need simplified becs for plotting later
+# NOTE: geojson doesn't have CRS so have to remind R that CRS is BC Albers
+#       (It will warn that it's not transforming)
+message("Clip BEC to BC outline")
 
 geojson_write(bec, file = "data/bec.geojson")
 geojson_write(bc, file = "data/bc.geojson")
@@ -53,14 +56,14 @@ system(glue("mapshaper-xl data/bec_clipped.geojson ",
             "-simplify dp 50% ",
             "-o data/bec_clipped_simp.geojson"))
 
-bec <- st_read("data/bec_clipped_simp.geojson")
-
 # Add ecoregions to PA ------------------------------------------------------
 message("Add eco regions")
 pa_eco <- st_intersection(eco, pa)
 
 # Add bec zones to PA -------------------------------------------------------
 message("Add bec zones")
+bec <- st_read("data/bec_clipped_simp.geojson", crs = 3005) %>%
+  st_make_valid()
 pa_bec <- st_intersection(bec, pa)
 
 # Remove LINESTRING shapes ------------------------------------------------
@@ -101,8 +104,8 @@ rm(pa_bec_poly)
 write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
-#pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-#pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+# pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
+# pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
 
 # Simplify ecoregions for plotting  -------------------------------------------
@@ -116,6 +119,7 @@ write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 
 message("Simplify - Eco regions")
 
+eco_simp <- slice(pa_eco, 0)
 for(e in unique(pa_eco$ecoregion_code)) {
   message(e)
   temp <- filter(pa_eco, ecoregion_code == e)
@@ -146,4 +150,4 @@ write_rds(eco, "out/eco_simp.rds")
 # Simplify bec zones background map ------------------------------------------
 system(glue("mapshaper-xl data/bec_clipped.geojson ",
             "-simplify 5% keep-shapes ",
-            "-o data/bec_simp.geojson"))
+            "-o out/bec_simp.geojson"))
