@@ -25,16 +25,6 @@ library(glue)
 
 # Constants ---------------------------------------------------------------
 
-options(scipen = 999) # No scientific notation in plots
-
-# Sizes
-app_width <- 900
-bottom_width <- 700
-
-top_height <- 400
-bottom_height <- 200
-
-
 # Data
 eco <- readRDS("../out/eco_simp.rds")
 pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
@@ -42,15 +32,42 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
 
 eco_area <- readRDS("../out/eco_area.rds") %>%
   mutate(tooltip_bar = glue("{format(round(p_region, 1), big.mark = ',')}%"),
-         tooltip_line = glue("{format(round(cum_region), big.mark = ',')}"))
+         tooltip_date = if_else(is.na(date), "Total (inc. missing dates)", as.character(date)),
+         tooltip_line = glue("<strong>Year:</strong> {tooltip_date}<br>",
+                             "<strong>Cumulative Area:</strong> ",
+                             "{format(round(cum_region), big.mark = ',')} ha"))
 
 eco_area_sum <- eco_area %>%
-  select(ecoregion_code, ecoregion_name, park_type, type, p_region) %>%
+  select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
   distinct() %>%
+  group_by(ecoregion_code) %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         tooltip = glue("{format(round(p_region, 1), big.mark = ',')}%"))
+         type_combo = factor(type_combo,
+                             levels = c("Land - PPA", "Land - OECM",
+                                        "Water - PPA", "Water - OECM")),
+         tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
+                        "<strong>Protected:</strong> ",
+                        "{format(round(p_region, 1), big.mark = ',')}%")) %>%
+  arrange(ecoregion_name, type_combo)
 
-# Colours
+# Add tool tip to map so they match
+eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
+  left_join(eco, ., by = "ecoregion_code")
+
+
+# Sizes
+app_width <- 900
+bottom_width <- 700
+
+top_height <- 500
+bottom_height <- 200
+
+# Styling - Matches msw-disposal-indicator
+tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
+                padding: 5px; box-shadow: 3px 3px 5px 0px #888888;
+                font-size: 12px; border-width 2px; border-color: black;"
+
+# Colours - Somewhat matches msw-disposal-indicator and original
 scale_land <- c("OECM" = "#004529", "PPA" = "#93c288")
 scale_water <- c("OECM" = "#063c4e", "PPA" = "#8bc3d5")
 scale_map_fill <- c(scale_land[[2]], scale_water[[2]])
@@ -65,10 +82,13 @@ select <- "#FFFFFF"
 # Labels
 lab_total_area <- "Total Area Protected (ha)"
 lab_year <- "Year"
-lab_growth <- "Annual Growth (ha)"
+lab_growth <- "Cumulative\nAnnual Growth"
 lab_oecm <- "Type"
 
-
+# Points and lines
+size_pt <- 2
+size_line <- 1
+size_line_missing <- 0.5
 
 # Functions ---------------------------------------------------------------
 
@@ -77,9 +97,8 @@ breaks_int <- function(x) {
   unique(floor(pretty(seq(min(x), (max(x) + 1)))))
 }
 
-labs_int <- function(x) x
-
-labs_int_na <- function(x) {
-  x[length(x)] <- "NA"
-  x
+labels_ha <- function(x) {
+  x <- format(x, trim = TRUE, big.mark = ',',
+              scientific = FALSE, justify = 'none')
+  glue("{x} ha")
 }
