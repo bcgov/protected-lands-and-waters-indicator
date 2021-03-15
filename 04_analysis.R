@@ -32,24 +32,39 @@ eco_totals <- eco %>%
   group_by(ecoregion_code) %>%
   summarize(total = sum(area) / 10000, .groups = "drop")
 
+d_max <- max(pa_eco$date, na.rm = TRUE)
 pa_eco_df <- pa_eco %>%
   mutate(total_area = st_area(geometry)) %>%
   st_set_geometry(NULL) %>%
-  group_by(ecoregion_code, ecoregion_name, park_type, type, date) %>%
+  # Add placeholder for missing dates for plots (max year plus 1)
+  mutate(missing = is.na(date),
+         date = if_else(is.na(date), d_max + 1L, date)) %>%
+  group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
+  # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
+  complete(date = seq(min(date, na.rm = TRUE), d_max + 1L),
+           fill = list(total_area = 0, missing = FALSE)) %>%
+  group_by(ecoregion_code, ecoregion_name, park_type, type, missing, date) %>%
+  summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
+  group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
   arrange(date, .by_group = TRUE) %>%
-  summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop_last") %>%
-  mutate(cum_region = cumsum(total_area)) %>%
-  group_by(ecoregion_name, park_type) %>%
-  mutate(total_type = sum(total_area)) %>%
-  group_by(ecoregion_name) %>%
+  mutate(cum_type = cumsum(total_area),
+         total_type = sum(total_area)) %>%
+  group_by(ecoregion_code) %>%
   mutate(total_region = sum(total_area)) %>%
-  ungroup() %>%
   left_join(eco_totals, by = "ecoregion_code") %>%
-  mutate(p_area = total_area / total * 100,
-         p_type = total_type / total * 100,
-         p_region = total_region / total * 100) %>%
-  arrange(p_region) %>%
+  # Get regional values
+  group_by(ecoregion_code) %>%
+  mutate(p_type = total_type / total * 100,
+         p_region = total_region / total * 100,
+         cum_p_type = cum_type / total * 100,
+         tooltip_date = if_else(missing,
+                                "Inc. unknown year of protection",
+                                as.character(date))) %>%
+  ungroup() %>%
+  arrange(desc(type), p_region) %>%
   mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
+
+
 write_rds(pa_eco_df, "out/eco_area.rds")
 
 

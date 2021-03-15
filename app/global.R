@@ -32,11 +32,9 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
 eco_area <- readRDS("../out/eco_area.rds") %>%
-  mutate(tooltip_bar = glue("{format(round(p_region, 1), big.mark = ',')}%"),
-         tooltip_date = if_else(is.na(date), "Total (inc. missing dates)", as.character(date)),
-         tooltip_line = glue("<strong>Year:</strong> {tooltip_date}<br>",
-                             "<strong>Cumulative Area:</strong> ",
-                             "{format(round(cum_region), big.mark = ',')} ha"))
+  mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
+                        "<strong>Cumulative Area Protected:</strong> ",
+                        "{format(round(cum_p_type, 2), big.mark = ',')} %"))
 
 eco_area_sum <- eco_area %>%
   select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
@@ -48,8 +46,7 @@ eco_area_sum <- eco_area %>%
                                         "Water - PPA", "Water - OECM")),
          tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
                         "<strong>Protected:</strong> ",
-                        "{format(round(p_region, 1), big.mark = ',')}%")) %>%
-  arrange(ecoregion_name, type_combo)
+                        "{format(round(p_region, 1), big.mark = ',')}%"))
 
 # Add tool tip to map so they match
 eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
@@ -69,8 +66,8 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
                 font-size: 12px; border-width 2px; border-color: black;"
 
 # Colours - Somewhat matches msw-disposal-indicator and original
-scale_land <- c("OECM" = "#004529", "PPA" = "#93c288")
-scale_water <- c("OECM" = "#063c4e", "PPA" = "#8bc3d5")
+scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
+scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
 scale_map_fill <- c(scale_land[[2]], scale_water[[2]])
 scale_map_colour <- c(scale_land[[1]], scale_water[[1]])
 scale_combo <- setNames(c(scale_land, scale_water),
@@ -81,9 +78,9 @@ hover <- "#FFFF99"
 select <- "#FFFFFF"
 
 # Labels
-lab_total_area <- "Total Area Protected (ha)"
+lab_total_area <- "Percent Area Protected"
 lab_year <- "Year"
-lab_growth <- "Cumulative\nAnnual Growth"
+lab_growth <- "Cumulative\n% Protected"
 lab_oecm <- "Type"
 
 # Points and lines
@@ -96,10 +93,4 @@ size_line_missing <- 0.5
 # https://stackoverflow.com/a/39877048/3362144
 breaks_int <- function(x) {
   unique(floor(pretty(seq(min(x), (max(x) + 1)))))
-}
-
-labels_ha <- function(x) {
-  x <- format(x, trim = TRUE, big.mark = ',',
-              scientific = FALSE, justify = 'none')
-  glue("{x} ha")
 }

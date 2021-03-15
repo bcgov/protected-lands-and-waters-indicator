@@ -79,48 +79,36 @@ shinyServer(function(input, output, session) {
   output$bottom <- renderGirafe({
     req(input$top_selected)
 
-    r <- filter(eco_area, ecoregion_code == input$top_selected)
-    r_n <- count(r, park_type)
-    r_missing <- filter(r, is.na(date)) %>%
-      mutate(date = max(r$date, na.rm = TRUE) + 1L)
-    r <- filter(r, !is.na(date))
+    r <- filter(eco_area, ecoregion_code == input$top_selected) %>%
+      group_by(date) %>%
+      arrange(date, desc(park_type)) %>%
+      mutate(point = cumsum(cum_p_type)) %>%
+      ungroup()
+
     if(r$type[1] == "land") s <- scale_land else s <- scale_water
 
-    g <- ggplot(data = r, aes(x = as.integer(date),
-                               y = cum_region, colour = park_type)) +
+    g <- ggplot(data = r, aes(x = date,
+                         y = cum_p_type, fill = park_type)) +
       theme_minimal(base_size = 14) +
       theme(panel.grid.minor.x = element_blank(),
             legend.title = element_blank(),
             legend.position = "bottom", axis.text.y = element_text(hjust = 1)) +
+      geom_area() +
+      geom_point_interactive(aes(y = point, tooltip = tooltip, alpha = missing,
+                                 shape = missing, size = missing),
+                             colour = "black", show.legend = FALSE) +
       labs(x = lab_year, y = lab_growth) +
       scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
                          breaks = breaks_int) +
-      scale_y_continuous(expand = expansion(mult = c(0.01, 0.05)),
-                         labels = labels_ha) +
-      scale_colour_manual(name = "Type", values = s, aesthetics = c("fill", "colour"))
+      scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
+      scale_fill_manual(name = "Type", values = s) +
+      scale_alpha_manual(values = c("FALSE" = 0.01, "TRUE" = 1)) +
+      scale_shape_manual(values = c("FALSE" = 2, "TRUE" = "*")) +
+      scale_size_manual(values = c("FALSE" = 10, "TRUE" = 6))
 
-    # If only one point
-    if(all(r_n$n <= 1)) {
-      g <- g + geom_bar_interactive(
-        aes(x = date, fill = park_type, tooltip = tooltip_line),
-        colour = NA, width = 1, stat = "identity", position = "dodge")
-    } else {
-      g <- g + geom_line(size = size_line, na.rm = TRUE) +
-        geom_point_interactive(aes(tooltip = tooltip_line,
-                                   data_id = glue("{date} {park_type}")),
-                               size = size_pt)
-    }
-
-    if(nrow(r_missing) > 0) {
-      line_missing <- bind_rows(group_by(r, park_type) %>% slice(n()), r_missing)
+    if(any(r$missing)) {
       g <- g +
-        geom_point_interactive(data = r_missing,
-                               aes(tooltip = tooltip_line,
-                                   data_id = glue("{date} {park_type}")),
-                               size = size_pt, na.rm = TRUE) +
-        geom_line(data = line_missing, size = size_line_missing,
-                  na.rm = TRUE, aes(linetype = "Inc. missing dates")) +
-        scale_linetype_manual(values = "dotted")
+        labs(caption = "* = including areas with unknown date of protection")
     }
 
     girafe(ggobj = g,
