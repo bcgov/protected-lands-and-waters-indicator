@@ -19,8 +19,9 @@ library(ggiraph)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(patchwork)
+library(cowplot)
 library(glue)
+library(sf)
 
 
 # Constants ---------------------------------------------------------------

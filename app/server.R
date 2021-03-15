@@ -28,6 +28,7 @@ shinyServer(function(input, output, session) {
       scale_y_continuous(expand = c(0,0))
 
     if(is.null(input$top_selected)) {
+
       g2 <- ggplot(data = eco_area_sum,
                    aes(x = p_type, y = ecoregion_name, fill = type_combo)) +
         theme_minimal(base_size = 10) +
@@ -37,8 +38,8 @@ shinyServer(function(input, output, session) {
                              width = 0.75, stat = "identity") +
         labs(x = lab_total_area) +
         scale_fill_manual(name = lab_oecm, values = scale_combo) +
-        scale_x_continuous(expand = c(0,0), position = "top")
-      w <- 2
+        scale_x_continuous(expand = c(0,0), position = "top") +
+        coord_fixed(ratio = 5)
 
     } else {
       region <- filter(pa_eco, ecoregion_code == input$top_selected)
@@ -54,11 +55,9 @@ shinyServer(function(input, output, session) {
         scale_x_continuous(expand = c(0,0)) +
         scale_y_continuous(expand = c(0,0)) +
         labs(title = region$ecoregion_name[1])
-      w <- 1
     }
 
-    g <- g1 + g2 + plot_layout(widths = c(w,1))
-
+    g <- plot_grid(g1, g2, nrow = 1)
 
     # If selection no longer visible
     if(is.null(input$top_selected) ||
