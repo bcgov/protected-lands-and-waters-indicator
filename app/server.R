@@ -15,10 +15,13 @@
 
 shinyServer(function(input, output, session) {
 
+
+  # Top Panel ---------------------------------------------------------------
   output$top <- renderGirafe({
 
     g1 <- ggplot(data = eco) +
       theme_void() +
+      theme(plot.margin = unit(c(0,0,0,0), "pt")) +
       geom_sf_interactive(aes(tooltip = tooltip,
                               data_id = ecoregion_code,
                               fill = type, colour = type), size = 0.25) +
@@ -33,7 +36,8 @@ shinyServer(function(input, output, session) {
                    aes(x = p_type, y = ecoregion_name, fill = type_combo)) +
         theme_minimal(base_size = 10) +
         theme(panel.grid.major.y = element_blank(),
-              axis.title.y = element_blank(), legend.position = c(0.5, 0.5)) +
+              axis.title.y = element_blank(), legend.position = c(0.5, 0.5),
+              plot.margin = unit(c(0,0,0,0), "pt")) +
         geom_bar_interactive(aes(tooltip = tooltip, data_id = ecoregion_code),
                              width = 0.75, stat = "identity") +
         labs(x = lab_total_area) +
@@ -48,7 +52,8 @@ shinyServer(function(input, output, session) {
 
       g2 <- ggplot(data = region) +
         theme_void() +
-        theme(plot.title = element_text(hjust = 0.5, size = 15)) +
+        theme(plot.title = element_text(hjust = 0.5, size = 15),
+              plot.margin = unit(c(0,0,0,0), "pt")) +
         geom_sf(data = r, fill = "grey80", colour = NA) +
         geom_sf(aes(fill = factor(park_type)), colour = NA) +
         scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
@@ -76,39 +81,19 @@ shinyServer(function(input, output, session) {
   }) %>%
     bindCache(input$top_selected)
 
+
+
+
+  # Bottom panel ------------------------------------------------------------
   output$bottom <- renderGirafe({
-    req(input$top_selected)
 
-    r <- filter(eco_area, ecoregion_code == input$top_selected) %>%
-      group_by(date) %>%
-      arrange(date, desc(park_type)) %>%
-      mutate(point = cumsum(cum_p_type)) %>%
-      ungroup()
-
-    if(r$type[1] == "land") s <- scale_land else s <- scale_water
-
-    g <- ggplot(data = r, aes(x = date,
-                         y = cum_p_type, fill = park_type)) +
-      theme_minimal(base_size = 14) +
-      theme(panel.grid.minor.x = element_blank(),
-            legend.title = element_blank(),
-            legend.position = "bottom", axis.text.y = element_text(hjust = 1)) +
-      geom_area() +
-      geom_point_interactive(aes(y = point, tooltip = tooltip, alpha = missing,
-                                 shape = missing, size = missing),
-                             colour = "black", show.legend = FALSE) +
-      labs(x = lab_year, y = lab_growth) +
-      scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
-                         breaks = breaks_int) +
-      scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
-      scale_fill_manual(name = "Type", values = s) +
-      scale_alpha_manual(values = c("FALSE" = 0.01, "TRUE" = 1)) +
-      scale_shape_manual(values = c("FALSE" = 2, "TRUE" = "*")) +
-      scale_size_manual(values = c("FALSE" = 10, "TRUE" = 6))
-
-    if(any(r$missing)) {
-      g <- g +
-        labs(caption = "* = including areas with unknown date of protection")
+    if(is.null(input$top_selected)) {
+      r <- mutate(eco_area_all, park_type = type_combo)
+      g <- gg_area(r, scale_combo, type = "all")
+    } else {
+      r <- filter(eco_area, ecoregion_code == input$top_selected)
+      if(r$type[1] == "land") s <- scale_land else s <- scale_water
+      g <- gg_area(r, s, type = "region")
     }
 
     girafe(ggobj = g,
@@ -120,8 +105,6 @@ shinyServer(function(input, output, session) {
            width_svg = bottom_width/72)
   }) %>%
     bindCache(input$top_selected)
-
-
 })
 
 

@@ -31,6 +31,17 @@ eco <- readRDS("../out/eco_simp.rds")
 pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
+
+eco_area_all <- readRDS("../out/eco_area_all.rds") %>%
+  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         type_combo = factor(type_combo,
+                             levels = c("Land - PPA", "Land - OECM",
+                                        "Water - PPA", "Water - OECM")),
+         tooltip = glue("<strong>Type:</strong> {type_combo}<br>",
+                        "<strong>Year:</strong> {tooltip_date}<br>",
+                        "<strong>Cumulative Area Protected:</strong> ",
+                        "{format(round(cum_p_type, 2), big.mark = ',')} %"))
+
 eco_area <- readRDS("../out/eco_area.rds") %>%
   mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
                         "<strong>Cumulative Area Protected:</strong> ",
@@ -55,7 +66,7 @@ eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
 
 # Sizes
 app_width <- 900
-bottom_width <- 700
+bottom_width <- 900
 
 top_height <- 500
 bottom_height <- 200
@@ -93,4 +104,48 @@ size_line_missing <- 0.5
 # https://stackoverflow.com/a/39877048/3362144
 breaks_int <- function(x) {
   unique(floor(pretty(seq(min(x), (max(x) + 1)))))
+}
+
+gg_area <- function(data, scale, type = "region") {
+
+  data <- data %>%
+    group_by(date) %>%
+    arrange(date, desc(park_type)) %>%
+    mutate(point = cumsum(cum_p_type)) %>%
+    ungroup() %>%
+    mutate(missing = case_when(missing ~ "missing",
+                               !missing & date == date[missing][1] ~ "missing_placeholder",
+                               TRUE ~ "not_missing"))
+
+  g <- ggplot(data = data, aes(x = date,
+                               y = cum_p_type, fill = park_type)) +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.minor.x = element_blank(),
+          axis.title.x = element_blank(),
+          legend.title = element_blank(),
+          legend.position = if_else(type == "region", "bottom", "none"),
+          legend.box.margin = margin(),
+          legend.margin = margin(),
+          plot.margin = unit(c(5,0,0,0), "pt")) +
+    geom_area() +
+    geom_point_interactive(aes(y = point, tooltip = tooltip, alpha = missing,
+                               shape = missing, size = missing),
+                           colour = "black", show.legend = FALSE) +
+    labs(x = lab_year, y = lab_growth) +
+    scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
+                       breaks = breaks_int) +
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
+    scale_fill_manual(name = "Type", values = scale) +
+    scale_alpha_manual(values = c("not_missing" = 0.01,      # Invisible, but tooltip
+                                  "missing_placeholder" = 0, # No tooltip
+                                  "missing" = 1)) +          # Visible and Tool tip
+    scale_shape_manual(values = c("not_missing" = 2, "missing_placeholder" = 2, "missing" = "*")) +
+    scale_size_manual(values = c("not_missing" = 10, "missing_placeholder" = 1, "missing" = 6))
+
+  if(any(r$missing)) {
+    g <- g + annotate("text", x = -Inf, y = + Inf, vjust = 1, hjust = 0,
+                      label = "Inc. areas with unknown date of protection (*)")
+  }
+
+
 }
