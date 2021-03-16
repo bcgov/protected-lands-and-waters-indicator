@@ -62,8 +62,10 @@ pa_eco_df <- pa_eco %>%
                                 as.character(date))) %>%
   ungroup() %>%
   arrange(desc(type), p_region) %>%
-  mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
-
+  mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)),
+         missing = case_when(missing ~ "missing",
+                             !missing & date == date[missing][1] ~ "missing_placeholder",
+                             TRUE ~ "not_missing"))
 write_rds(pa_eco_df, "out/eco_area.rds")
 
 pa_eco_all_df <- pa_eco %>%
@@ -88,7 +90,10 @@ pa_eco_all_df <- pa_eco %>%
          cum_p_type = cum_type / total * 100,
          tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
-                                as.character(date)))
+                                as.character(date)),
+         missing = case_when(missing ~ "missing",
+                             !missing & date == date[missing][1] ~ "missing_placeholder",
+                             TRUE ~ "not_missing"))
 write_rds(pa_eco_all_df, "out/eco_area_all.rds")
 
 

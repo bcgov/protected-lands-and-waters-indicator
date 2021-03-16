@@ -19,6 +19,7 @@ shinyServer(function(input, output, session) {
   # Top Panel ---------------------------------------------------------------
   output$top <- renderGirafe({
 
+    # Top Left - Provincial Map
     g1 <- ggplot(data = eco) +
       theme_void() +
       theme(plot.margin = unit(c(0,0,0,0), "pt")) +
@@ -32,6 +33,7 @@ shinyServer(function(input, output, session) {
 
     if(is.null(input$top_selected)) {
 
+      # Top Right #1 - Provincial Bar plot
       g2 <- ggplot(data = eco_area_sum,
                    aes(x = p_type, y = ecoregion_name, fill = type_combo)) +
         theme_minimal(base_size = 10) +
@@ -50,6 +52,7 @@ shinyServer(function(input, output, session) {
       r <- filter(eco, ecoregion_code == input$top_selected)
       if(r$type[1] == "land") s <- scale_land else s <- scale_water
 
+      # Top Right #2 - Ecoregion map
       g2 <- ggplot(data = region) +
         theme_void() +
         theme(plot.title = element_text(hjust = 0.5, size = 15),
@@ -88,12 +91,13 @@ shinyServer(function(input, output, session) {
   output$bottom <- renderGirafe({
 
     if(is.null(input$top_selected)) {
+      # Bottom #1 - Provincial Area plot
       r <- mutate(eco_area_all, park_type = type_combo)
-      g <- gg_area(r, scale_combo, type = "all")
+      g <- gg_area(r, type = "all")
     } else {
+      # Bottom #2 - Ecoregion Area plot
       r <- filter(eco_area, ecoregion_code == input$top_selected)
-      if(r$type[1] == "land") s <- scale_land else s <- scale_water
-      g <- gg_area(r, s, type = "region")
+      g <- gg_area(r, type = "region")
     }
 
     girafe(ggobj = g,

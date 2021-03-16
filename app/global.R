@@ -106,16 +106,23 @@ breaks_int <- function(x) {
   unique(floor(pretty(seq(min(x), (max(x) + 1)))))
 }
 
-gg_area <- function(data, scale, type = "region") {
+gg_area <- function(data, type = "region") {
+
+  if(type == "region") g <- "date" else g <- c("date", "type")
+
+  if(type == "all") {
+    scale <- scale_combo
+  } else if(data$type[1] == "land") {
+    scale <- scale_land
+  } else {
+    scale <- scale_water
+  }
 
   data <- data %>%
-    group_by(date) %>%
+    group_by(!!!rlang::syms(g)) %>%
     arrange(date, desc(park_type)) %>%
     mutate(point = cumsum(cum_p_type)) %>%
-    ungroup() %>%
-    mutate(missing = case_when(missing ~ "missing",
-                               !missing & date == date[missing][1] ~ "missing_placeholder",
-                               TRUE ~ "not_missing"))
+    ungroup()
 
   g <- ggplot(data = data, aes(x = date,
                                y = cum_p_type, fill = park_type)) +
@@ -126,12 +133,12 @@ gg_area <- function(data, scale, type = "region") {
           legend.position = if_else(type == "region", "bottom", "none"),
           legend.box.margin = margin(),
           legend.margin = margin(),
-          plot.margin = unit(c(5,0,0,0), "pt")) +
+          plot.margin = unit(c(5,0,0,0), "pt"),
+          strip.background = element_blank(), strip.text = element_blank()) +
     geom_area() +
     geom_point_interactive(aes(y = point, tooltip = tooltip, alpha = missing,
                                shape = missing, size = missing),
                            colour = "black", show.legend = FALSE) +
-    labs(x = lab_year, y = lab_growth) +
     scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
                        breaks = breaks_int) +
     scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
@@ -140,12 +147,13 @@ gg_area <- function(data, scale, type = "region") {
                                   "missing_placeholder" = 0, # No tooltip
                                   "missing" = 1)) +          # Visible and Tool tip
     scale_shape_manual(values = c("not_missing" = 2, "missing_placeholder" = 2, "missing" = "*")) +
-    scale_size_manual(values = c("not_missing" = 10, "missing_placeholder" = 1, "missing" = 6))
+    scale_size_manual(values = c("not_missing" = 10, "missing_placeholder" = 1, "missing" = 6)) +
+    labs(x = lab_year, y = lab_growth,
+         subtitle = if_else(any(data$missing == "missing"),
+                            "Inc. areas with unknown date of protection (*)",
+                            ""))
 
-  if(any(data$missing == "missing")) {
-    g <- g + annotate("text", x = -Inf, y = + Inf, vjust = 1, hjust = 0,
-                      label = "Inc. areas with unknown date of protection (*)")
-  }
+  if(type == "all") g <- g + facet_wrap(~ type, nrow = 1, scales = "free_x")
 
   g
 }
