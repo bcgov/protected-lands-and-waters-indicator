@@ -142,10 +142,10 @@ gg_area <- function(data, scale, type = "region") {
     scale_shape_manual(values = c("not_missing" = 2, "missing_placeholder" = 2, "missing" = "*")) +
     scale_size_manual(values = c("not_missing" = 10, "missing_placeholder" = 1, "missing" = 6))
 
-  if(any(r$missing)) {
+  if(any(data$missing == "missing")) {
     g <- g + annotate("text", x = -Inf, y = + Inf, vjust = 1, hjust = 0,
                       label = "Inc. areas with unknown date of protection (*)")
   }
 
-
+  g
 }
