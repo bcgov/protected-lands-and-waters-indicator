@@ -125,8 +125,7 @@ for(e in unique(pa_eco$ecoregion_code)) {
   temp <- filter(pa_eco, ecoregion_code == e)
   keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
   keep <- case_when(nrow(temp) < 50 ~ 1,
-                    nrow(temp) < 500 ~ 0.5,
-                    nrow(temp) < 1000 ~ 0.25,
+                    nrow(temp) < 1000 ~ 0.1,
                     TRUE ~ 0.05)
   if(keep == 1) region <- temp else region <- ms_simplify(temp, keep = keep,
                                                           keep_shapes = keep_shapes)
@@ -146,7 +145,7 @@ system(glue("mapshaper-xl data/pa_bec.geojson ",
             "-o out/CPCAD_Dec2020_bec_simp.geojson"))
 
 # Simplify ecoregions background map ------------------------------------------
-eco <- ms_simplify(eco)
+eco <- ms_simplify(eco, keep = 0.01)
 write_rds(eco, "out/eco_simp.rds")
 
 # Simplify bec zones background map ------------------------------------------

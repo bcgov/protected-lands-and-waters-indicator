@@ -55,14 +55,12 @@ cnts %>%
   kable_styling()
 
 #+ fig.width = 12, fig.asp = 0.5
-for(r in c("YSH", "LOM", "PAC", "TPC", "SBC", "FAP")) {
+for(r in unique(pa_eco$ecoregion_code)) {
 
   temp <- filter(pa_eco, ecoregion_code == r)
-
   keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
   keep <- case_when(nrow(temp) < 50 ~ 1,
-                    nrow(temp) < 500 ~ 0.5,
-                    nrow(temp) < 1000 ~ 0.25,
+                    nrow(temp) < 1000 ~ 0.1,
                     TRUE ~ 0.05)
 
   g <- ggplot() +

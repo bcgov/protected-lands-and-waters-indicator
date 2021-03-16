@@ -48,9 +48,13 @@ shinyServer(function(input, output, session) {
         coord_fixed(ratio = 5)
 
     } else {
-      region <- filter(pa_eco, ecoregion_code == input$top_selected)
-      r <- filter(eco, ecoregion_code == input$top_selected)
-      if(r$type[1] == "land") s <- scale_land else s <- scale_water
+      region <- filter(pa_eco, ecoregion_code == input$top_selected) %>%
+        select(park_type, geometry, ecoregion_name, type)
+      r <- filter(eco, ecoregion_code == input$top_selected) %>%
+        pull(geometry)
+
+      n <- region$ecoregion_name[1]
+      if(region$type[1] == "land") s <- scale_land else s <- scale_water
 
       # Top Right #2 - Ecoregion map
       g2 <- ggplot(data = region) +
@@ -62,7 +66,7 @@ shinyServer(function(input, output, session) {
         scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
         scale_x_continuous(expand = c(0,0)) +
         scale_y_continuous(expand = c(0,0)) +
-        labs(title = region$ecoregion_name[1])
+        labs(title = n)
     }
 
     g <- plot_grid(g1, g2, nrow = 1)

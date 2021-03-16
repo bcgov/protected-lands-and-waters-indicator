@@ -70,6 +70,7 @@ eco_area_sum <- eco_area %>%
 
 # Add tool tip to map so they match
 eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
+  distinct() %>%
   left_join(eco, ., by = "ecoregion_code")
 
 

@@ -33,11 +33,15 @@ eco_totals <- eco %>%
   summarize(total = sum(area) / 10000, .groups = "drop")
 
 pa_eco_df <- pa_eco %>%
-  mutate(total_area = st_area(geometry),
-         d_max = max(date, na.rm = TRUE)) %>%
+  mutate(total_area = as.numeric(st_area(geometry))) %>%
   st_set_geometry(NULL) %>%
+  group_by(ecoregion_code, ecoregion_name, type, date) %>%
+  complete(park_type = c("OECM", "PPA"),
+           fill = list(total_area = 0)) %>%
+  ungroup() %>%
   # Add placeholder for missing dates for plots (max year plus 1)
-  mutate(missing = is.na(date),
+  mutate(d_max = max(date, na.rm = TRUE),
+         missing = is.na(date),
          date = if_else(is.na(date), d_max + 1L, date)) %>%
   group_by(ecoregion_code) %>%
   mutate(d_max = max(c(date, d_max))) %>%
@@ -85,7 +89,11 @@ pa_eco_all_df <- pa_eco %>%
   ungroup() %>%
   mutate(total = sum(eco_totals$total),
          p_type = total_type / total * 100,
-         cum_p_type = cum_type / total * 100)
+         cum_p_type = cum_type / total * 100) %>%
+  group_by(date) %>%
+  complete(type = c("land", "water"), park_type = c("OECM", "PPA"),
+           fill = list(cum_p_type = 0, missing = FALSE)) %>%
+  ungroup()
 write_rds(pa_eco_all_df, "out/eco_area_all.rds")
 
 
