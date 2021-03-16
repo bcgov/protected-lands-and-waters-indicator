@@ -83,8 +83,8 @@ pa_eco_all_df <- pa_eco %>%
   mutate(cum_type = cumsum(total_area),
          total_type = sum(total_area)) %>%
   ungroup() %>%
-  mutate(total = sum(total_area)) %>%
-  mutate(p_type = total_type / total * 100,
+  mutate(total = sum(eco_totals$total),
+         p_type = total_type / total * 100,
          cum_p_type = cum_type / total * 100,
          tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
