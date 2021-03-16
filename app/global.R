@@ -33,19 +33,28 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
 
 
 eco_area_all <- readRDS("../out/eco_area_all.rds") %>%
-  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+  mutate(tooltip_date = if_else(missing,
+                                "Inc. unknown year of protection",
+                                as.character(date)),
+         type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
                              levels = c("Land - OECM", "Land - PPA",
-                                        "Water - OECM", "Water - PPA")),
-         tooltip = glue("<strong>Type:</strong> {type_combo}<br>",
-                        "<strong>Year:</strong> {tooltip_date}<br>",
-                        "<strong>Cumulative Area Protected:</strong> ",
-                        "{format(round(cum_p_type, 2), big.mark = ',')} %"))
-
-eco_area <- readRDS("../out/eco_area.rds") %>%
+                                        "Water - OECM", "Water - PPA"))) %>%
+  group_by(date, type) %>%
   mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
                         "<strong>Cumulative Area Protected:</strong> ",
-                        "{format(round(cum_p_type, 2), big.mark = ',')} %"))
+                        "{format(round(sum(cum_p_type), 2), big.mark = ',')} %")) %>%
+  ungroup()
+
+eco_area <- readRDS("../out/eco_area.rds") %>%
+  mutate(tooltip_date = if_else(missing,
+                                "Inc. unknown year of protection",
+                                as.character(date))) %>%
+  group_by(ecoregion_code, date) %>%
+  mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
+                        "<strong>Cumulative Area Protected:</strong> ",
+                        "{format(round(sum(cum_p_type), 2), big.mark = ',')} %")) %>%
+  ungroup()
 
 eco_area_sum <- eco_area %>%
   select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
@@ -108,8 +117,6 @@ breaks_int <- function(x) {
 
 gg_area <- function(data, type = "region") {
 
-  if(type == "region") g <- "date" else g <- c("date", "type")
-
   if(type == "all") {
     scale <- scale_combo
   } else if(data$type[1] == "land") {
@@ -119,13 +126,12 @@ gg_area <- function(data, type = "region") {
   }
 
   data <- data %>%
-    group_by(!!!rlang::syms(g)) %>%
+    group_by(type, date) %>%
     arrange(date, desc(park_type)) %>%
     mutate(point = cumsum(cum_p_type)) %>%
     ungroup()
 
-  g <- ggplot(data = data, aes(x = date,
-                               y = cum_p_type, fill = park_type)) +
+  g <- ggplot(data = data, aes(x = date, y = cum_p_type)) +
     theme_minimal(base_size = 14) +
     theme(panel.grid.minor.x = element_blank(),
           axis.title.x = element_blank(),
@@ -135,21 +141,17 @@ gg_area <- function(data, type = "region") {
           legend.margin = margin(),
           plot.margin = unit(c(5,0,0,0), "pt"),
           strip.background = element_blank(), strip.text = element_blank()) +
-    geom_area() +
-    geom_point_interactive(aes(y = point, tooltip = tooltip, alpha = missing,
-                               shape = missing, size = missing),
-                           colour = "black", show.legend = FALSE) +
+    geom_area(aes(fill = park_type)) +
+    geom_point(data = filter(data, missing), aes(y = point),
+               shape = "*", size = 6) +
+    geom_bar_interactive(aes(y = +Inf, tooltip = tooltip), na.rm = TRUE,
+                         show.legend = FALSE, alpha = 0.01, stat = "identity") +
     scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
                        breaks = breaks_int) +
     scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
     scale_fill_manual(name = "Type", values = scale) +
-    scale_alpha_manual(values = c("not_missing" = 0.01,      # Invisible, but tooltip
-                                  "missing_placeholder" = 0, # No tooltip
-                                  "missing" = 1)) +          # Visible and Tool tip
-    scale_shape_manual(values = c("not_missing" = 2, "missing_placeholder" = 2, "missing" = "*")) +
-    scale_size_manual(values = c("not_missing" = 10, "missing_placeholder" = 1, "missing" = 6)) +
     labs(x = lab_year, y = lab_growth,
-         subtitle = if_else(any(data$missing == "missing"),
+         subtitle = if_else(any(data$missing),
                             "Inc. areas with unknown date of protection (*)",
                             ""))
 
