@@ -35,8 +35,8 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
 eco_area_all <- readRDS("../out/eco_area_all.rds") %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - PPA", "Land - OECM",
-                                        "Water - PPA", "Water - OECM")),
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA")),
          tooltip = glue("<strong>Type:</strong> {type_combo}<br>",
                         "<strong>Year:</strong> {tooltip_date}<br>",
                         "<strong>Cumulative Area Protected:</strong> ",
@@ -53,8 +53,8 @@ eco_area_sum <- eco_area %>%
   group_by(ecoregion_code) %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - PPA", "Land - OECM",
-                                        "Water - PPA", "Water - OECM")),
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA")),
          tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
                         "<strong>Protected:</strong> ",
                         "{format(round(p_region, 1), big.mark = ',')}%"))
