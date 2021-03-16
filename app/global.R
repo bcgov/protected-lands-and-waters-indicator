@@ -112,7 +112,7 @@ size_line_missing <- 0.5
 
 # https://stackoverflow.com/a/39877048/3362144
 breaks_int <- function(x) {
-  unique(floor(pretty(seq(min(x), (max(x) + 1)))))
+  unique(floor(pretty(seq(min(x), (max(x))))))
 }
 
 gg_area <- function(data, type = "region") {
@@ -134,28 +134,37 @@ gg_area <- function(data, type = "region") {
   g <- ggplot(data = data, aes(x = date, y = cum_p_type)) +
     theme_minimal(base_size = 14) +
     theme(panel.grid.minor.x = element_blank(),
+          axis.line = element_line(),
           axis.title.x = element_blank(),
           legend.title = element_blank(),
           legend.position = if_else(type == "region", "bottom", "none"),
           legend.box.margin = margin(),
           legend.margin = margin(),
-          plot.margin = unit(c(5,0,0,0), "pt"),
-          strip.background = element_blank(), strip.text = element_blank()) +
+          plot.margin = unit(c(5,10,0,0), "pt"),
+          strip.background = element_blank(),
+          strip.text = element_blank()) +
     geom_area(aes(fill = park_type)) +
     geom_point(data = filter(data, missing), aes(y = point),
                shape = "*", size = 6) +
-    geom_bar_interactive(aes(y = +Inf, tooltip = tooltip), na.rm = TRUE,
-                         show.legend = FALSE, alpha = 0.01, stat = "identity") +
-    scale_x_continuous(expand = expansion(mult = c(0.01, 0.01)),
+    geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
+                         na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
                        breaks = breaks_int) +
-    scale_y_continuous(expand = expansion(mult = c(0.01, 0.05))) +
     scale_fill_manual(name = "Type", values = scale) +
     labs(x = lab_year, y = lab_growth,
          subtitle = if_else(any(data$missing),
                             "Inc. areas with unknown date of protection (*)",
-                            ""))
+                            "")) +
+    coord_cartesian(xlim = c(min(data$date), max(data$date)))
 
-  if(type == "all") g <- g + facet_wrap(~ type, nrow = 1, scales = "free_x")
+  if(type == "all") {
+    lim <- c(0, ceiling(max(data$point)))
+    g <- g + facet_wrap(~ type, nrow = 1, scales = "free")
+  } else lim <- NULL
+
+  g <- g + scale_y_continuous(expand = expansion(mult = c(0, 0.05)),
+                              limits = lim)
+
 
   g
 }

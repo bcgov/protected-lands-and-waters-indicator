@@ -32,16 +32,18 @@ eco_totals <- eco %>%
   group_by(ecoregion_code) %>%
   summarize(total = sum(area) / 10000, .groups = "drop")
 
-d_max <- max(pa_eco$date, na.rm = TRUE)
 pa_eco_df <- pa_eco %>%
-  mutate(total_area = st_area(geometry)) %>%
+  mutate(total_area = st_area(geometry),
+         d_max = max(date, na.rm = TRUE)) %>%
   st_set_geometry(NULL) %>%
   # Add placeholder for missing dates for plots (max year plus 1)
   mutate(missing = is.na(date),
          date = if_else(is.na(date), d_max + 1L, date)) %>%
+  group_by(ecoregion_code) %>%
+  mutate(d_max = max(c(date, d_max))) %>%
   group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
-  # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
-  complete(date = seq(min(date, na.rm = TRUE), d_max + 1L),
+  # Fill in missing dates all the way to max
+  complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
            fill = list(total_area = 0, missing = FALSE)) %>%
   group_by(ecoregion_code, ecoregion_name, park_type, type, missing, date) %>%
   summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
@@ -63,14 +65,16 @@ pa_eco_df <- pa_eco %>%
 write_rds(pa_eco_df, "out/eco_area.rds")
 
 pa_eco_all_df <- pa_eco %>%
-  mutate(total_area = st_area(geometry)) %>%
+  mutate(total_area = st_area(geometry),
+         d_max = max(date, na.rm = TRUE)) %>%
   st_set_geometry(NULL) %>%
   # Add placeholder for missing dates for plots (max year plus 1)
   mutate(missing = is.na(date),
-         date = if_else(is.na(date), d_max + 1L, date)) %>%
+         date = if_else(is.na(date), d_max + 1L, date),
+         d_max = max(c(date, d_max))) %>%
   group_by(park_type, type) %>%
   # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
-  complete(date = seq(min(date, na.rm = TRUE), d_max + 1L),
+  complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
            fill = list(total_area = 0, missing = FALSE)) %>%
   group_by(park_type, type, missing, date) %>%
   summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
