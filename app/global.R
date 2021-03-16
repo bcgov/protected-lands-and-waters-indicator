@@ -41,9 +41,12 @@ eco_area_all <- readRDS("../out/eco_area_all.rds") %>%
                              levels = c("Land - OECM", "Land - PPA",
                                         "Water - OECM", "Water - PPA"))) %>%
   group_by(date, type) %>%
-  mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
-                        "<strong>Cumulative Area Protected:</strong> ",
-                        "{format(round(sum(cum_p_type), 2), big.mark = ',')} %")) %>%
+  mutate(tooltip = glue(
+    "<strong>Year:</strong> {tooltip_date}<br>",
+    "<strong>Parks and Protected Areas:</strong> ",
+    "{format(round(cum_p_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "<strong>OECM:</strong> ",
+    "{format(round(cum_p_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
 
 eco_area <- readRDS("../out/eco_area.rds") %>%
@@ -51,9 +54,12 @@ eco_area <- readRDS("../out/eco_area.rds") %>%
                                 "Inc. unknown year of protection",
                                 as.character(date))) %>%
   group_by(ecoregion_code, date) %>%
-  mutate(tooltip = glue("<strong>Year:</strong> {tooltip_date}<br>",
-                        "<strong>Cumulative Area Protected:</strong> ",
-                        "{format(round(sum(cum_p_type), 2), big.mark = ',')} %")) %>%
+  mutate(tooltip = glue(
+    "<strong>Year:</strong> {tooltip_date}<br>",
+    "<strong>Parks and Protected Areas:</strong> ",
+    "{format(round(cum_p_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "<strong>OECM:</strong> ",
+    "{format(round(cum_p_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
 
 eco_area_sum <- eco_area %>%
@@ -65,8 +71,10 @@ eco_area_sum <- eco_area %>%
                              levels = c("Land - OECM", "Land - PPA",
                                         "Water - OECM", "Water - PPA")),
          tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
-                        "<strong>Protected:</strong> ",
-                        "{format(round(p_region, 1), big.mark = ',')}%"))
+                        "<strong>Parks and Protected Areas:</strong> ",
+                        "{format(round(p_type[park_type == 'PPA'], 1), big.mark = ',')}%<br>",
+                        "<strong>OECM:</strong> ",
+                        "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
 
 # Add tool tip to map so they match
 eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
