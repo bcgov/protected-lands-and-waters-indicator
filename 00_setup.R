@@ -12,20 +12,31 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-if(!dir.exists("data")) dir.create("data")
-if(!dir.exists("share")) dir.create("share")
-if(!dir.exists("out")) dir.create("out")
+package_list <- c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
+                  "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
+                  "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
+                  "knitr", "rmarkdown", "kableExtra")
+package_new <- package_list[!(package_list %in% installed.packages()[,"Package"])]
+if(length(package_new)) install.packages(package_new)
 
-library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(readr)
+library(stringr)
+library(ggplot2)
+library(lubridate)
+library(glue)
+library(assertr)
 library(sf)
 library(bcmaps)
-library(assertr)
-library(glue)
 library(bcdata)
-library(lubridate)
 library(rmapshaper)
 library(geojsonio)
 
+if(!dir.exists("data")) dir.create("data")
+if(!dir.exists("share")) dir.create("share")
+if(!dir.exists("out")) dir.create("out")
 
 # Create bc map for reset button
 bc_button <- bc_bound() %>%
