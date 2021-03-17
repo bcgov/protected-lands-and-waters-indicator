@@ -77,7 +77,7 @@ eco_area_sum <- eco_area %>%
                         "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
 
 # Add tool tip to map so they match
-eco <- select(eco_area_sum, ecoregion_code, tooltip) %>%
+eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
   distinct() %>%
   left_join(eco, ., by = "ecoregion_code")
 
@@ -97,8 +97,7 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
 # Colours - Somewhat matches msw-disposal-indicator and original
 scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
 scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
-scale_map_fill <- c(scale_land[[2]], scale_water[[2]])
-scale_map_colour <- c(scale_land[[1]], scale_water[[1]])
+scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 scale_combo <- setNames(c(scale_land, scale_water),
                         c("Land - OECM", "Land - PPA",
                           "Water - OECM", "Water - PPA"))

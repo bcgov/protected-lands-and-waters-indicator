@@ -15,21 +15,45 @@
 
 shinyServer(function(input, output, session) {
 
+  # Create BC Map with custom legends on app load
+  g <- ggplot() +
+    theme_void() +
+    theme(plot.margin = unit(c(0,0,0,0), "pt"), legend.title = element_blank()) +
+    scale_fill_manual(values = scale_map, guide = NULL) +
+    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100),
+                           labels = function(x) glue("{x}%")) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0))
+
+  g_bc <- g +
+    theme(legend.position = c(0.85, 0.7)) +
+    geom_sf_interactive(data = eco,
+                        aes(tooltip = tooltip, fill = type, alpha = p_region,
+                            data_id = ecoregion_code), size = 0.1, colour = "black") +
+    guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))
+
+  g_legend_water <- g +
+    theme(legend.position = c(0.78, 0.7)) +
+    theme(legend.text = element_blank()) +
+    geom_sf_interactive(data = filter(eco, type == "water"),
+                        aes(tooltip = tooltip, fill = type, alpha = p_region,
+                            data_id = ecoregion_code), size = 0.1, colour = "black") +
+    guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
+
+  g_legend_water <- get_legend(g_legend_water)
+  g_legend_land <- get_legend(g_bc)
+
+  g_bc <- ggdraw(g_bc + theme(legend.position = "none")) +
+    draw_plot(g_legend_water, x = 0, y = 0, width = 1, height = 1) +
+    draw_plot(g_legend_land, x = 0, y = 0, width = 1, height = 1) +
+    draw_label("Percent\nProtected", x = 0.8, y = 0.82, size = 12, colour = "black")
+
 
   # Top Panel ---------------------------------------------------------------
   output$top <- renderGirafe({
 
     # Top Left - Provincial Map
-    g1 <- ggplot(data = eco) +
-      theme_void() +
-      theme(plot.margin = unit(c(0,0,0,0), "pt")) +
-      geom_sf_interactive(aes(tooltip = tooltip,
-                              data_id = ecoregion_code,
-                              fill = type, colour = type), size = 0.25) +
-      scale_fill_manual(values = scale_map_fill, guide = NULL) +
-      scale_colour_manual(values = scale_map_colour, guide = NULL) +
-      scale_x_continuous(expand = c(0,0)) +
-      scale_y_continuous(expand = c(0,0))
+    g1 <- g_bc
 
     if(is.null(input$top_selected)) {
 
@@ -78,7 +102,7 @@ shinyServer(function(input, output, session) {
     } else selected <- input$top_selected
 
     girafe(ggobj = g, width_svg = app_width/72, height_svg = top_height/72,
-           options = list(opts_hover(css = glue("fill:{hover};")),
+           options = list(opts_hover(css = glue("fill:{hover};fill-opacity:1;")),
                           opts_selection(selected = selected,
                                          type = "single",
                                          css = glue("fill:{select};")),
