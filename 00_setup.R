@@ -27,3 +27,11 @@ library(rmapshaper)
 library(geojsonio)
 
 
+# Create bc map for reset button
+bc_button <- bc_bound() %>%
+  st_geometry() %>%
+  ms_simplify(0.02, explode = TRUE, keep_shapes = FALSE) %>%
+  ggplot() +
+  theme_void() +
+  ggiraph::geom_sf_interactive(fill = "black", data_id = "reset")
+write_rds(bc_button, "out/bc_button.rds")

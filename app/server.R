@@ -55,7 +55,7 @@ shinyServer(function(input, output, session) {
     # Top Left - Provincial Map
     g1 <- g_bc
 
-    if(is.null(input$top_selected)) {
+    if(is.null(input$top_selected) || input$top_selected == "reset") {
 
       # Top Right #1 - Provincial Bar plot
       g2 <- ggplot(data = eco_area_sum,
@@ -90,7 +90,12 @@ shinyServer(function(input, output, session) {
         scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
         scale_x_continuous(expand = c(0,0)) +
         scale_y_continuous(expand = c(0,0)) +
-        labs(title = n)
+        labs(title = " ")
+
+      g2 <- ggdraw(g2) +
+        draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
+                  hjust = 0, vjust = 0) +
+        draw_label(n, x = 0.5, y = 0.98, size = 16, colour = "black")
     }
 
     g <- plot_grid(g1, g2, nrow = 1)
@@ -118,7 +123,7 @@ shinyServer(function(input, output, session) {
   # Bottom panel ------------------------------------------------------------
   output$bottom <- renderGirafe({
 
-    if(is.null(input$top_selected)) {
+    if(is.null(input$top_selected) || input$top_selected == "reset") {
       # Bottom #1 - Provincial Area plot
       r <- mutate(eco_area_all, park_type = type_combo)
       g <- gg_area(r, type = "all")

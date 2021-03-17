@@ -81,6 +81,7 @@ eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
   distinct() %>%
   left_join(eco, ., by = "ecoregion_code")
 
+bc_button <- readRDS("../out/bc_button.rds")
 
 # Sizes
 app_width <- 900
