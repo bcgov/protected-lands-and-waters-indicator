@@ -68,38 +68,10 @@ pa_bec <- st_intersection(bec, pa)
 
 # Remove LINESTRING shapes ------------------------------------------------
 # see share/99_checks_non_polygons.html for rational
-
 message("Fix linestrings")
-pa_eco_poly <- pa_eco %>%
-  # Get GEOMETRYCOLLECTIONS
-  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>%
-  # Get only POLYGONS from collections (omit LINESTRINGS)
-  st_collection_extract(type = "POLYGON")
 
-pa_eco <- pa_eco %>%
-  # Remove GEOMETRYCOLLECTIONS
-  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%
-  # Add POLYGONS from collections
-  rbind(pa_eco_poly) %>%
-  # Double check
-  verify(all(str_detect(st_geometry_type(.), "POLYGON")))
-
-pa_bec_poly <- pa_bec %>%
-  # Get GEOMETRYCOLLECTIONS
-  filter(!str_detect(st_geometry_type(.), "POLYGON")) %>%
-  # Get only POLYGONS from collections (omit LINESTRINGS)
-  st_collection_extract(type = "POLYGON")
-
-pa_bec <- pa_bec %>%
-  # Remove GEOMETRYCOLLECTIONS
-  filter(str_detect(st_geometry_type(.), "POLYGON")) %>%
-  # Add POLYGONS from collections
-  rbind(pa_bec_poly) %>%
-  # Double check
-  verify(all(str_detect(st_geometry_type(.), "POLYGON")))
-
-rm(pa_eco_poly)
-rm(pa_bec_poly)
+pa_eco <- st_collection_extract(pa_eco, type = "POLYGON")
+pa_bec <- st_collection_extract(pa_bec, type = "POLYGON")
 
 write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
