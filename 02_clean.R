@@ -38,15 +38,25 @@ pa_wha <- wha %>%
   select(approval_date) %>%
   filter(!is.na(approval_date)) %>%
   st_cast(to = "POLYGON", warn = FALSE) %>%
-  st_centroid() %>%
-  st_join(filter(pa, name_e == "Wildlife Habitat Areas"), .)
+  st_point_on_surface() %>%
+  st_join(
+    filter(pa, name_e == "Wildlife Habitat Areas") %>%
+      tibble::rownames_to_column(), .
+    ) %>%
+  group_by(rowname) %>%
+  slice_max(approval_date, with_ties = FALSE)
 
 pa_ogma <- ogma %>%
   select(legalization_frpa_date) %>%  # Other two dates are numeric, not date
   filter(!is.na(legalization_frpa_date)) %>%
   st_cast(to = "POLYGON", warn = FALSE) %>%
-  st_centroid() %>%
-  st_join(filter(pa, name_e == "Old Growth Management Areas (Mapped Legal)"), .)
+  st_point_on_surface() %>%
+  st_join(
+    filter(pa, name_e == "Old Growth Management Areas (Mapped Legal)") %>%
+      tibble::rownames_to_column(), .
+  ) %>%
+  group_by(rowname) %>%
+  slice_max(legalization_frpa_date, with_ties = FALSE)
 
 pa <- pa %>%
   filter(!name_e %in% c("Wildlife Habitat Areas",
