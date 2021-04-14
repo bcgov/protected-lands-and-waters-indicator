@@ -32,10 +32,8 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
 
-eco_area_all <- readRDS("../out/eco_area_all.rds") %>%
-  mutate(tooltip_date = if_else(missing,
-                                "Inc. unknown year of protection",
-                                as.character(date)),
+pa_eco_sum <- readRDS("../out/pa_eco_sum.rds") %>%
+  mutate(tooltip_date = as.character(date),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
                              levels = c("Land - OECM", "Land - PPA",
@@ -153,21 +151,19 @@ gg_area <- function(data, type = "region") {
           strip.background = element_blank(),
           strip.text = element_blank()) +
     geom_area(aes(fill = park_type)) +
-    geom_point(data = filter(data, missing), aes(y = point),
-               shape = "*", size = 6) +
     geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
                          na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
     scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
                        breaks = breaks_int) +
     scale_fill_manual(name = "Type", values = scale) +
-    labs(x = lab_year, y = lab_growth,
-         subtitle = if_else(any(data$missing),
-                            "Inc. areas with unknown date of protection (*)",
-                            "")) +
+    labs(x = lab_year, y = lab_growth)+#,
+         #subtitle = if_else(any(data$missing),
+                            #"Inc. areas with unknown date of protection (*)",
+                            #"")) +
     coord_cartesian(xlim = c(min(data$date), max(data$date)))
 
   if(type == "all") {
-    lim <- c(0, ceiling(max(data$point)))
+    lim <- c(0, ceiling(max(data$cum_p_type)))
     g <- g + facet_wrap(~ type, nrow = 1, scales = "free")
   } else lim <- NULL
 

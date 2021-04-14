@@ -125,7 +125,7 @@ shinyServer(function(input, output, session) {
 
     if(is.null(input$top_selected) || input$top_selected == "reset") {
       # Bottom #1 - Provincial Area plot
-      r <- mutate(eco_area_all, park_type = type_combo)
+      r <- mutate(pa_eco_sum, park_type = type_combo)
       g <- gg_area(r, type = "all")
     } else {
       # Bottom #2 - Ecoregion Area plot

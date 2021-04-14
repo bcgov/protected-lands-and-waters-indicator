@@ -68,6 +68,7 @@ pa_eco_df <- pa_eco %>%
   mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
 write_rds(pa_eco_df, "out/eco_area.rds")
 
+
 pa_eco_all_df <- pa_eco %>%
   mutate(total_area = st_area(geometry),
          d_max = max(date, na.rm = TRUE)) %>%
@@ -95,6 +96,28 @@ pa_eco_all_df <- pa_eco %>%
            fill = list(cum_p_type = 0, missing = FALSE)) %>%
   ungroup()
 write_rds(pa_eco_all_df, "out/eco_area_all.rds")
+
+#find total area of land/water by adding ecoregion area
+bc_totals<- pa_eco_df %>%
+  group_by(ecoregion_name) %>%
+  slice_head(n=1) %>%
+  ungroup() %>%
+  group_by(type) %>%
+  summarize(bc_total_by_type = sum(total)) %>%
+  ungroup()
+
+#find sum of park type by year for area plot
+pa_eco_sum <- pa_eco_all_df %>%
+  replace_na(list(total_area=0)) %>%
+  group_by(date, park_type, type) %>%
+  summarize(total_annual_by_park_type = sum(total_area), .groups = "drop") %>%
+  left_join(bc_totals)%>%
+  group_by(type, park_type) %>%
+  arrange(date, .by_group = TRUE) %>%
+  mutate(cumulative_by_type=cumsum(total_annual_by_park_type),
+         cum_p_type = cumulative_by_type/bc_total_by_type*100) %>%
+  ungroup()
+write_rds(pa_eco_sum, "out/pa_eco_sum.rds")
 
 
 # Summarize by bec zone region
