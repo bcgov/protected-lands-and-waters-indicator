@@ -163,12 +163,10 @@ gg_area <- function(data, type = "region") {
     coord_cartesian(xlim = c(min(data$date), max(data$date)))
 
   if(type == "all") {
-    lim <- c(0, ceiling(max(data$cum_p_type)))
-    g <- g + facet_wrap(~ type, nrow = 1, scales = "free")
+    g <- g + facet_wrap(~ type, nrow = 1)
   } else lim <- NULL
 
-  g <- g + scale_y_continuous(expand = expansion(mult = c(0, 0.05)),
-                              limits = lim)
+  g <- g + scale_y_continuous(expand = expansion(mult = c(0, 0.05)))
 
 
   g
