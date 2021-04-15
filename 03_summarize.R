@@ -53,7 +53,7 @@ system(glue("mapshaper-xl data/bec.geojson ",
             "-o data/bec_clipped.geojson"))
 
 system(glue("mapshaper-xl data/bec_clipped.geojson ",
-            "-simplify dp 50% ",
+            "-simplify 50% ",
             "-o data/bec_clipped_simp.geojson"))
 
 # Add ecoregions to PA ------------------------------------------------------
@@ -113,7 +113,7 @@ message("Simplify - Bec Zones")
 geojson_write(pa_bec, file = "data/pa_bec.geojson")
 
 system(glue("mapshaper-xl data/pa_bec.geojson ",
-            "-simplify dp 10% keep-shapes ",
+            "-simplify 5% keep-shapes ",
             "-o out/CPCAD_Dec2020_bec_simp.geojson"))
 
 # Simplify ecoregions background map ------------------------------------------
@@ -122,5 +122,5 @@ write_rds(eco, "out/eco_simp.rds")
 
 # Simplify bec zones background map ------------------------------------------
 system(glue("mapshaper-xl data/bec_clipped.geojson ",
-            "-simplify dp 5% keep-shapes ",
+            "-simplify 1% keep-shapes ",
             "-o out/bec_simp.geojson"))
