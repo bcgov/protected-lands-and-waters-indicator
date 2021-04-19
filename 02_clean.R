@@ -79,7 +79,7 @@ pa <- pa %>%
                      name_e == "S'Amunu Wildlife Management Area" ~ 2018L,
                      name_e == "Swan Lake Wildlife Management Area" ~ 2018L,
                      name_e == "Mctaggart-Cowan/Nsek'Iniw'T Wildlife Management Area" ~ 2013L,
-                     name_e == "Sea to Sky Wildland Zones" ~ 2011L),
+                     name_e == "Sea To Sky Wildland Zones" ~ 2011L),
     iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
                                            "V", "VI", "Yes", "N/A")),
     name_e = str_replace(name_e, "Widllife", "Wildlife"),
