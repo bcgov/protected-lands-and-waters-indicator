@@ -22,7 +22,10 @@ tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot
 # load datasets ------------------------------------------------------------------------------------
 
 load_data <- list(
-  tar_target(get_cpcad_bc_data, get_wha_data, get_ogma_data)
+  tar_target(get_cpcad_bc_data()),
+  tar_target(get_ogma_data()),
+  tar_target(get_wha_data())
+
 )
 
 
@@ -31,7 +34,7 @@ load_data <- list(
 
 # pipeline
 list(
-  load_data,
+  load_data
   #...
 )
 #add list(,
