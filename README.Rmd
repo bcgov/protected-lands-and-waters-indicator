@@ -33,14 +33,9 @@ A set of R scripts to complete the analysis behind the Environmental Indicator [
 
 ### Data
 
-The analysis uses data from several sources; they should be downloaded and stored in the `data` folder:
+The analysis uses data from several sources. The data does not need to be pre-downloaded to run the code. 
 
--   [Canadian Council on Ecological Areas (CCEA) shapefile database of
-    protected areas in Canada](http://www.ccea.org/download-carts-data/)
--   [B.C. Government Conservation
-    Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612) (Licence: `r get_data_license("ogl-bc")`)
--   [B.C. NGO Conservation Areas Database &mdash; Fee Simple
-    Areas](http://ltabc.ca/resources/2012-02-05-22-20-02)
+-   [Canadian Protected and Conserved Areas Database         (CPCAD)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
 -   [Ecoregions - Ecoregion Ecosystem Classification of British
     Columbia](https://catalogue.data.gov.bc.ca/dataset/d00389e0-66da-4895-bd56-39a0dd64aa78) (Licence: `r get_data_license("ogl-bc")`)
 -   [Biogeoclimatic Ecosystem Classification (BEC)

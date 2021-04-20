@@ -11,11 +11,28 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 library(targets)
+library(tarchetypes)
+
 source("R/functions.R")
 tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
                           "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
                           "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
                           "knitr", "rmarkdown", "kableExtra"))
 
+# load datasets ------------------------------------------------------------------------------------
+
+load_data <- list(
+  tar_target(get_cpcad_bc_data, get_wha_data, get_ogma_data)
+)
+
+
+
+
+
+# pipeline
+list(
+  load_data,
+  #...
+)
 #add list(,
 #tar_targets() for each intermediate step of workflow)
