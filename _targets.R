@@ -23,25 +23,40 @@ tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot
 # load datasets ------------------------------------------------------------------------------------
 
 load_data <- list(
-  tar_target(load_ogma, get_ogma_data()),
-  tar_target(load_wha, get_wha_data()),
-  tar_target(load_pa, get_cpcad_bc_data(crs="data/wha.rds"))
+  tar_target(wha_data, get_wha_data()),
+  tar_target(ogma_data, get_ogma_data()),
+  tar_target(pa_data, get_cpcad_bc_data(crs="data/wha.rds"))
 )
 
+# clean data --------------------------------------------------------------
+
+clean_data <- list(
+  tar_target(pa_wha, fill_in_dates(data=wha_data, column = "approval_date",
+                                   join= pa_data, landtype = "Wildlife Habitat Areas",
+                                   output=pa_wha)),
+  tar_target(pa_ogma, fill_in_dates(data=ogma_data, column = "legalization_frpa_date",
+                                    join= pa_data, landtype = "Old Growth Management Areas (Mapped Legal)",
+                                    output=pa_ogma)),
+  tar_target(clean_dates_pa, clean_up_dates(pa_data, pa_wha, pa_ogma, clean_dates_pa)),
+  tar_target(clean_pa, remove_overlaps(clean_dates_pa, clean_pa))
+)
+
+
+# intersect data ----------------------------------------------------------
 
 intersect_data <- list(
-  tar_target(pa_wha, fill_in_dates(data="data/wha.rds", column = "approval_date",
-                                   join= "data/CPCAD_Dec2020_BC_fixed.rds", landtype = "Wildlife Habitat Areas",
-                                   output=pa_wha)),
-  tar_target(pa_ogma, fill_in_dates(data="data/ogma.rds", column = "legalization_frpa_date",
-                                    join= "data/CPCAD_Dec2020_BC_fixed.rds", landtype = "Old Growth Management Areas (Mapped Legal)",
-                                    output=pa_ogma))
+  tar_target(ecoregions, load_ecoregions()),
+  tar_target(bec, load_bec()),
+  tar_target(clipped_bec, clip_bec_to_bc_boundary(bec)),
+  tar_target(pa_eco, intersect_eco_pa(ecoregions, clean_pa)),
+  tar_target(pa_bec, intersect_bec_pa(clipped_bec, clean_pa))
 )
 
+# targets pipeline --------------------------------------------------------
 
-# pipeline
 list(
   load_data,
+  clean_data,
   intersect_data
   #...
 )
