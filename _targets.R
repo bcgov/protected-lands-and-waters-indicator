@@ -17,24 +17,32 @@ source("R/functions.R")
 tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
                           "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
                           "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
-                          "knitr", "rmarkdown", "kableExtra"))
+                          "knitr", "rmarkdown", "kableExtra", "tibble"),
+               imports=c("bcmaps", "bcdata"))
 
 # load datasets ------------------------------------------------------------------------------------
 
 load_data <- list(
-  tar_target(get_cpcad_bc_data()),
-  tar_target(get_ogma_data()),
-  tar_target(get_wha_data())
-
+  tar_target(load_ogma, get_ogma_data()),
+  tar_target(load_wha, get_wha_data()),
+  tar_target(load_pa, get_cpcad_bc_data(crs="data/wha.rds"))
 )
 
 
-
+intersect_data <- list(
+  tar_target(pa_wha, fill_in_dates(data="data/wha.rds", column = "approval_date",
+                                   join= "data/CPCAD_Dec2020_BC_fixed.rds", landtype = "Wildlife Habitat Areas",
+                                   output=pa_wha)),
+  tar_target(pa_ogma, fill_in_dates(data="data/ogma.rds", column = "legalization_frpa_date",
+                                    join= "data/CPCAD_Dec2020_BC_fixed.rds", landtype = "Old Growth Management Areas (Mapped Legal)",
+                                    output=pa_ogma))
+)
 
 
 # pipeline
 list(
-  load_data
+  load_data,
+  intersect_data
   #...
 )
 #add list(,

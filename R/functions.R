@@ -11,7 +11,23 @@
 # See the License for the specific language governing permissions and limitations under the License.
 
 
-get_cpcad_bc_data <- function() {
+# Loading data functions --------------------------------------------------
+
+get_wha_data <- function(){
+   bcdc_get_data("WHSE_WILDLIFE_MANAGEMENT.WCP_WILDLIFE_HABITAT_AREA_POLY") %>%
+      rename_with(tolower) %>%
+      write_rds("data/wha.rds")
+}
+
+get_ogma_data <- function (){
+  bcdc_query_geodata("WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW") %>%
+    collect() %>%
+    rename_with(tolower) %>%
+    write_rds("data/ogma.rds")
+}
+
+get_cpcad_bc_data <- function(crs) {
+
   f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
   ff <- file.path("data", str_remove(f, ".zip"))
   if(!dir.exists(ff)){
@@ -29,25 +45,33 @@ get_cpcad_bc_data <- function() {
   pa <- filter(pa, !(aichi_t11 == "No" & oecm == "No"))
 
   # Fix problems
-  pa <- st_make_valid(pa)        # Fix Ring Self-intersections
+  pa <- st_make_valid(pa)
+
+  # Apply crs from wildlife habitat area for direct comparison
+  pa <- pa %>%
+    st_transform(st_crs(read_rds(crs))) %>%
+    mutate(area_all = as.numeric(st_area(.)))
+
+  pa <- st_cast(pa, to = "POLYGON", warn = FALSE)l
 
   # Save file for comparisons
   write_rds(pa, "data/CPCAD_Dec2020_BC_fixed.rds")
+}
+# Intersections for added dates -----------------------------------------
 
-  return(pa)
+
+fill_in_dates <- function(data, column, join, landtype, output){
+
+  output <- read_rds(data) %>%
+  select(all_of(column)) %>%
+  filter(!is.na(column)) %>%
+  st_cast(to = "POLYGON", warn = FALSE) %>%
+  st_point_on_surface() %>%
+    st_join(
+      filter(read_rds(join), name_e == landtype) %>%
+        tibble::rownames_to_column(), .
+    ) %>%
+    group_by(rowname) %>%
+    slice_max(column, with_ties = FALSE)
 }
 
-get_wha_data <- function(){
-  if(!file.exists("data/wha.rds")) {
-   bcdc_get_data("WHSE_WILDLIFE_MANAGEMENT.WCP_WILDLIFE_HABITAT_AREA_POLY") %>%
-      write_rds("data/wha.rds")
-}
-}
-
-get_ogma_data <- function (){
-  if(!file.exists("data/ogma.rds")) {
-  bcdc_query_geodata("WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW") %>%
-    collect() %>%
-    write_rds("data/ogma.rds")
-  }
-}
