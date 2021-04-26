@@ -40,11 +40,14 @@ pa %>%
 #' How many missing dates at the start?
 pa %>%
   filter(is.na(protdate)) %>%
-  count(name_e) %>%
+  group_by(name_e) %>%
+  summarise(area=sum(area_all), n=n()) %>%
   arrange(desc(n))
+
 
 #' How many missing dates after adding dates?
 pa %>%
   filter(is.na(date)) %>%
-  count(name_e) %>%
+  group_by(name_e) %>%
+  summarise(area=sum(area_all), n=n()) %>%
   arrange(desc(n))

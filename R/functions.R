@@ -59,6 +59,22 @@ get_cpcad_bc_data <- function(crs) {
   # Save file for comparisons
   write_rds(pa_data, "data/CPCAD_Dec2020_BC_fixed.rds")
 }
+
+load_ecoregions <- function(){
+  marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
+  output <- ecoregions(ask = FALSE) %>%
+    rename_all(tolower) %>%
+    select(ecoregion_code, ecoregion_name) %>%
+    mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
+           type = if_else(ecoregion_code %in% marine_eco, "water", "land"))
+}
+
+load_bec <- function(){
+  bec <- bec(ask = FALSE) %>%
+    rename_all(tolower) %>%
+    select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
+}
+
 # Intersections with wha and ogma data to add dates -----------------------------------------
 
 fill_in_dates <- function(data, column, join, landtype, output){
@@ -115,29 +131,12 @@ remove_overlaps <- function(data, output){
 
 # Calculate ecoregion and bec zone protected areas ------------------------
 
-load_ecoregions <- function(){
-  marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
-  ecoregions <- ecoregions(ask = FALSE) %>%
-    rename_all(tolower) %>%
-    select(ecoregion_code, ecoregion_name) %>%
-    mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
-           type = if_else(ecoregion_code %in% marine_eco, "water", "land"))
-}
-
-load_bec <- function(){
-  bec <- bec(ask = FALSE) %>%
-    rename_all(tolower) %>%
-    select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
-}
-
 clip_bec_to_bc_boundary<- function(data){
   # Clip BEC to BC outline ----------------------------------------------------
   # We'll need simplified becs for plotting later
   # NOTE: geojson doesn't have CRS so have to remind R that CRS is BC Albers
   #       (It will warn that it's not transforming)
   bc <- bc_bound_hres(ask = FALSE)
-
-  message("Clip BEC to BC outline")
 
   geojson_write(data, file = "data/bec.geojson")
   geojson_write(bc, file = "data/bc.geojson")
@@ -149,6 +148,7 @@ clip_bec_to_bc_boundary<- function(data){
   system(glue("mapshaper-xl data/bec_clipped.geojson ",
               "-simplify 50% ",
               "-o data/bec_clipped_simp.geojson"))
+
 }
 
 intersect_eco_pa <- function(input1, input2){
@@ -157,13 +157,14 @@ intersect_eco_pa <- function(input1, input2){
   write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 }
 
-intersect_eco_bec <- function(input1, input2){
-  # Add bec zones to PA -------------------------------------------------------
-  message("Add bec zones")
-  bec <- st_read(input1, crs = 3005) %>%
+intersect_bec_pa <- function(input1, input2){ # Add bec zones to PA -------------
+  bec_zones <- st_read(input1, crs = 3005) %>%
     st_make_valid()
-  pa_bec <- st_intersection(input1, input2)%>%
+  pa_bec <- st_intersection(bec_zones, input2)%>%
     st_collection_extract(type = "POLYGON")
   write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
 }
+
+# Analysis for visualization ---------------------------------
+
 

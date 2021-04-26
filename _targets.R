@@ -25,7 +25,9 @@ tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot
 load_data <- list(
   tar_target(wha_data, get_wha_data()),
   tar_target(ogma_data, get_ogma_data()),
-  tar_target(pa_data, get_cpcad_bc_data(crs="data/wha.rds"))
+  tar_target(pa_data, get_cpcad_bc_data(crs="data/wha.rds")),
+  tar_target(ecoregions, load_ecoregions()),
+  tar_target(bec, load_bec())
 )
 
 # clean data --------------------------------------------------------------
@@ -41,15 +43,12 @@ clean_data <- list(
   tar_target(clean_pa, remove_overlaps(clean_dates_pa, clean_pa))
 )
 
-
 # intersect data ----------------------------------------------------------
 
 intersect_data <- list(
-  tar_target(ecoregions, load_ecoregions()),
-  tar_target(bec, load_bec()),
   tar_target(clipped_bec, clip_bec_to_bc_boundary(bec)),
   tar_target(pa_eco, intersect_eco_pa(ecoregions, clean_pa)),
-  tar_target(pa_bec, intersect_bec_pa(clipped_bec, clean_pa))
+  tar_target(pa_bec, intersect_bec_pa("data/bec_clipped_simp.geojson", clean_pa))
 )
 
 # targets pipeline --------------------------------------------------------
