@@ -47,8 +47,8 @@ clean_data <- list(
 
 intersect_data <- list(
   tar_target(clipped_bec, clip_bec_to_bc_boundary(bec)),
-  tar_target(pa_eco, intersect_eco_pa(ecoregions, clean_pa)),
-  tar_target(pa_bec, intersect_bec_pa("data/bec_clipped_simp.geojson", clean_pa))
+  tar_target(pa_eco, intersect_pa(ecoregions, clean_pa, pa_eco)),
+  tar_target(pa_bec, intersect_pa(clipped_bec, clean_pa, pa_bec))
 )
 
 # targets pipeline --------------------------------------------------------

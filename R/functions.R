@@ -15,21 +15,18 @@
 
 get_wha_data <- function(){
   wha_data <- bcdc_get_data("WHSE_WILDLIFE_MANAGEMENT.WCP_WILDLIFE_HABITAT_AREA_POLY") %>%
-      rename_with(tolower) %>%
-      write_rds("data/wha.rds")
-  return(wha_data)
+      rename_with(tolower)
+  wha_data
 }
 
 get_ogma_data <- function(){
   ogma_data <- bcdc_query_geodata("WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW") %>%
     collect() %>%
-    rename_with(tolower) %>%
-    write_rds("data/ogma.rds")
-  return(ogma_data)
+    rename_with(tolower)
+  ogma_data
 }
 
 get_cpcad_bc_data <- function(crs) {
-
   f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
   ff <- file.path("data", str_remove(f, ".zip"))
   if(!dir.exists(ff)){
@@ -37,59 +34,49 @@ get_cpcad_bc_data <- function(crs) {
     unzip(f, exdir = "data")
     unlink(f)
   }
-  st_layers(ff) #list available layers
 
   pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
-    rename_all(tolower)
-
-  pa <- filter(pa, str_detect(loc_e, "Pacific|British Columbia"))
-
-  pa <- filter(pa, !(aichi_t11 == "No" & oecm == "No"))
-
-  # Fix problems
-  pa <- st_make_valid(pa)
-
-  # Apply crs from wildlife habitat area for direct comparison
-  pa <- pa %>%
-    st_transform(st_crs(read_rds(crs))) %>%
-    mutate(area_all = as.numeric(st_area(.)))
-
-  pa_data <- st_cast(pa, to = "POLYGON", warn = FALSE)
-
-  # Save file for comparisons
-  write_rds(pa_data, "data/CPCAD_Dec2020_BC_fixed.rds")
+    rename_all(tolower) %>%
+    filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
+    filter(!(aichi_t11 == "No" & oecm == "No")) %>%
+    st_make_valid() %>%
+    st_transform(st_crs(read_rds(crs))) %>% # Apply crs from wildlife habitat area for direct comparison
+    mutate(area_all = as.numeric(st_area(.))) %>%
+    st_cast(to = "POLYGON", warn = FALSE)
+  pa
 }
 
 load_ecoregions <- function(){
   marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
-  output <- ecoregions(ask = FALSE) %>%
+  eco <- ecoregions(ask = FALSE) %>%
     rename_all(tolower) %>%
     select(ecoregion_code, ecoregion_name) %>%
     mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
            type = if_else(ecoregion_code %in% marine_eco, "water", "land"))
+  eco
 }
 
 load_bec <- function(){
   bec <- bec(ask = FALSE) %>%
     rename_all(tolower) %>%
     select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
+  bec
 }
 
 # Intersections with wha and ogma data to add dates -----------------------------------------
 
 fill_in_dates <- function(data, column, join, landtype, output){
-
   output <- data %>%
-  select(all_of(column)) %>%
-  filter(!is.na(column)) %>%
-  st_cast(to = "POLYGON", warn = FALSE) %>%
-  st_point_on_surface() %>%
+    select(all_of(column)) %>%
+    filter(!is.na(column)) %>%
+    st_cast(to = "POLYGON", warn = FALSE) %>%
     st_join(
       filter(join, name_e == landtype) %>%
         tibble::rownames_to_column(), .
     ) %>%
     group_by(rowname) %>%
     slice_max(column, with_ties = FALSE)
+  output
 }
 
 # Clean up protected areas db ------------------------------------
@@ -115,9 +102,7 @@ clean_up_dates <- function(data, input1, input2, output){
       name_e = str_replace(name_e, "Widllife", "Wildlife"),
       park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
     arrange(desc(oecm), iucn_cat, date, area_all)
-
-  # Save file for comparisons
-  write_rds(output, "data/CPCAD_Dec2020_BC_clean.rds")
+  output
 }
 
 remove_overlaps <- function(data, output){
@@ -126,7 +111,8 @@ remove_overlaps <- function(data, output){
     st_make_valid() %>%
     st_difference() %>%                             # Remove overlaps (~45min)
     st_make_valid()        # Fix Self-intersections (again!)
-  write_rds(output, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
+  output
+  write_rds(output, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
 
 # Calculate ecoregion and bec zone protected areas ------------------------
@@ -148,21 +134,16 @@ clip_bec_to_bc_boundary<- function(data){
   system(glue("mapshaper-xl data/bec_clipped.geojson ",
               "-simplify 50% ",
               "-o data/bec_clipped_simp.geojson"))
-
-}
-
-intersect_eco_pa <- function(input1, input2){
-  pa_eco <- st_intersection(input1, input2) %>%
-    st_collection_extract(type = "POLYGON")
-  write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-}
-
-intersect_bec_pa <- function(input1, input2){ # Add bec zones to PA -------------
-  bec_zones <- st_read(input1, crs = 3005) %>%
+  output <- st_read("data/bec_clipped_simp.geojson", crs=3005)%>%
     st_make_valid()
-  pa_bec <- st_intersection(bec_zones, input2)%>%
+  output
+}
+
+intersect_pa <- function(input1, input2, output){
+  output <- st_intersection(input1, input2) %>%
     st_collection_extract(type = "POLYGON")
-  write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+  write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
+  output
 }
 
 # Analysis for visualization ---------------------------------
