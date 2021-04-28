@@ -27,11 +27,10 @@ load_data <- list(
   tar_target(ogma_data, get_ogma_data()),
   tar_target(pa_data, get_cpcad_bc_data(crs="data/wha.rds")),
   tar_target(ecoregions, load_ecoregions()),
-  tar_target(bec, load_bec())
+  tar_target(bec_zones, load_bec())
 )
 
 # clean data --------------------------------------------------------------
-
 clean_data <- list(
   tar_target(pa_wha, fill_in_dates(data=wha_data, column = "approval_date",
                                    join= pa_data, landtype = "Wildlife Habitat Areas",
@@ -44,13 +43,11 @@ clean_data <- list(
 )
 
 # intersect data ----------------------------------------------------------
-
 intersect_data <- list(
-  tar_target(clipped_bec, clip_bec_to_bc_boundary(bec)),
+  tar_target(clipped_bec, clip_bec_to_bc_boundary(bec_zones)),
   tar_target(pa_eco, intersect_pa(ecoregions, clean_pa, pa_eco)),
   tar_target(pa_bec, intersect_pa(clipped_bec, clean_pa, pa_bec))
 )
-
 
 # simplify spatial data  --------------------------------------------------
 simplify_data <- list(
@@ -64,7 +61,7 @@ simplify_data <- list(
 analyze_data <- list(
   tar_target(ecoregion_totals, find_ecoregion_size(ecoregions)),
   tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, ecoregion_totals)),
-  tar_target(pa_bec_sum, protected_area_by_bec(bec, pa_bec)),
+  tar_target(pa_bec_sum, protected_area_by_bec(bec_zones, pa_bec)),
   tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum))
 )
 
@@ -76,7 +73,6 @@ plot_data <- list(
 )
 
 # targets pipeline --------------------------------------------------------
-
 list(
   load_data,
   clean_data,
