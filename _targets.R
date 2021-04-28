@@ -51,12 +51,30 @@ intersect_data <- list(
   tar_target(pa_bec, intersect_pa(clipped_bec, clean_pa, pa_bec))
 )
 
+
+# simplify spatial data  --------------------------------------------------
+simplify_data <- list(
+  tar_target(map_eco, simplify_ecoregions(pa_eco)),
+  tar_target(map_bec, simplify_beczones(pa_bec)),
+  tar_target(map_eco_background, simplify_eco_background(ecoregions)),
+  tar_target(map_bec_background, simplify_bec_background())
+)
+
+# analyze and prepare for visualization -----------------------------------
+analyze_data <- list(
+  tar_target(ecoregion_totals, find_ecoregion_size(ecoregions)),
+  tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, ecoregion_totals)),
+  tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum)),
+  tar_target(pa_bec_sum, protected_area_by_bec(bec, pa_bec))
+)
+
 # targets pipeline --------------------------------------------------------
 
 list(
   load_data,
   clean_data,
-  intersect_data
+  intersect_data,
+  analyze_data
   #...
 )
 #add list(,
