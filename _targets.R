@@ -12,13 +12,13 @@
 
 library(targets)
 library(tarchetypes)
-
+source("packages.R")
 source("R/functions.R")
-tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
-                          "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
-                          "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
-                          "knitr", "rmarkdown", "kableExtra", "tibble"),
-               imports=c("bcmaps", "bcdata"))
+#tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
+#                          "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
+#                          "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
+#                          "knitr", "rmarkdown", "kableExtra", "tibble"),
+#               imports=c("bcmaps", "bcdata"))
 
 # load datasets ------------------------------------------------------------------------------------
 
@@ -69,7 +69,8 @@ analyze_data <- list(
 plot_data <- list(
   tar_target(bec_plot_type, plot_by_bec_zone(pa_bec_sum)),
   tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum)),
-  tar_target(bec_map_figure, bec_zone_map(map_bec))
+  tar_target(bec_map_figure, bec_zone_map(map_bec)),
+  tar_target(bc_button, create_bc_button())
 )
 
 # targets pipeline --------------------------------------------------------

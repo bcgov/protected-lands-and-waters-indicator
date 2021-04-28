@@ -360,3 +360,14 @@ bec_zone_map <- function(data){
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
+
+create_bc_button <- function(){
+  output <- bc_bound() %>%
+    st_geometry() %>%
+    ms_simplify(0.02, explode = TRUE, keep_shapes = FALSE) %>%
+    ggplot() +
+    theme_void() +
+    ggiraph::geom_sf_interactive(fill = "black", data_id = "reset")
+  write_rds(output, "out/bc_button.rds")
+  output
+}
