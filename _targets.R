@@ -64,8 +64,15 @@ simplify_data <- list(
 analyze_data <- list(
   tar_target(ecoregion_totals, find_ecoregion_size(ecoregions)),
   tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, ecoregion_totals)),
-  tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum)),
-  tar_target(pa_bec_sum, protected_area_by_bec(bec, pa_bec))
+  tar_target(pa_bec_sum, protected_area_by_bec(bec, pa_bec)),
+  tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum))
+)
+
+# supplemental bec zone plots ---------------------------------------------
+plot_data <- list(
+  tar_target(bec_plot_type, plot_by_bec_zone(pa_bec_sum)),
+  tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum)),
+  tar_target(bec_map_figure, bec_zone_map(map_bec))
 )
 
 # targets pipeline --------------------------------------------------------
@@ -74,7 +81,9 @@ list(
   load_data,
   clean_data,
   intersect_data,
-  analyze_data
+  simplify_data,
+  analyze_data,
+  plot_data
   #...
 )
 #add list(,

@@ -317,3 +317,46 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
   output
 }
 
+# Bec zone supplemental plots ------------------------------------------------------
+
+plot_by_bec_zone <- function(data){
+  bar1 <- ggplot(data,
+                 aes(x = p_area, y = zone_name, fill = zone, alpha = park_type)) +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.major.y = element_blank(),
+          legend.position = c(0.7, 0.3)) +
+    geom_bar(width = 0.9, stat = "identity") +
+    labs(x = "Percent Area Protected", y = "Biogeoclimatic Zone") +
+    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+    scale_x_continuous(expand = c(0,0)) +
+    guides(alpha = guide_legend(override.aes = list(fill = "black")))
+  ggsave("out/bec_bar1.png", bar1, width = 6, height = 6, dpi = 300)
+  bar1
+}
+
+plot_bec_zone_totals<- function(data){
+  bar2 <- ggplot(data %>%  select(zone_name, zone, p_zone) %>% distinct(),
+                 aes(x = p_zone, y = zone_name, fill = zone)) +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.major.y = element_blank()) +
+    geom_bar(width = 0.9, stat = "identity") +
+    labs(x = "Percent Area Protected", y = "Biogeoclimatic Zone") +
+    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    scale_x_continuous(expand = c(0,0))
+  ggsave("out/bec_bar2.png", bar2, width = 6, height = 6, dpi = 300)
+  bar2
+}
+
+bec_zone_map <- function(data){
+  map<-ggplot() +
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.25, size = 25)) +
+    geom_sf(data = data, aes(fill = zone), colour = NA)+
+    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(title = "Biogeoclimatic Zones of B.C.")
+  ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
+  map
+}
