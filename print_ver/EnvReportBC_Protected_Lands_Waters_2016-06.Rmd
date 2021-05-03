@@ -1,10 +1,13 @@
 ---
-topic: "land"
+topic: "Land"
 title: "Protected Lands & Waters in B.C."
-output: envreportutils.internal::print_ver
+output: 
+  pdf_document: envreportutils.internal::print_ver
+  html_document:
+    self_contained: false
 ---
 <!--
-Copyright 2018 Province of British Columbia
+Copyright 2021 Province of British Columbia
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,27 +20,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 -->
 
+```{r setup, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2) #plotting
+library(envreportutils) #for theme_soe and theme_soe_facet
+library(scales) #for label = comma
+library(forcats) # fct_rev() for stacking order
+library(RColorBrewer) #for colour palette
+library(dplyr)
+library(knitr) #for rendering the PDF
+library(here)
+library(reshape2)
+library(plotly)
 
-```{r setup, include=FALSE}
-library(ggplot2)
-library(envreportutils)
+opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
 
-root <- rprojroot::is_rstudio_project
+#### stopped here loading files next part
 
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE)
-load(root$find_file("tmp/out_gg.rda"))
-load(root$find_file("tmp/out_data.rda"))
+if (!exists("ghg_time")) load(here("tmp", "plots.RData"))
+if (!exists("ghg_est")) load(here("tmp", "clean_data.RData"))
 ```
 
 
-Protected lands and waters are legally established areas set aside to
-conserve nature and cultural values. British Columbia's network of
-protected lands and waters contribute to the global and Canadian targets
-to set aside, by 2020, at least 17% of terrestrial areas and inland
-water and 10% of coastal and marine areas through networks of protected
-areas and other effective area-based conservation measures.^1,2^
-This indicator reports on the trends in the establishment and status of
-protected lands and waters in British Columbia.
+Protected lands and waters are legally established areas set aside to conserve nature and cultural values. Canada adopted [UN Conventional on Biological Diversity targets](https://www.cbd.int/sp/targets/rationale/target-11/) to protect at least 17% of terrestrial areas and inland water and 10% of coastal and marine areas by 2020, which Canada has since extended until 2023 [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). British Columbia's network of protected areas and other effective area-based conservation measures contribute to the Canadian, and global targets. 
 
 -   **Protected lands and waters cover 15.4% of B.C.'s land base and
     3.2% of B.C.'s marine areas.** In the terrestrial realm, 15.0% is in provincial and federal parks and     protected areas, while the remaining 0.4% is in other provincial and federal designations such as Wildlife Management Areas and National Wildlife Areas, and private conservation lands.

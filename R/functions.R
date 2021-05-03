@@ -37,8 +37,8 @@ get_cpcad_bc_data <- function(crs) {
 
   pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
     rename_all(tolower) %>%
-    filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
-    filter(!(aichi_t11 == "No" & oecm == "No")) %>%
+    dplyr::filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
+    dplyr::filter(!(aichi_t11 == "No" & oecm == "No")) %>%
     st_make_valid() %>%
     st_transform(st_crs(read_rds(crs))) %>% # Apply crs from wildlife habitat area for direct comparison
     mutate(area_all = as.numeric(st_area(.))) %>%
@@ -68,10 +68,10 @@ load_bec <- function(){
 fill_in_dates <- function(data, column, join, landtype, output){
   output <- data %>%
     select(all_of(column)) %>%
-    filter(!is.na(column)) %>%
+    dplyr::filter(!is.na(column)) %>%
     st_cast(to = "POLYGON", warn = FALSE) %>%
     st_join(
-      filter(join, name_e == landtype) %>%
+      dplyr::filter(join, name_e == landtype) %>%
         tibble::rownames_to_column(), .
     ) %>%
     group_by(rowname) %>%
@@ -83,7 +83,7 @@ fill_in_dates <- function(data, column, join, landtype, output){
 
 clean_up_dates <- function(data, input1, input2, output){
   output <- data %>%
-    filter(!name_e %in% c("Wildlife Habitat Areas",
+    dplyr::filter(!name_e %in% c("Wildlife Habitat Areas",
                           "Old Growth Management Areas (Mapped Legal)")) %>%
     bind_rows(input1, input2)
 
@@ -168,22 +168,21 @@ simplify_beczones<-function(data){# Simplify bec zones for plotting  ---
   system(glue("mapshaper-xl data/pa_bec.geojson ",
               "-simplify 5% keep-shapes ",
               "-o out/CPCAD_Dec2020_bec_simp.geojson"))
-  output<-st_read("out/CPCAD_Dec2020_bec_simp.geojson", crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
-    st_make_valid()
+  output<-st_read("out/CPCAD_Dec2020_bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
 simplify_eco_background<- function(data){# Simplify ecoregions background map ---
   output<- ms_simplify(data, keep = 0.01)
-  write_rds(eco, "out/eco_simp.rds")
+  write_rds(output, "out/eco_simp.rds")
   output
 }
 
 simplify_bec_background<-function(){# Simplify bec zones background map ---
   system(glue("mapshaper-xl data/bec_clipped.geojson ",
+              "-simplify 1% keep-shapes ",
               "-o out/bec_simp.geojson"))
-  output<-st_read("out/bec_simp.geojson", crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
-    st_make_valid()
+  output<-st_read("out/bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
