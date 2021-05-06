@@ -25,7 +25,7 @@ source("R/functions.R")
 load_data <- list(
   tar_target(wha_data, get_wha_data()),
   tar_target(ogma_data, get_ogma_data()),
-  tar_target(pa_data, get_cpcad_bc_data(crs="data/wha.rds")),
+  tar_target(pa_data, get_cpcad_bc_data()),
   tar_target(ecoregions, load_ecoregions()),
   tar_target(bec_zones, load_bec())
 )

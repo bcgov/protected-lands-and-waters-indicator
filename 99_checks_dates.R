@@ -51,3 +51,20 @@ pa %>%
   group_by(name_e) %>%
   summarise(area=sum(area_all), n=n()) %>%
   arrange(desc(n))
+
+pa %>%
+  filter(is.na(date)) %>%
+  filter(name_e == "Old Growth Management Areas (Mapped Legal)") %>%
+  arrange(desc(parent_id))
+
+ogma_no_date <- pa %>%
+  filter(is.na(date)) %>%
+  filter(name_e == "Old Growth Management Areas (Mapped Legal)") %>%
+  arrange(desc(parent_id))
+geojson_write(ogma_no_date, file = "data/ogma_no_dates.geojson")
+
+wha_no_date <- pa %>%
+  filter(is.na(date)) %>%
+  filter(name_e == "Wildlife Habitat Areas") %>%
+  arrange(desc(parent_id))
+geojson_write(wha_no_date, file = "data/wha_no_dates.geojson")

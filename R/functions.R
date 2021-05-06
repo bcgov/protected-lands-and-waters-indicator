@@ -26,7 +26,7 @@ get_ogma_data <- function(){
   ogma_data
 }
 
-get_cpcad_bc_data <- function(crs) {
+get_cpcad_bc_data <- function() {
   f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
   ff <- file.path("data", str_remove(f, ".zip"))
   if(!dir.exists(ff)){
@@ -40,7 +40,7 @@ get_cpcad_bc_data <- function(crs) {
     dplyr::filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
     dplyr::filter(!(aichi_t11 == "No" & oecm == "No")) %>%
     st_make_valid() %>%
-    st_transform(st_crs(read_rds(crs))) %>% # Apply crs from wildlife habitat area for direct comparison
+    st_transform(st_crs(3005)) %>% # Apply crs from wildlife habitat area for direct comparison
     mutate(area_all = as.numeric(st_area(.))) %>%
     st_cast(to = "POLYGON", warn = FALSE)
   pa
@@ -52,14 +52,16 @@ load_ecoregions <- function(){
     rename_all(tolower) %>%
     select(ecoregion_code, ecoregion_name) %>%
     mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
-           type = if_else(ecoregion_code %in% marine_eco, "water", "land"))
+           type = if_else(ecoregion_code %in% marine_eco, "water", "land")) %>%
+    st_cast(to="POLYGON", warn = FALSE)
   eco
 }
 
 load_bec <- function(){
   bec <- bec(ask = FALSE) %>%
     rename_all(tolower) %>%
-    select(zone, subzone, zone_name, subzone_name, natural_disturbance_name)
+    select(zone, subzone, zone_name, subzone_name, natural_disturbance_name) %>%
+    st_cast(to="POLYGON", warn = FALSE)
   bec
 }
 
@@ -70,6 +72,7 @@ fill_in_dates <- function(data, column, join, landtype, output){
     select(all_of(column)) %>%
     dplyr::filter(!is.na(column)) %>%
     st_cast(to = "POLYGON", warn = FALSE) %>%
+    st_point_on_surface() %>%
     st_join(
       dplyr::filter(join, name_e == landtype) %>%
         tibble::rownames_to_column(), .
@@ -101,7 +104,9 @@ clean_up_dates <- function(data, input1, input2, output){
                                              "V", "VI", "Yes", "N/A")),
       name_e = str_replace(name_e, "Widllife", "Wildlife"),
       park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
-    arrange(desc(oecm), iucn_cat, date, area_all)
+    arrange(desc(oecm), iucn_cat, date, area_all) %>%
+    st_cast() %>%
+    st_cast(to="POLYGON", warn = FALSE)
   output
 }
 
@@ -115,14 +120,8 @@ remove_overlaps <- function(data, output){
   write_rds(output, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
 
-intersect_pa <- function(input1, input2, output){
-  output <- st_intersection(input1, input2) %>%
-    st_collection_extract(type = "POLYGON")
-  write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
-  output
-}
 
-# Simplify spatial data for visualization---------------------------------------------------
+# intersect data ----------------------------------------------------------
 
 clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
   bc <- bc_bound_hres(ask = FALSE)
@@ -137,9 +136,21 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
               "-simplify 50% ",
               "-o data/bec_clipped_simp.geojson"))
   output <- st_read("data/bec_clipped_simp.geojson", crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
-    st_make_valid()
+    st_make_valid() %>%
+    st_cast() %>%
+    st_cast(to="POLYGON", warn = FALSE)
   output
 }
+
+intersect_pa <- function(input1, input2, output){
+  output <- st_intersection(input1, input2) %>%
+    st_collection_extract(type = "POLYGON")
+  write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
+  output
+}
+
+# Simplify spatial data for visualization---------------------------------------------------
+
 # Run by region/zone
 #  - Much faster and no crashing (on my computer at least)
 #  - Allows simplifying to different degrees for different regions
