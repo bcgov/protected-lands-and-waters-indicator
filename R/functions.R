@@ -145,7 +145,7 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
 intersect_pa <- function(input1, input2, output){
   output <- st_intersection(input1, input2) %>%
     st_collection_extract(type = "POLYGON")
-  write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
+  #write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
   output
 }
 
@@ -159,7 +159,7 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
   eco_simp <- slice(data, 0)
   for(e in unique(data$ecoregion_code)) {
     message(e)
-    temp <- filter(data, ecoregion_code == e)
+    temp <- dplyr::filter(data, ecoregion_code == e)
     keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
     keep <- case_when(nrow(temp) < 50 ~ 1,
                       nrow(temp) < 1000 ~ 0.1,
@@ -168,7 +168,7 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
                                                             keep_shapes = keep_shapes)
     eco_simp <- rbind(eco_simp, region)
   }
-  output <- filter(eco_simp, !st_is_empty(eco_simp))
+  output <- dplyr::filter(eco_simp, !st_is_empty(eco_simp))
   write_rds(eco_simp, "out/CPCAD_Dec2020_eco_simp.rds")
   output
 }
@@ -268,7 +268,7 @@ protected_area_totals<- function(data, eco_area_data){
     mutate(cum_type = cumsum(total_area),
            total_type = sum(total_area)) %>%
     ungroup() %>%
-    mutate(total = sum(eco_totals$total),
+    mutate(total = sum(eco_area_data$total),
            p_type = total_type / total * 100,
            cum_p_type = cum_type / total * 100) %>%
     group_by(date) %>%
@@ -323,11 +323,11 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
     mutate(zone_name = str_replace_all(zone_name, "--", " — "),
            zone_name = factor(zone_name, levels = unique(zone_name)))
 
-  write_rds(pa_bec_df, "out/bec_area.rds")
+  write_rds(output, "out/bec_area.rds")
   output
 }
 
-# Bec zone supplemental plots ------------------------------------------------------
+# Supplemental plots ------------------------------------------------------
 
 plot_by_bec_zone <- function(data){
   bar1 <- ggplot(data,
@@ -380,4 +380,42 @@ create_bc_button <- function(){
     ggiraph::geom_sf_interactive(fill = "black", data_id = "reset")
   write_rds(output, "out/bc_button.rds")
   output
+}
+
+bc_map <- function(data){
+
+  ld_cities <- st_intersection(bcmaps::nr_districts(), bcmaps::bc_cities()) %>%
+    group_by(DISTRICT_NAME) %>%
+    slice_max(POP_2000, n=1) %>%
+    dplyr::select(DISTRICT_NAME, NAME, POP_2000, geometry)
+
+  scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
+  scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
+  scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
+  scale_combo <- setNames(c(scale_land, scale_water),
+                          c("Land - OECM", "Land - PPA",
+                            "Water - OECM", "Water - PPA"))
+  output <- data %>%
+    mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+           type_combo = factor(type_combo,
+                               levels = c("Land - OECM", "Land - PPA",
+                                          "Water - OECM", "Water - PPA"))) %>%
+    group_by(date, type) %>%
+    ungroup()
+
+
+  map<-ggplot() +
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.25, size = 25)) +
+    geom_sf(data = output, aes(fill = type_combo), colour = NA)+
+    geom_sf(data=ld_cities)+
+    geom_sf(data = bc_bound(), aes(fill=NA))+
+    geom_text(data=ld_cities, aes(label=NAME))+ #need to fix this on Monday
+    scale_fill_manual(values = scale_combo) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0)) +
+    labs(title = "Distribution of Protected Areas in B.C.") +
+    theme(legend.title=element_blank())
+  ggsave("out/prov_map.png", map, width = 11, height = 10, dpi = 300)
+  map
 }

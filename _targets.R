@@ -22,7 +22,7 @@ source("R/functions.R")
 
 # load datasets ------------------------------------------------------------------------------------
 
-load_data <- list(
+data_load <- list(
   tar_target(wha_data, get_wha_data()),
   tar_target(ogma_data, get_ogma_data()),
   tar_target(pa_data, get_cpcad_bc_data()),
@@ -75,7 +75,7 @@ plot_data <- list(
 
 # targets pipeline --------------------------------------------------------
 list(
-  load_data,
+  data_load,
   clean_data,
   intersect_data,
   simplify_data,
