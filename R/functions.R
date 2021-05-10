@@ -72,7 +72,6 @@ fill_in_dates <- function(data, column, join, landtype, output){
     select(all_of(column)) %>%
     dplyr::filter(!is.na(column)) %>%
     st_cast(to = "POLYGON", warn = FALSE) %>%
-    st_point_on_surface() %>%
     st_join(
       dplyr::filter(join, name_e == landtype) %>%
         tibble::rownames_to_column(), .

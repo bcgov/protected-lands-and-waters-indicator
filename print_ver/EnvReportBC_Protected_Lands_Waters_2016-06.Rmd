@@ -44,8 +44,8 @@ Protected lands and waters are legally established areas set aside to conserve n
 
 There are different types of conserved areas in B.C. that contribute to Canada's Target 1 progress [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s contributions to Target 1 include parks and protected areas (PPAs) and other effective area-based conservation measures (OECMs). PPAs are areas typically designated through through legal or other effective means for long-term conservation. Examples of PPAs include National and B.C. Parks, Indigenous-led land-use planning areas, Wildlife Refuges, Natural Areas, Habitat Protection Areas, and Ecological & Biodiversity Reserves. OECMs are conserved areas other than PPAs that similarly seek long-term conservation of biodiversity, ecosystem functions, and applicable cultural, spiritual, socio-economic, and other relevant values. Examples of OECMs include privately owned conservation lands, traditional land use planning areas, areas protected through Indigenous land claim agreements, among others [(Accounting for protected and conserved areas 2019)](https://static1.squarespace.com/static/57e007452e69cf9a7af0a033/t/60806e9b70e77d3268e87bf1/1619029667230/Communication+Document+-+Visual_EN%281%29.pdf). 
 
-- **As of 2020, protected lands and water cover % of B.C.'s terrestrial areas and inland water and % of coastal and marine areas.** PA and OECM breakdown here. 
-- To update: 
+* **As of 2020, protected lands and water cover % of B.C.'s terrestrial areas and inland water and % of coastal and marine areas.** PA and OECM breakdown here. 
+* To update: 
 -   **Protected lands and waters cover 15.4% of B.C.'s land base and
     3.2% of B.C.'s marine areas.** In the terrestrial realm, 15.0% is in provincial and federal parks and protected areas, while the remaining 0.4% is in other provincial and federal designations such as Wildlife Management Areas and National Wildlife Areas, and private conservation lands.
 -   The amount of recognized protected land in B.C. has more than
@@ -65,19 +65,13 @@ There are different types of conserved areas in B.C. that contribute to Canada's
     
 \newpage
 
-### Map of Protected Lands & Waters in B.C. (2015)
-
-Protected land and water designations include: all park and protected
-areas managed by BC Parks, all national protected area designations,
-such as National Parks and National Marine Conservation Areas,
-provincially administered conservation lands such as Wildlife Management
-Areas, and British Columbia's private conservation lands. Details on
-specific designations and legal tools are provided below.
+### Map of Protected Areas Across B.C. (2020)
 
 \vspace{16pt}
 
 ```{r prot-areas-map, fig.height=8, dev='png', dpi=300}
-prot_map
+tar_load(bc_map_all)
+bc_map_all
 ```
 
 \newpage
