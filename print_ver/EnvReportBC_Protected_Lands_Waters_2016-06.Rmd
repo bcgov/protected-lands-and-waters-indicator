@@ -33,13 +33,28 @@ library(reshape2)
 library(plotly)
 library(targets)
 
+
 opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
-
-#### stopped here loading files next part
-
-tar_load(ecoregion_totals)
-tar_load(total_prot_area)
-tar_load(pa_eco_sum)
+theme_print <-   theme(axis.text.y = element_text(size = 8),
+                       axis.text.x = element_text(size = 8),
+                       axis.title.y = element_text(size = 10,
+                                                   margin = margin(t = 0, r = 10,
+                                                                   b = 0, l = 0,
+                                                                   unit = "pt")),
+                       plot.title = element_text(size = 10, hjust = 0.5),
+                       plot.margin = unit(c(6,6,6,2),"mm"))
+#theme for plots with integrated labels
+theme_summary <- theme(axis.text.y = element_text(size = 8),
+                       axis.text.x = element_text(size = 8),
+                       axis.title.y = element_text(size = 10,
+                                                   margin = margin(t = 0, r = 10,
+                                                                   b = 0, l = 0,
+                                                                   unit = "pt")),
+                       plot.title = element_text(size = 10, hjust = 0.5),
+                       plot.margin = unit(c(0.5,3.5,0.5,0.5), "cm"))
+is_html <- knitr::is_html_output()
+is_pdf <- knitr::is_latex_output()
+if (is_pdf) opts_chunk$set(fig.width = 6.5)
 
 ```
 
@@ -48,62 +63,50 @@ Protected lands and waters are legally established areas set aside to conserve n
 There are different types of conserved areas in B.C. that contribute to Canada's Target 1 progress [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s contributions to Target 1 include parks and protected areas (PPAs) and other effective area-based conservation measures (OECMs). PPAs are areas typically designated through through legal or other effective means for long-term conservation. Examples of PPAs include National and B.C. Parks, Indigenous-led land-use planning areas, Wildlife Refuges, Natural Areas, Habitat Protection Areas, and Ecological & Biodiversity Reserves. OECMs are conserved areas other than PPAs that similarly seek long-term conservation of biodiversity, ecosystem functions, and applicable cultural, spiritual, socio-economic, and other relevant values. Examples of OECMs include privately owned conservation lands, traditional land use planning areas, areas protected through Indigenous land claim agreements, among others [(Accounting for protected and conserved areas 2019)](https://static1.squarespace.com/static/57e007452e69cf9a7af0a033/t/60806e9b70e77d3268e87bf1/1619029667230/Communication+Document+-+Visual_EN%281%29.pdf). 
 
 ```{r}
+
+total_prot_area <- readRDS("out/pa_eco_sum.rds")
+
 pa_total <- total_prot_area %>% 
   group_by(park_type) %>% 
   filter(date == 2020)
 
 land_ppa <- pa_total %>% 
-  filter(park_type == "PPA"|type =="land")
+  filter(park_type == "PPA"&type =="land")
 
 land_oecm <- pa_total %>% 
-  filter(park_type == "OECM"|type =="land")
+  filter(park_type == "OECM"&type =="land")
 
 water_ppa <- pa_total %>% 
-  filter(park_type == "PPA"|type =="water")
+  filter(park_type == "PPA"&type =="water")
 
 water_oecm <- pa_total %>% 
-  filter(park_type == "OECM"|type =="water")
+  filter(park_type == "OECM"&type =="water")
+
+land_total <- round(land_ppa$cum_p_type + land_oecm$cum_p_type, digits=1)
+
+water_total <- round(water_ppa$cum_p_type + water_oecm$cum_p_type, digits=1)
 ```
-
-
-* **As of 2020, protected lands and water cover `r land_ppa$cumulative_by_type + land_oecm$cumulative_by_type`% of B.C.'s terrestrial areas and inland water and `r water_ppa$cumulative_by_type + water_oecm$cumulative_by_type`% of coastal and marine areas.** 
-* For terrestrial areas/inland water, the protected areas are comprised of `r land_ppa$cumulative_by_type`% PPA and `r land_oecm$cumulative_by_type`% OECM. 
-* Coastal areas in B.C. are comprised of `r water_ppa$cumulative_by_type`% PPA and `r water_oecm$cumulative_by_type`% OECM.
-* To update: 
--   The amount of recognized protected land in B.C. has more than
-    doubled since the early 1990s.
--   The amount of protected land and water varies across
-    British Columbia. For example, protected areas cover over 40% of the
-    Gwaii Haanas, Chilcotin Ranges and Eastern Hazelton Mountains
-    regions but less than 10% of the Fraser Basin, Fraser Plateau and
-    Thompson-Okanagan Plateau regions.
--   Ecosystem representation varies within the protected areas system.
-    For example, 30% of B.C.'s Boreal Altai Fescue Alpine habitats and
-    5% of Coastal Douglas-fir habitats are protected.
--   Protected lands and waters, in particular [BC Parks](http://www.env.gov.bc.ca/bcparks/),
-    make a major contribution to B.C.'s economy through job creation and
-    park visitation &mdash; about 60% of British Columbians use a park every
-    year.^3,4^
-    
-\newpage
 
 ### Map of Protected Areas Across B.C. (2020)
 
+* **As of 2020, protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water total`% of coastal and marine areas.** 
+* For terrestrial areas/inland water, the protected areas are comprised of `r land_ppa$cum_p_type`% PPAs and `r land_oecm$cum_p_type`% OECMs. 
+* Coastal areas in B.C. are comprised of `r water_ppa$cum_p_type`% PPAs and `r water_oecm$cum_p_type`% OECMs.
+* The amount of protected land and water varies across B.C. The distribution is shown below by terrestrial/marine ecoregion and by ecosystem. 
+    
+
 \vspace{16pt}
 
-```{r prot-areas-map, fig.height=8, dev='png', dpi=300}
-tar_load(bc_map_all)
-bc_map_all
+```{r prot-areas-map, fig.alt = "Map of protected lands and waters across B.C."}
+
+include_graphics(path = here("out", "prov_map.png"))
 ```
 
 \newpage
 
-### Trends in the Protection of British Columbia's Terrestrial Ecoregions (1886-2015)
+### Trends in the Protection of British Columbia's Terrestrial Ecoregions (1886-2020)
 
-The map below shows how much land is protected within each of
-B.C.'s 44 terrestrial ecoregions. The following series of plots show how that has changed over time.
-[Ecoregions](http://www.env.gov.bc.ca/ecology/ecoregions/) are areas
-with similar climate and geologic features.
+The interactive map below shows how much land is protected within each of B.C.'s 44 [terrestrial ecoregions](http://www.env.gov.bc.ca/ecology/ecoregions/). Ecoregions are areas with similar climate and geologic features. 
 
 \vspace{16pt}
 

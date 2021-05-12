@@ -313,14 +313,14 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
     mutate(total_area = st_area(geometry)) %>%
     st_set_geometry(NULL) %>%
     group_by(zone, zone_name, park_type) %>%
-    summarize(total_area = as.numeric(sum(total_area) / 10000), .groups = "drop") %>%
+    summarize(sum_type_by_zone = as.numeric(sum(total_area) / 10000), .groups = "drop") %>%
     group_by(zone_name) %>%
-    mutate(total_zone = sum(total_area)) %>%
+    mutate(sum_zone = sum(sum_type_by_zone)) %>%
     ungroup() %>%
     left_join(bec_totals, by = "zone") %>%
-    mutate(p_area = total_area / total * 100,
-           p_zone = total_zone / total * 100) %>%
-    arrange(p_zone) %>%
+    mutate(perc_type_zone = sum_type_by_zone / total * 100,
+           perc_zone = sum_zone / total * 100) %>%
+    arrange(perc_zone) %>%
     mutate(zone_name = str_replace_all(zone_name, "--", " — "),
            zone_name = factor(zone_name, levels = unique(zone_name)))
 
@@ -332,7 +332,7 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
 
 plot_by_bec_zone <- function(data){
   bar1 <- ggplot(data,
-                 aes(x = p_area, y = zone_name, fill = zone, alpha = park_type)) +
+                 aes(x = perc_type_zone, y = zone_name, fill = zone, alpha = park_type)) +
     theme_minimal(base_size = 14) +
     theme(panel.grid.major.y = element_blank(),
           legend.position = c(0.7, 0.3)) +
@@ -347,16 +347,35 @@ plot_by_bec_zone <- function(data){
 }
 
 plot_bec_zone_totals<- function(data){
-  bar2 <- ggplot(data %>%  select(zone_name, zone, p_zone) %>% distinct(),
-                 aes(x = p_zone, y = zone_name, fill = zone)) +
+  bar2 <- ggplot(data %>%  select(zone_name, zone, perc_zone) %>% distinct(),
+                 aes(x = perc_zone, y = zone_name, fill = zone)) +
     theme_minimal(base_size = 14) +
     theme(panel.grid.major.y = element_blank()) +
     geom_bar(width = 0.9, stat = "identity") +
-    labs(x = "Percent Area Protected", y = "Biogeoclimatic Zone") +
+    labs(x = "Percent Area Protected (%)", y = "Biogeoclimatic Zone") +
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
     scale_x_continuous(expand = c(0,0))
   ggsave("out/bec_bar2.png", bar2, width = 6, height = 6, dpi = 300)
   bar2
+
+  bec_totals <- data %>%
+    dplyr::filter(park_type == "PPA") %>%
+    mutate(total_bc = sum(total)) %>%
+    mutate(bec_rep = total/total_bc *100) %>%
+    select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
+    arrange(desc(perc_zone))
+
+  bar3 <- ggplot(bec_totals, aes(x=bec_rep, y= zone_name, fill=zone))+
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.major.y = element_blank()) +
+    geom_bar(width = 0.9, stat = "identity") +
+    labs(x = "BEC Zone Distribution Across B.C. (%)", y = "") +
+    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    scale_x_continuous(expand = c(0,0))
+  ggsave("out/bec_bar3.png", bar3, width = 6, height = 6, dpi = 300)
+
+  joined_bar<-plot_grid(bar2, bar3, align="h")
+  ggsave("out/bec_join.png", joined_bar, width = 12, height = 6, dpi = 300)
 }
 
 bec_zone_map <- function(data){
