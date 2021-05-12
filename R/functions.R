@@ -62,8 +62,10 @@ load_bec <- function(){
     rename_all(tolower) %>%
     select(zone, subzone, zone_name, subzone_name, natural_disturbance_name) %>%
     st_cast(to="POLYGON", warn = FALSE)
+  bec$zone_name <- str_replace_all(bec$zone_name, "-- ", "")
   bec
 }
+
 
 # Intersections with wha and ogma data to add dates -----------------------------------------
 
@@ -358,11 +360,25 @@ plot_bec_zone_totals<- function(data){
 }
 
 bec_zone_map <- function(data){
+
+  ld_cities <- st_intersection(bcmaps::nr_districts(), bcmaps::bc_cities()) %>%
+    dplyr::filter(CITY_TYPE == "C") %>%
+    dplyr::filter(POP_2000>10000) %>%
+    group_by(DISTRICT_NAME) %>%
+    slice_max(POP_2000, n=1) %>%
+    dplyr::select(DISTRICT_NAME, NAME, POP_2000, geometry)
+
   map<-ggplot() +
     theme_void() +
     theme(plot.title = element_text(hjust = 0.25, size = 25)) +
     geom_sf(data = data, aes(fill = zone), colour = NA)+
-    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    geom_sf(data = bc_bound(), aes(fill=NA))+
+    geom_sf(data=ld_cities)+
+    ggrepel::geom_label_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
+                              stat="sf_coordinates", min.segment.length=Inf,
+                              fill = alpha(c("white"),0.5))+
+    scale_fill_manual(values = bec_colours()) +
+    theme(legend.title=element_blank()) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
     labs(title = "Biogeoclimatic Zones of B.C.")
@@ -384,6 +400,8 @@ create_bc_button <- function(){
 bc_map <- function(data){
 
   ld_cities <- st_intersection(bcmaps::nr_districts(), bcmaps::bc_cities()) %>%
+    dplyr::filter(CITY_TYPE == "C") %>%
+    dplyr::filter(POP_2000>10000) %>%
     group_by(DISTRICT_NAME) %>%
     slice_max(POP_2000, n=1) %>%
     dplyr::select(DISTRICT_NAME, NAME, POP_2000, geometry)
@@ -407,9 +425,12 @@ bc_map <- function(data){
     theme_void() +
     theme(plot.title = element_text(hjust = 0.25, size = 25)) +
     geom_sf(data = output, aes(fill = type_combo), colour = NA)+
-    geom_sf(data=ld_cities)+
     geom_sf(data = bc_bound(), aes(fill=NA))+
-    geom_text(data=ld_cities, aes(label=NAME))+ #need to fix this on Monday
+    geom_sf(data=ld_cities)+
+    ggrepel::geom_label_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
+                              stat="sf_coordinates", min.segment.length=Inf,
+                              fill = alpha(c("white"),0.5))+
+    #geom_sf_label(data=ld_cities, aes(label=NAME), nudge_y=2)+
     scale_fill_manual(values = scale_combo) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
