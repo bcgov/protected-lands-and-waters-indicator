@@ -71,7 +71,9 @@ plot_data <- list(
   tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum)),
   tar_target(bec_map_figure, bec_zone_map(map_bec)),
   tar_target(bc_map_all, bc_map(pa_eco)),
-  tar_target(bc_button, create_bc_button())
+  tar_target(bc_button, create_bc_button()),
+  tar_target(ecoregion_land_pdf, ecoregion_land(pa_eco_sum)),
+  tar_target(ecoregion_water_pdf, ecoregion_water(pa_eco_sum))
 )
 
 # targets pipeline --------------------------------------------------------
