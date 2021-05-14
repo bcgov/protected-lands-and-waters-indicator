@@ -427,7 +427,6 @@ bc_map <- function(data){
 
   scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
   scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
-  scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
   scale_combo <- setNames(c(scale_land, scale_water),
                           c("Land - OECM", "Land - PPA",
                             "Water - OECM", "Water - PPA"))
@@ -459,70 +458,23 @@ bc_map <- function(data){
   map
 }
 
-ecoregion_land <- function(data){
+eco_static <- function(data, input){
 
-  scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
-  breaks_int <- function(x) {
-    unique(floor(base::pretty(seq(min(x), (max(x))))))
-  }
-  land_data<- data %>% dplyr::filter(type=="land")
+  data <- data %>%
+    left_join(input, by = ecoregion_name)
+  scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
-  eco_land <- ggplot(land_data, aes(x = date, y = cum_p_type)) +
-    #theme_minimal(base_size = 14) +
-    #theme(panel.grid.minor.x = element_blank(),
-          #axis.line = element_line(),
-          #axis.title.x = element_blank(),
-          #legend.title = element_blank(),
-          #legend.position = if_else(type == "region", "bottom", "none"),
-          #legend.box.margin = margin(),
-          #legend.margin = margin(),
-          #plot.margin = unit(c(5,10,0,0), "pt"),
-          #strip.background = element_blank(),
-          #strip.text = element_blank()) +
-    geom_area(aes(fill = park_type)) +
-    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
-                       breaks = breaks_int) +
-    scale_fill_manual(name = "Type", values = scale_land) +
-    labs(x = "Year", y = "Percent Protected (%)")+
-    coord_cartesian(xlim = c(min(data$date), max(data$date))) +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
-    facet_wrap(vars(ecoregion_name), nrow=9, ncol=5, scales="fixed")
-
-  ggsave("out/ecoregion_land_pdf.png", eco_land, width = 10, height = 11, dpi = 300)
-
-  eco_land
-}
-
-ecoregion_water <- function(data){
-
-  scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
-  breaks_int <- function(x) {
-    unique(floor(base::pretty(seq(min(x), (max(x))))))
-  }
-  water_data<- data %>% dplyr::filter(type=="water")
-
-  eco_water <- ggplot(water_data, aes(x = date, y = cum_p_type)) +
-    #theme_minimal(base_size = 14) +
-    #theme(panel.grid.minor.x = element_blank(),
-    #axis.line = element_line(),
-    #axis.title.x = element_blank(),
-    #legend.title = element_blank(),
-    #legend.position = if_else(type == "region", "bottom", "none"),
-    #legend.box.margin = margin(),
-    #legend.margin = margin(),
-    #plot.margin = unit(c(5,10,0,0), "pt"),
-    #strip.background = element_blank(),
-    #strip.text = element_blank()) +
-  geom_area(aes(fill = park_type)) +
-    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
-                       breaks = breaks_int) +
-    scale_fill_manual(name = "Type", values = scale_water) +
-    labs(x = "Year", y = "Percent Protected (%)")+
-    coord_cartesian(xlim = c(min(data$date), max(data$date))) +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
-    facet_wrap(vars(ecoregion_name), scales="fixed")
-
-  ggsave("out/ecoregion_water_pdf.png", eco_water, width = 10, height = 11, dpi = 300)
-
-  eco_water
+  g <- ggplot() +
+    theme_void() +
+    geom_sf(data=data, aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
+    geom_sf(data=bc_bound(), aes(fill=NA))+
+    theme(plot.margin = unit(c(0,0,0,0), "pt"), legend.title = element_blank()) +
+    scale_fill_manual(values = scale_map, guide = NULL) +
+    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100)) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_continuous(expand = c(0,0))
+    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))+
+    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
+  ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
+  g
 }
