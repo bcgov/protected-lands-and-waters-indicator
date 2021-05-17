@@ -400,7 +400,7 @@ bec_zone_map <- function(data){
     theme(legend.title=element_blank()) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
-    labs(title = "Biogeoclimatic Zones of B.C.")
+    labs(title = "Distribution of Protected Areas by BEC Zones")
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
@@ -460,20 +460,29 @@ bc_map <- function(data){
 
 eco_static <- function(data, input){
 
+  input <- input %>%
+    group_by(ecoregion_name, type) %>%
+    dplyr::filter(date == 2020) %>%
+    select(ecoregion_name, type, p_region)
+
   data <- data %>%
-    left_join(input, by = ecoregion_name)
+    mutate(ecoregion_name = as.factor(ecoregion_name)) %>%
+    mutate(type=as.factor(type)) %>%
+    left_join(input, by = c("ecoregion_name", "type"))
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
   g <- ggplot() +
     theme_void() +
-    geom_sf(data=data, aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
-    geom_sf(data=bc_bound(), aes(fill=NA))+
-    theme(plot.margin = unit(c(0,0,0,0), "pt"), legend.title = element_blank()) +
-    scale_fill_manual(values = scale_map, guide = NULL) +
-    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100)) +
+    geom_sf(data=data, mapping=aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
+    geom_sf(data=bc_bound_hres(), mapping=aes(fill=NA))+
+    theme(plot.margin = unit(c(0,0,0,0), "pt")) +
+    scale_fill_manual(values = scale_map, name = "") +
+    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected") +
     scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0))
-    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))+
+    scale_y_continuous(expand = c(0,0)) +
+    labs(title = "Area Protected by Ecoregion") +
+    theme(plot.title = element_text(hjust=0.5, size = 25)) +
+    guides(alpha = guide_legend(override.aes = list(fill = "black")))#+
     #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
   ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
   g
