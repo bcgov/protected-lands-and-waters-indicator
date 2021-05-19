@@ -45,7 +45,8 @@ clean_data <- list(
 # intersect data ----------------------------------------------------------
 intersect_data <- list(
   tar_target(clipped_bec, clip_bec_to_bc_boundary(bec_zones)),
-  tar_target(pa_eco, intersect_pa(ecoregions, clean_pa, pa_eco)),
+  tar_target(mod_ecoregions, fix_gpd_ecoregions(ecoregions)),
+  tar_target(pa_eco, intersect_pa(mod_ecoregions, clean_pa, pa_eco)),
   tar_target(pa_bec, intersect_pa(clipped_bec, clean_pa, pa_bec))
 )
 
@@ -53,13 +54,13 @@ intersect_data <- list(
 simplify_data <- list(
   tar_target(map_eco, simplify_ecoregions(pa_eco)),
   tar_target(map_bec, simplify_beczones(pa_bec)),
-  tar_target(map_eco_background, simplify_eco_background(ecoregions)),
+  tar_target(map_eco_background, simplify_eco_background(mod_ecoregions)),
   tar_target(map_bec_background, simplify_bec_background())
 )
 
 # analyze and prepare for visualization -----------------------------------
 analyze_data <- list(
-  tar_target(ecoregion_totals, find_ecoregion_size(ecoregions)),
+  tar_target(ecoregion_totals, find_ecoregion_size(mod_ecoregions)),
   tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, ecoregion_totals)),
   tar_target(pa_bec_sum, protected_area_by_bec(bec_zones, pa_bec)),
   tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum))
@@ -69,7 +70,7 @@ analyze_data <- list(
 plot_data <- list(
   tar_target(bec_plot_type, plot_by_bec_zone(pa_bec_sum)),
   tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum)),
-  tar_target(bec_map_figure, bec_zone_map(map_bec)),
+  tar_target(bec_map_figure, bec_zone_map(map_bec_background)),
   tar_target(bc_map_all, bc_map(pa_eco)),
   tar_target(bc_button, create_bc_button()),
   tar_target(bc_eco_map, eco_static(map_eco_background, pa_eco_sum))

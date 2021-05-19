@@ -47,12 +47,11 @@ get_cpcad_bc_data <- function() {
 }
 
 load_ecoregions <- function(){
-  marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
+  #marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
   eco <- ecoregions(ask = FALSE) %>%
     rename_all(tolower) %>%
     select(ecoregion_code, ecoregion_name) %>%
-    mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name)),
-           type = if_else(ecoregion_code %in% marine_eco, "water", "land")) %>%
+    mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name))) %>%
     st_cast(to="POLYGON", warn = FALSE)
   eco
 }
@@ -143,10 +142,47 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
   output
 }
 
+fix_gpd_ecoregions <- function(data){
+  m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
+
+  ecoregions <- data
+  bc_bound_hres <- bcmaps::bc_bound_hres()
+
+  ## Extract the terrestrial and marine portions of GPB into separate objects
+  gpb_terrestrial <- ms_clip(ecoregions[ecoregions$ecoregion_code == "GPB",],
+                             bc_bound_hres)
+  gpb_marine <- ms_erase(ecoregions[ecoregions$ecoregion_code == "GPB",],
+                         bc_bound_hres)
+  ## Fix it up:
+  gpb_terrestrial <- fix_geo_problems(gpb_terrestrial)
+  gpb_marine <- fix_geo_problems(gpb_marine)
+
+  ## Add terrestrial portion of GPB back to terrestrial ecoregions
+  ecoregions_t <- rbind(ecoregions[!ecoregions$ecoregion_code %in% c("GPB", m_ecoregions), ],
+                        gpb_terrestrial[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
+
+  ## Add marine portion of GPB back to marine ecoregions
+  ecoregions_m <- rbind(ecoregions[ecoregions$ecoregion_code %in% m_ecoregions, ],
+                        gpb_marine[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
+
+  ## Calcualte the area of the polygons
+  ecoregions_t <- ecoregions_t %>%
+    mutate(area = as.numeric(st_area(geometry))) %>%
+    mutate(type = "land")
+
+
+  ecoregions_m <- ecoregions_m %>%
+    mutate(area = as.numeric(st_area(geometry))) %>%
+    mutate(type = "water")
+
+  ## Create simplified versions for visualization
+  ecoregions_comb <- rbind(ecoregions_m, ecoregions_t)
+  ecoregions_comb
+}
+
 intersect_pa <- function(input1, input2, output){
   output <- st_intersection(input1, input2) %>%
     st_collection_extract(type = "POLYGON")
-  #write_rds(output, paste0("data/CPCAD_Dec2020_BC_clean_no_ovlps_", output, ".rds"))
   output
 }
 
@@ -380,27 +416,16 @@ plot_bec_zone_totals<- function(data){
 
 bec_zone_map <- function(data){
 
-  ld_cities <- st_intersection(bcmaps::nr_districts(), bcmaps::bc_cities()) %>%
-    dplyr::filter(CITY_TYPE == "C") %>%
-    dplyr::filter(POP_2000>10000) %>%
-    group_by(DISTRICT_NAME) %>%
-    slice_max(POP_2000, n=1) %>%
-    dplyr::select(DISTRICT_NAME, NAME, POP_2000, geometry)
-
   map<-ggplot() +
     theme_void() +
-    theme(plot.title = element_text(hjust = 0.25, size = 25)) +
+    theme(plot.title = element_text(hjust = 0.5, size = 25)) +
     geom_sf(data = data, aes(fill = zone), colour = NA)+
-    geom_sf(data = bc_bound(), aes(fill=NA))+
-    geom_sf(data=ld_cities)+
-    ggrepel::geom_label_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
-                              stat="sf_coordinates", min.segment.length=Inf,
-                              fill = alpha(c("white"),0.5))+
+    geom_sf(data = bc_bound_hres(), aes(fill=NA))+
     scale_fill_manual(values = bec_colours()) +
     theme(legend.title=element_blank()) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
-    labs(title = "Distribution of Protected Areas by BEC Zones")
+    labs(title = "Distribution of BEC Zones Across B.C.")
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
@@ -418,12 +443,16 @@ create_bc_button <- function(){
 
 bc_map <- function(data){
 
-  ld_cities <- st_intersection(bcmaps::nr_districts(), bcmaps::bc_cities()) %>%
-    dplyr::filter(CITY_TYPE == "C") %>%
-    dplyr::filter(POP_2000>10000) %>%
-    group_by(DISTRICT_NAME) %>%
-    slice_max(POP_2000, n=1) %>%
-    dplyr::select(DISTRICT_NAME, NAME, POP_2000, geometry)
+  ld_cities <- bcmaps::bc_cities() %>%
+    dplyr::filter(NAME == "Victoria" |
+                    NAME == "Prince Rupert"|
+                    NAME == "Smithers"|
+                    NAME == "Fort St. John"|
+                    NAME == "Kamloops"|
+                    NAME == "Prince George"|
+                    NAME == "Vancouver"|
+                    NAME == "Cranbrook")%>%
+    dplyr::select(NAME, geometry)
 
   scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
   scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
@@ -441,13 +470,12 @@ bc_map <- function(data){
 
   map<-ggplot() +
     theme_void() +
-    theme(plot.title = element_text(hjust = 0.25, size = 25)) +
+    theme(plot.title = element_text(hjust =0.5, size = 25)) +
     geom_sf(data = output, aes(fill = type_combo), colour = NA)+
     geom_sf(data = bc_bound(), aes(fill=NA))+
     geom_sf(data=ld_cities)+
-    ggrepel::geom_label_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
-                              stat="sf_coordinates", min.segment.length=Inf,
-                              fill = alpha(c("white"),0.5))+
+    ggrepel::geom_text_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
+                              stat="sf_coordinates")+
     #geom_sf_label(data=ld_cities, aes(label=NAME), nudge_y=2)+
     scale_fill_manual(values = scale_combo) +
     scale_x_continuous(expand = c(0,0)) +

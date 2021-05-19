@@ -142,7 +142,7 @@ eco_water <- ggplot(water_data, aes(x = date, y = cum_p_type)) +
 
   ggsave("out/ecoregion_water_pdf.png", eco_water, width = 14, height = 11, dpi = 300)
 
-include_graphics(path = here("out", "ecoregion_land_pdf-4.png"))
+include_graphics(path = here("out", "ecoregion_water_pdf.png"))
 }
 ```
 

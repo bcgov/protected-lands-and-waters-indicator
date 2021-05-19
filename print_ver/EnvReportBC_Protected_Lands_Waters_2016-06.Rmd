@@ -110,49 +110,17 @@ The interactive map below shows how much land is protected within each of B.C.'s
 
 \vspace{16pt}
 
-```{r ecoregion-map, fig.height=8}
-current_t_map + 
-  labs(title = "Amount of Land and Water Protected in B.C. Ecoregions", 
-       fill = "Percent of\nEcoregion Protected") +
-  theme(plot.title = element_text(size = 12, face = "bold"))
-```
-
-```{r ecoregion-facet-line-plot, fig.height=12, fig.width=9}
-ggplot(cum_summary_t_eco, 
-       aes(x = prot_date, y = cum_percent_protected)) +
-  geom_path(colour = "forestgreen") +
-  facet_wrap(~ecoregion, labeller = label_wrap_gen(width = 20), ncol = 4) +
-  scale_x_continuous(expand = c(0,0), breaks = function(x) round(seq(min(x),max(x), length.out = 5))) +
-  scale_y_continuous(breaks = seq(0,100, length.out = 3)) +
-  labs(x = "Year", y = "Cumulative Percent of Ecoregion Protected") +
-  # theme_minimal() +
-  theme(axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14),
-        plot.title = element_text(size = 14, face = "bold"),
-        panel.margin.x = unit(1, "lines"),
-        plot.margin = unit(c(5,5,5,5),"mm"),
-        axis.text.x = element_text(size = 9, angle = 45),
-        strip.text = element_text(size = 12),
-        strip.background = element_rect(fill = "white")) +
-  geom_text(data = current_eco_t, x = 2001, y = 80,
-            aes(label = paste0(round(cum_percent_protected, 1), "%")),
-            size = 3) +
-  ggtitle("Trends in Land and Water Protection in B.C. Ecoregions")
+```{r include=is_pdf, eval=is_pdf, out.width="100%"}
+include_graphics(path = here("out", "ecoregion_map.png"))
 ```
 
 
 \newpage
 
-**Interpreting the Trend Information:** The charts above do not reflect
-changes to the size of *individual* protected areas over time. They
-assume that each protected area was it's current (2015) size when it
-was initally established. Only the terrestrial portion of the the
-Georgia-Puget Basin ecoregion is represented on this map.
-
 ### Terrestrial Ecosystem Representation within Protected Lands in B.C.
 
 -   Ecosystems in British Columbia are characterized as [biogeoclimatic
-    zones](https://www.for.gov.bc.ca/hre/becweb/) &mdash; geographic areas with
+    zones](https://www.for.gov.bc.ca/hre/becweb/) - geographic areas with
     similar patterns of energy flow, vegetation and soils.
 -   Protected lands are not evenly distributed among British
     Columbia's ecosystems. High elevation and mountainous areas such as
