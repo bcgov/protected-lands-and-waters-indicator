@@ -454,8 +454,12 @@ bc_map <- function(data){
                     NAME == "Cranbrook")%>%
     dplyr::select(NAME, geometry)
 
-  scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
-  scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
+  #manually setting label location
+  ld_cities$longitude <- c(925299, 627354, 1205857, 1295775, 1399598, 1741864, 1270416, 1245673)
+  ld_cities$latitude <- c(1069703, 1050342, 979165, 1241672, 626000, 570917, 435953, 380451)
+
+  scale_land <- c("OECM" = "#74c476", "PPA" = "#006d2c")
+  scale_water <- c("OECM" = "#43a2ca", "PPA" = "#0868ac")
   scale_combo <- setNames(c(scale_land, scale_water),
                           c("Land - OECM", "Land - PPA",
                             "Water - OECM", "Water - PPA"))
@@ -467,21 +471,20 @@ bc_map <- function(data){
     group_by(date, type) %>%
     ungroup()
 
-
   map<-ggplot() +
     theme_void() +
     theme(plot.title = element_text(hjust =0.5, size = 25)) +
     geom_sf(data = output, aes(fill = type_combo), colour = NA)+
-    geom_sf(data = bc_bound(), aes(fill=NA))+
+    geom_sf(data = bc_bound_hres(), aes(fill=NA))+
     geom_sf(data=ld_cities)+
-    ggrepel::geom_text_repel(data=ld_cities, aes(label=NAME, geometry=geometry),
-                              stat="sf_coordinates")+
-    #geom_sf_label(data=ld_cities, aes(label=NAME), nudge_y=2)+
+    geom_text(data=ld_cities, aes(x=longitude, y=latitude, label=NAME))+
     scale_fill_manual(values = scale_combo) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
     labs(title = "Distribution of Protected Areas in B.C.") +
-    theme(legend.title=element_blank())
+    theme(legend.title=element_blank())+
+    theme(legend.justification=c("center"),
+          legend.position=c(0.8, 0.6))
   ggsave("out/prov_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
