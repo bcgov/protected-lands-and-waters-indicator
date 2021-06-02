@@ -45,7 +45,7 @@ clean_data <- list(
 # intersect data ----------------------------------------------------------
 intersect_data <- list(
   tar_target(clipped_bec, clip_bec_to_bc_boundary(bec_zones)),
-  tar_target(mod_ecoregions, fix_gpd_ecoregions(ecoregions)),
+  tar_target(mod_ecoregions, fix_ecoregions(ecoregions)),
   tar_target(pa_eco, intersect_pa(mod_ecoregions, clean_pa, pa_eco)),
   tar_target(pa_bec, intersect_pa(clipped_bec, clean_pa, pa_bec))
 )
@@ -60,8 +60,8 @@ simplify_data <- list(
 
 # analyze and prepare for visualization -----------------------------------
 analyze_data <- list(
-  tar_target(ecoregion_totals, find_ecoregion_size(mod_ecoregions)),
-  tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, ecoregion_totals)),
+  #tar_target(ecoregion_totals, find_ecoregion_size(mod_ecoregions)),
+  tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, mod_ecoregions)),
   tar_target(pa_bec_sum, protected_area_by_bec(bec_zones, pa_bec)),
   tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum))
 )

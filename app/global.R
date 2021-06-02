@@ -51,7 +51,7 @@ eco_area <- readRDS("../out/eco_area.rds") %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
                                 as.character(date))) %>%
-  group_by(ecoregion_code, date) %>%
+  group_by(ecoregion_code, type, date) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",

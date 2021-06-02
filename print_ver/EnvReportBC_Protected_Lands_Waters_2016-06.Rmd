@@ -6,6 +6,8 @@ output:
   html_document:
     self_contained: false
 ---
+
+```{=html}
 <!--
 Copyright 2021 Province of British Columbia
 
@@ -19,7 +21,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 -->
-
+```
 ```{r setup, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
 library(ggplot2) #plotting
 library(envreportutils) #for theme_soe and theme_soe_facet
@@ -58,9 +60,10 @@ if (is_pdf) opts_chunk$set(fig.width = 6.5)
 
 ```
 
-Protected lands and waters are legally established areas set aside to conserve nature and cultural values. Canada adopted [UN Conventional on Biological Diversity targets](https://www.cbd.int/sp/targets/rationale/target-11/) to protect at least 17% of terrestrial areas and inland water and 10% of coastal and marine areas by 2020, which Canada has since extended until 2023 [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s network of protected areas contribute to the Canadian, and global targets. This indicator details the amount, the type, and the distribution of protected areas across B.C. 
+Protected lands and waters are legally established areas set aside to conserve nature and cultural values. Canada adopted the [UN Convention on Biological Diversity targets](https://www.cbd.int/sp/targets/rationale/target-11/) to protect at least 17% of terrestrial areas and inland water and 10% of coastal and marine areas by 2020, which has been extended until 2023 [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s
+network of protected areas contribute to the Canadian and global targets. This indicator details the amount, the type, and the location of protected areas across B.C.
 
-There are different types of conserved areas in B.C. that contribute to Canada's Target 1 progress [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s contributions to Target 1 include parks and protected areas (PPAs) and other effective area-based conservation measures (OECMs). PPAs are areas typically designated through through legal or other effective means for long-term conservation. Examples of PPAs include National and B.C. Parks, Indigenous-led land-use planning areas, Wildlife Refuges, Natural Areas, Habitat Protection Areas, and Ecological & Biodiversity Reserves. OECMs are conserved areas other than PPAs that similarly seek long-term conservation of biodiversity, ecosystem functions, and applicable cultural, spiritual, socio-economic, and other relevant values. Examples of OECMs include privately owned conservation lands, traditional land use planning areas, areas protected through Indigenous land claim agreements, among others [(Accounting for protected and conserved areas 2019)](https://static1.squarespace.com/static/57e007452e69cf9a7af0a033/t/60806e9b70e77d3268e87bf1/1619029667230/Communication+Document+-+Visual_EN%281%29.pdf). 
+There are different types of conserved areas in B.C. that contribute to Canada's Target 1 progress [(Pathway to Canada Target 1)](https://www.conservation2020canada.ca/home). B.C.'s contributions include parks and protected areas (PPAs) and other effective area-based conservation measures (OECMs). PPAs are areas typically designated through through legal or other effective means for long-term conservation. Examples of PPAs include National and B.C. Parks, Indigenous-led land-use planning areas, Wildlife Refuges, Natural Areas, Habitat Protection Areas, and Ecological & Biodiversity Reserves. OECMs are conserved areas other than PPAs that similarly seek long-term conservation of biodiversity, ecosystem functions, and applicable cultural, spiritual, socio-economic, and other relevant values. Examples of OECMs include privately owned conservation lands, traditional land use planning areas, areas protected through Indigenous land claim agreements, among others [(Accounting for protected and conserved areas 2019)](https://static1.squarespace.com/static/57e007452e69cf9a7af0a033/t/60806e9b70e77d3268e87bf1/1619029667230/Communication+Document+-+Visual_EN%281%29.pdf).
 
 ```{r}
 
@@ -89,11 +92,16 @@ water_total <- round(water_ppa$cum_p_type + water_oecm$cum_p_type, digits=1)
 
 ### Map of Protected Areas Across B.C. (2020)
 
-* **As of 2020, protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water total`% of coastal and marine areas.** 
-* For terrestrial areas/inland water, the protected areas are comprised of `r land_ppa$cum_p_type`% PPAs and `r land_oecm$cum_p_type`% OECMs. 
-* Coastal areas in B.C. are comprised of `r water_ppa$cum_p_type`% PPAs and `r water_oecm$cum_p_type`% OECMs.
-* The amount of protected land and water varies across B.C. The distribution is shown below by terrestrial/marine ecoregion and by ecosystem. 
-    
+-   **As of 2020, protected lands and water cover `r land_total`% of
+    B.C.'s terrestrial areas and inland water and `r water total`% of
+    coastal and marine areas.**
+-   For terrestrial areas/inland water, the protected areas are
+    comprised of `r land_ppa$cum_p_type`% PPAs and
+    `r land_oecm$cum_p_type`% OECMs.
+-   Coastal areas in B.C. are comprised of `r water_ppa$cum_p_type`%
+    PPAs and `r water_oecm$cum_p_type`% OECMs.
+-   The amount of protected land and water varies across B.C. The
+    distribution is shown below by ecoregion and ecosystem.
 
 \vspace{16pt}
 
@@ -104,9 +112,10 @@ include_graphics(path = here("out", "prov_map.png"))
 
 \newpage
 
-### Trends in the Protection of British Columbia's Terrestrial Ecoregions (1886-2020)
+### Trends in the Protection of British Columbia's Terrestrial and Marine Ecoregions (1886-2020)
 
-The interactive map below shows how much land is protected within each of B.C.'s 44 [terrestrial ecoregions](http://www.env.gov.bc.ca/ecology/ecoregions/). Ecoregions are areas with similar climate and geologic features. 
+The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
+* The most protected ecoregions include 
 
 \vspace{16pt}
 
@@ -114,26 +123,26 @@ The interactive map below shows how much land is protected within each of B.C.'s
 include_graphics(path = here("out", "ecoregion_map.png"))
 ```
 
-
 \newpage
 
 ### Terrestrial Ecosystem Representation within Protected Lands in B.C.
 
+
 -   Ecosystems in British Columbia are characterized as [biogeoclimatic
-    zones](https://www.for.gov.bc.ca/hre/becweb/) - geographic areas with
-    similar patterns of energy flow, vegetation and soils.
--   Protected lands are not evenly distributed among British
-    Columbia's ecosystems. High elevation and mountainous areas such as
-    the Spruce – Willow – Birch, Boreal Altai Fescue Alpine, and
-    Interior Mountain-heather Alpine zones have more than the provincial
-    average protected. Low elevation, warm, valley bottom areas tend to
-    be underrepresented in the protected areas system &mdash; for example,
+    zones](https://www.for.gov.bc.ca/hre/becweb/) - geographic areas
+    with similar patterns of energy flow, vegetation and soils.
+-   Protected lands are not evenly distributed among British Columbia's
+    ecosystems. High elevation and mountainous areas such as the Spruce
+    -- Willow -- Birch, Boreal Altai Fescue Alpine, and Interior
+    Mountain-heather Alpine zones have more than the provincial average
+    protected. Low elevation, warm, valley bottom areas tend to be
+    underrepresented in the protected areas system --- for example,
     Coastal Douglas-fir, Ponderosa Pine, and Interior Douglas-fir zones.
 -   There is also high spatial variation in the proportion of ecosystem
     protection across the province. For example, most of the 20% Coastal
     Western Hemlock zone that is protected occurs along the west coast
-    of Haida Gwaii. Protected areas in the Spruce – Willow – Birch zone
-    are more evenly distributed.
+    of Haida Gwaii. Protected areas in the Spruce -- Willow -- Birch
+    zone are more evenly distributed.
 
 \vspace{16pt}
 
@@ -147,44 +156,23 @@ bec_zone_map +
   theme(plot.title = element_text(size = 12, face = "bold"))
 ```
 
-\newpage
-
-### Marine Protected Areas in B.C.
-
--   Protected areas cover 3.2% of B.C.'s coastal and marine areas.
--   B.C. has 200 designated marine protected areas located in all six of
-    the provincial marine ecoregions.
--   The [Endeavour Hydrothermal Vents Marine Protected
-    Area](http://www.pac.dfo-mpo.gc.ca/oceans/protection/mpa-zpm/endeavour/index-eng.html)
-    was established in B.C. waters in 2003 &mdash; the first marine protected
-    area in Canada.
-
-\vspace{16pt}
-
-```{r marine-map-chart}
-current_m_map + 
-  theme(legend.position = "left", legend.direction = "vertical", legend.title = element_text(size = 13, face = "bold"), legend.text = element_text(size = 13), plot.margin = unit(c(1,1,1,1), "lines"))
-```
-
-\newpage
-
-```{r marine-bar-chart}
-summary_eco_m_plot +
-  theme(plot.margin = unit(c(1,1,1,1), "lines"))
-```
 
 ### Details of Protected Land & Water Designations in B.C.
 
 -   **BC Parks (14.4% terrestrial; 0.9% marine)**
+
     -   Most of the protected land and a third of the protected waters
-        in B.C. are managed by [BC Parks](http://www.env.gov.bc.ca/bcparks/).
+        in B.C. are managed by [BC
+        Parks](http://www.env.gov.bc.ca/bcparks/).
     -   Protected areas managed by BC Parks are governed by several
         pieces of
         [legislation](http://www.env.gov.bc.ca/bcparks/aboutBCParks/legis.html)
         and fall into one of the following designations: Ecological
         Reserve, Provincial Park, Protected Area, Conservancy,
         Recreation Area.
+
 -   **National Protected Areas (0.7% terrestrial; 2.2% marine)**
+
     -   The Government of Canada has established protected land and
         marine areas in British Columbia, for example National Parks,
         National Wildlife Areas, Marine Protected Areas and Migratory
@@ -195,10 +183,12 @@ summary_eco_m_plot +
         Act*](http://www.pc.gc.ca/eng/agen/dp-pd/lr-ar/lr-ar1.aspx),
         [*Canada Wildlife Act*, *Migratory Birds Convention
         Act*](http://www.ec.gc.ca/default.asp?lang=En&n=E826924C-1), and
-        the [*Oceans
-        Act (1996)*](http://laws-lois.justice.gc.ca/eng/acts/O-2.4/).
+        the [*Oceans Act
+        (1996)*](http://laws-lois.justice.gc.ca/eng/acts/O-2.4/).
+
 -   **B.C. Provincial Administered Conservation Lands (0.26%
     terrestrial; 0.07% marine)**
+
     -   [Administered Conservation
         Lands](http://www.env.gov.bc.ca/fw/habitat/conservation-lands/)
         are lands over which the Government of British Columbia has
@@ -206,22 +196,24 @@ summary_eco_m_plot +
     -   Wildlife Management Areas are Administered Conservation Lands
         that are designated under the provincial [*Wildlife
         Act*](http://www.env.gov.bc.ca/fw/wildlife/) to protect habitat
-        for regionally, nationally or internationally
-        significant species.
+        for regionally, nationally or internationally significant
+        species.
     -   Other types of Administered Conservation Lands are aquired by
         way of: [*Land
         Act*](http://www.bclaws.ca/EPLibraries/bclaws_new/document/ID/freeside/00_96245_01)
         section 106 Transfers of Administration, Fee Simple Acquisitions
-        (through direct purchase, donation, or land exchange), and
-        Lease Sites.
--   **B.C. Non-Government Organization Conservation Areas
-    (0.1% terrestrial)**
+        (through direct purchase, donation, or land exchange), and Lease
+        Sites.
+
+-   **B.C. Non-Government Organization Conservation Areas (0.1%
+    terrestrial)**
+
     -   [B.C. Non-Government Organization Conservation
         Areas](http://ltabc.ca/resources/2012-02-05-22-20-02), also
         known as private conservation lands, include Fee Simple areas,
         defined as ownership of the title to a legal parcel, and
-        Registerable Interests &mdash; other conservation securements registered
-        on title, such as conservation covenants and leases.
+        Registerable Interests --- other conservation securements
+        registered on title, such as conservation covenants and leases.
 
 **Note:** The sum of the numbers listed above will be greater than the
 total provincial area reported on this page (15.4%). This is because
@@ -270,7 +262,7 @@ Canada](http://biodivcanada.ca/default.asp?lang=En&n=9B5793F6-1)
 Targets](https://www.cbd.int/sp/targets/)
 
 ^3^[BC Parks](http://www.env.gov.bc.ca/bcparks/) Facts and Figures:
-[http://www.env.gov.bc.ca/bcparks/aboutBCParks/fact\_fig.html](/bcparks/aboutBCParks/fact_fig.html)
+[http://www.env.gov.bc.ca/bcparks/aboutBCParks/fact_fig.html](/bcparks/aboutBCParks/fact_fig.html)
 
 ^4^Canada Parks Council. 2011. Economic Impact of Canada's National
 Provincial and Territorial Parks in 2009. A Technical Report prepared by
@@ -282,38 +274,43 @@ at: <http://www.parks-parcs.ca/english/cpc/economic.php>
 \*By accessing these datasets, you agree to the license associated with
 each file, as indicated in parentheses below.
 
--   [Indicator data: Summaries of Protected Lands and Waters
-    in B.C.](https://catalogue.data.gov.bc.ca/dataset/6579744d-818c-4b26-839a-28a03edc0d98) (License: `r get_data_license("ogl-bc")`)
+-   [Indicator data: Summaries of Protected Lands and Waters in
+    B.C.](https://catalogue.data.gov.bc.ca/dataset/6579744d-818c-4b26-839a-28a03edc0d98)
+    (License: `r get_data_license("ogl-bc")`)
 -   [Canadian Council on Ecological Areas (CCEA) shapefile database of
     protected areas in Canada](http://www.ccea.org/download-carts-data/)
 -   [B.C. Government Conservation
-    Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612) (License: `r get_data_license("ogl-bc")`)
--   [B.C. NGO Conservation Areas Database &mdash; Fee Simple
+    Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612)
+    (License: `r get_data_license("ogl-bc")`)
+-   [B.C. NGO Conservation Areas Database --- Fee Simple
     Areas](http://ltabc.ca/resources/2012-02-05-22-20-02)
 -   [Ecoregions - Ecoregion Ecosystem Classification of British
-    Columbia](http://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia) (License: `r get_data_license("ogl-bc")`)
+    Columbia](http://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia)
+    (License: `r get_data_license("ogl-bc")`)
 -   [Biogeoclimatic Ecosystem Classification (BEC)
-    Map](http://catalogue.data.gov.bc.ca/dataset/biogeoclimatic-ecosystem-classification-bec-map) (License: `r get_data_license("ogl-bc")`)
+    Map](http://catalogue.data.gov.bc.ca/dataset/biogeoclimatic-ecosystem-classification-bec-map)
+    (License: `r get_data_license("ogl-bc")`)
 
 Updated June 2016
 
-Published and Available On-Line at Environmental Reporting BC (June 2016):
-[](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html)
+Published and Available On-Line at Environmental Reporting BC (June
+2016):
 
-Email correspondence to: envreportbc@gov.bc.ca
+Email correspondence to:
+[envreportbc\@gov.bc.ca](mailto:envreportbc@gov.bc.ca){.email}
 
 \newpage
 
 ## Appendix: Breakdown of land designations in B.C.
 
 **Note:** The sum of the numbers listed below will be greater than the
-total provincial area reported on this page (15.4% for terrestrial, and 
-3.2% for marine). This is because
-there is some overlap among designations. For example, there are about
-10,000 hectares of land that are owned by non-governmental conservation
-organizations, but are administered by the province. These lands are
-included in both categories, but the overlap is removed in the overall
-provincial and ecoregional analyses.
+total provincial area reported on this page (15.4% for terrestrial, and
+3.2% for marine). This is because there is some overlap among
+designations. For example, there are about 10,000 hectares of land that
+are owned by non-governmental conservation organizations, but are
+administered by the province. These lands are included in both
+categories, but the overlap is removed in the overall provincial and
+ecoregional analyses.
 
 ### Terrestrial
 

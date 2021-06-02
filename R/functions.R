@@ -142,41 +142,36 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
   output
 }
 
-fix_gpd_ecoregions <- function(data){
-  m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC")
+fix_ecoregions <- function(data){
+  m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
-  ecoregions <- data
+  eco_marine_sites <- data %>%
+    dplyr::filter(ecoregion_code %in% m_ecoregions)
+
   bc_bound_hres <- bcmaps::bc_bound_hres()
 
   ## Extract the terrestrial and marine portions of GPB into separate objects
-  gpb_terrestrial <- ms_clip(ecoregions[ecoregions$ecoregion_code == "GPB",],
-                             bc_bound_hres)
-  gpb_marine <- ms_erase(ecoregions[ecoregions$ecoregion_code == "GPB",],
-                         bc_bound_hres)
+  eco_terrestrial <- ms_clip(data, bc_bound_hres)
+  eco_marine <- ms_erase(eco_marine_sites, bc_bound_hres)
+
   ## Fix it up:
-  gpb_terrestrial <- fix_geo_problems(gpb_terrestrial)
-  gpb_marine <- fix_geo_problems(gpb_marine)
-
-  ## Add terrestrial portion of GPB back to terrestrial ecoregions
-  ecoregions_t <- rbind(ecoregions[!ecoregions$ecoregion_code %in% c("GPB", m_ecoregions), ],
-                        gpb_terrestrial[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
-
-  ## Add marine portion of GPB back to marine ecoregions
-  ecoregions_m <- rbind(ecoregions[ecoregions$ecoregion_code %in% m_ecoregions, ],
-                        gpb_marine[, setdiff(names(gpb_terrestrial), "rmapshaperid")])
-
-  ## Calcualte the area of the polygons
-  ecoregions_t <- ecoregions_t %>%
-    mutate(area = as.numeric(st_area(geometry))) %>%
-    mutate(type = "land")
+  eco_terrestrial <- fix_geo_problems(eco_terrestrial)
+  eco_marine <- fix_geo_problems(eco_marine)
 
 
-  ecoregions_m <- ecoregions_m %>%
-    mutate(area = as.numeric(st_area(geometry))) %>%
-    mutate(type = "water")
+  eco_terrestrial <- eco_terrestrial %>%
+    mutate(ecoregion_area = as.numeric(st_area(geometry)),
+           type = "land",
+           total_ecoregion_by_type = ecoregion_area/ 10000)
+
+
+  eco_marine <- eco_marine %>%
+    mutate(ecoregion_area = as.numeric(st_area(geometry)),
+           type = "water",
+           total_ecoregion_by_type = ecoregion_area/ 10000)
 
   ## Create simplified versions for visualization
-  ecoregions_comb <- rbind(ecoregions_m, ecoregions_t)
+  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)
   ecoregions_comb
 }
 
@@ -236,15 +231,15 @@ simplify_bec_background<-function(){# Simplify bec zones background map ---
 
 # Calculate ecoregion and bec zone protected areas ------------------------
 
-find_ecoregion_size <- function(data) {
-# Summarize by eco region
-  output <- data %>%
-    mutate(area = as.numeric(st_area(geometry))) %>%
-    st_set_geometry(NULL) %>%
-    group_by(ecoregion_code) %>%
-    summarize(total = sum(area) / 10000, .groups = "drop")
-  output
-}
+# find_ecoregion_size <- function(data) {
+# # Summarize by eco region
+#   output <- data %>%
+#     mutate(area = as.numeric(st_area(geometry))) %>%
+#     st_set_geometry(NULL) %>%
+#     group_by(ecoregion_code) %>%
+#     summarize(total = sum(area) / 10000, .groups = "drop")
+#   output
+# }
 
 protected_area_by_eco <- function(data, eco_input){
   output <- data %>%
@@ -263,7 +258,7 @@ protected_area_by_eco <- function(data, eco_input){
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
     # Fill in missing dates all the way to max
     complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
-             fill = list(total_area = 0, missing = FALSE)) %>%
+             fill = list(area = 0, missing = FALSE)) %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type, missing, date) %>%
     summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
@@ -291,9 +286,9 @@ protected_area_totals<- function(data, eco_area_data){
            d_max = max(date, na.rm = TRUE)) %>%
     st_set_geometry(NULL) %>%
     # Add placeholder for missing dates for plots (max year plus 1)
-    mutate(missing = is.na(date),
-           date = if_else(is.na(date), d_max + 1L, date),
-           d_max = max(c(date, d_max))) %>%
+    mutate(d_max = max(date, na.rm = TRUE),
+           missing = is.na(date),
+           date = if_else(is.na(date), d_max + 1L, date)) %>%
     group_by(park_type, type) %>%
     # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
     complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
@@ -484,12 +479,12 @@ bc_map <- function(data){
     labs(title = "Distribution of Protected Areas in B.C.") +
     theme(legend.title=element_blank())+
     theme(legend.justification=c("center"),
-          legend.position=c(0.8, 0.6))
+          legend.position=c(0.9, 0.6))
   ggsave("out/prov_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
 
-eco_static <- function(data, input){
+eco_static <- function(data, input, coordinates){
 
   input <- input %>%
     group_by(ecoregion_name, type) %>%
@@ -497,8 +492,11 @@ eco_static <- function(data, input){
     select(ecoregion_name, type, p_region)
 
   data <- data %>%
-    mutate(ecoregion_name = as.factor(ecoregion_name)) %>%
+    mutate(ecoregion_name = as.factor(ecoregion_name),
+           type=as.factor(type),
+           coo) %>%
     mutate(type=as.factor(type)) %>%
+
     left_join(input, by = c("ecoregion_name", "type"))
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
@@ -507,12 +505,14 @@ eco_static <- function(data, input){
     geom_sf(data=data, mapping=aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
     geom_sf(data=bc_bound_hres(), mapping=aes(fill=NA))+
     theme(plot.margin = unit(c(0,0,0,0), "pt")) +
-    scale_fill_manual(values = scale_map, name = "") +
+    scale_fill_manual(values = scale_map, guide=NULL) +
     scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected") +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
     labs(title = "Area Protected by Ecoregion") +
     theme(plot.title = element_text(hjust=0.5, size = 25)) +
+    theme(legend.justification=c("center"),
+          legend.position=c(0.9, 0.6))+
     guides(alpha = guide_legend(override.aes = list(fill = "black")))#+
     #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
   ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
