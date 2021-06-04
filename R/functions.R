@@ -202,7 +202,8 @@ fix_ecoregions <- function(data){
     ungroup()
 
   ## Create simplified versions for visualization
-  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)
+  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)%>%
+    st_cast(to="POLYGON", warn = FALSE)
   ecoregions_comb
 }
 
@@ -276,7 +277,7 @@ protected_area_by_eco <- function(data, eco_input){
   output <- data %>%
     mutate(total_area = as.numeric(st_area(geometry))) %>%
     st_set_geometry(NULL) %>%
-    left_join(eco_input, by = c("ecoregion_code, type")) %>%
+    left_join(eco_input, by = c("ecoregion_code", "type")) %>%
     group_by(ecoregion_code, ecoregion_name, type, date) %>%
     complete(park_type = c("OECM", "PPA"),
              fill = list(total_area = 0)) %>%
@@ -423,7 +424,7 @@ plot_bec_zone_totals<- function(data){
 
   bec_totals <- data %>%
     dplyr::filter(park_type == "PPA") %>%
-    mutate(total_bc = sum(total)) %>%
+    mutate(total_bc = bcmaps::bc_area()) %>%
     mutate(bec_rep = total/total_bc *100) %>%
     select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
     arrange(desc(perc_zone))
@@ -439,6 +440,8 @@ plot_bec_zone_totals<- function(data){
 
   joined_bar<-plot_grid(bar2, bar3, align="h")
   ggsave("out/bec_join.png", joined_bar, width = 12, height = 6, dpi = 300)
+
+  scatterplot <- ggplot(bec)
 }
 
 bec_zone_map <- function(data){
