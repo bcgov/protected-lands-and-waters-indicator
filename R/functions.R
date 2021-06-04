@@ -120,6 +120,31 @@ remove_overlaps <- function(data, output){
   write_rds(output, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
 
+# classify_land_type <- function(data){
+#
+#     bc_bound_hres <- bcmaps::bc_bound_hres()
+#
+#     ## Extract the terrestrial and marine portions of GPB into separate objects
+#     pa_terrestrial <- ms_clip(data, bc_bound_hres)
+#     pa_marine <- ms_erase(data, bc_bound_hres)
+#
+#     ## Fix it up:
+#     pa_terrestrial <- fix_geo_problems(pa_terrestrial)
+#     pa_marine <- fix_geo_problems(pa_marine)
+#
+#
+#     pa_terrestrial <- pa_terrestrial %>%
+#       mutate(type = "land")
+#
+#
+#     pa_marine <- pa_marine %>%
+#       mutate(type = "water")
+#
+#     ## Create simplified versions for visualization
+#     pa_comb <- rbind(pa_terrestrial, pa_marine)
+#     pa_comb
+# }
+
 
 # intersect data ----------------------------------------------------------
 
@@ -161,14 +186,20 @@ fix_ecoregions <- function(data){
 
   eco_terrestrial <- eco_terrestrial %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           type = "land",
-           total_ecoregion_by_type = ecoregion_area/ 10000)
+           type = "land") %>%
+    group_by(ecoregion_code, ecoregion_name, type) %>%
+    summarise(ecoregion_area = sum(ecoregion_area)) %>%
+    mutate(total_ecoregion_by_type = ecoregion_area/10000) %>%
+    ungroup()
 
 
   eco_marine <- eco_marine %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           type = "water",
-           total_ecoregion_by_type = ecoregion_area/ 10000)
+           type = "water") %>%
+    group_by(ecoregion_code, ecoregion_name, type) %>%
+    summarise(ecoregion_area = sum(ecoregion_area)) %>%
+    mutate(total_ecoregion_by_type = ecoregion_area/10000) %>%
+    ungroup()
 
   ## Create simplified versions for visualization
   ecoregions_comb <- rbind(eco_terrestrial, eco_marine)
@@ -245,6 +276,7 @@ protected_area_by_eco <- function(data, eco_input){
   output <- data %>%
     mutate(total_area = as.numeric(st_area(geometry))) %>%
     st_set_geometry(NULL) %>%
+    left_join(eco_input, by = c("ecoregion_code, type")) %>%
     group_by(ecoregion_code, ecoregion_name, type, date) %>%
     complete(park_type = c("OECM", "PPA"),
              fill = list(total_area = 0)) %>%
@@ -265,14 +297,14 @@ protected_area_by_eco <- function(data, eco_input){
     arrange(date, .by_group = TRUE) %>%
     mutate(cum_type = cumsum(total_area),
            total_type = sum(total_area)) %>%
-    group_by(ecoregion_code) %>%
+    group_by(ecoregion_code, type) %>%
     mutate(total_region = sum(total_area)) %>%
-    left_join(eco_input, by = "ecoregion_code") %>%
+    #left_join(eco_input, by = "ecoregion_code") %>%
     # Get regional values
-    group_by(ecoregion_code) %>%
-    mutate(p_type = total_type / total * 100,
-           p_region = total_region / total * 100,
-           cum_p_type = cum_type / total * 100) %>%
+    group_by(ecoregion_code, type) %>%
+    mutate(p_type = total_type / total_ecoregion_by_type * 100,
+           p_region = total_region / total_ecoregion_by_type * 100,
+           cum_p_type = cum_type / total_ecoregion_by_type * 100) %>%
     ungroup() %>%
     arrange(desc(type), p_region) %>%
     mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))

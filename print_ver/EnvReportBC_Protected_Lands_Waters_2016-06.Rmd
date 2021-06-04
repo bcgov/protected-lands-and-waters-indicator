@@ -101,7 +101,7 @@ water_total <- round(water_ppa$cum_p_type + water_oecm$cum_p_type, digits=1)
 -   Coastal areas in B.C. are comprised of `r water_ppa$cum_p_type`%
     PPAs and `r water_oecm$cum_p_type`% OECMs.
 -   The amount of protected land and water varies across B.C. The
-    distribution is shown below by ecoregion and ecosystem.
+    distribution is shown below by two different ecosystem classification systems below. 
 
 \vspace{16pt}
 
@@ -114,7 +114,7 @@ include_graphics(path = here("out", "prov_map.png"))
 
 ### Trends in the Protection of British Columbia's Terrestrial and Marine Ecoregions (1886-2020)
 
-The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
+* To help B.C. is divided into ecoregions to  The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
 * The most protected ecoregions include 
 
 \vspace{16pt}
@@ -127,9 +127,10 @@ include_graphics(path = here("out", "ecoregion_map.png"))
 
 ### Terrestrial Ecosystem Representation within Protected Lands in B.C.
 
-
--   Ecosystems in British Columbia are characterized as [biogeoclimatic
-    zones](https://www.for.gov.bc.ca/hre/becweb/) - geographic areas
+The distribution of protected areas is also shown by [biogeoclimatic
+    zones (BEC)](https://www.for.gov.bc.ca/hre/becweb/). 
+* BEC zones are defined by the biological communities that can develop in an area due to the climate and geography. They provide insight into the soils and plant communities you would expect to see in an area. 
+-   Ecosystems in British Columbia are characterized as  - geographic areas
     with similar patterns of energy flow, vegetation and soils.
 -   Protected lands are not evenly distributed among British Columbia's
     ecosystems. High elevation and mountainous areas such as the Spruce
