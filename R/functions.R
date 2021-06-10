@@ -186,24 +186,23 @@ fix_ecoregions <- function(data){
 
   eco_terrestrial <- eco_terrestrial %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
+           total_ecoregion_by_type = as.numeric(set_units(ecoregion_area, km^2)),
            type = "land") %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
-    summarise(ecoregion_area = sum(ecoregion_area)) %>%
-    mutate(total_ecoregion_by_type = ecoregion_area/10000) %>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
     ungroup()
 
 
   eco_marine <- eco_marine %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
+           total_ecoregion_by_type = as.numeric(set_units(ecoregion_area, km^2)),
            type = "water") %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
-    summarise(ecoregion_area = sum(ecoregion_area)) %>%
-    mutate(total_ecoregion_by_type = ecoregion_area/10000) %>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
     ungroup()
 
   ## Create simplified versions for visualization
-  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)%>%
-    st_cast(to="POLYGON", warn = FALSE)
+  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)
   ecoregions_comb
 }
 
@@ -273,11 +272,13 @@ simplify_bec_background<-function(){# Simplify bec zones background map ---
 #   output
 # }
 
-protected_area_by_eco <- function(data, eco_input){
+protected_area_by_eco <- function(data, eco_totals){
+  eco_totals<- eco_totals %>%
+    st_set_geometry(NULL)
   output <- data %>%
-    mutate(total_area = as.numeric(st_area(geometry))) %>%
+    mutate(total_area = as.numeric(st_area(geometry)),
+           total_area = set_units(total_area, km^2)) %>%
     st_set_geometry(NULL) %>%
-    left_join(eco_input, by = c("ecoregion_code", "type")) %>%
     group_by(ecoregion_code, ecoregion_name, type, date) %>%
     complete(park_type = c("OECM", "PPA"),
              fill = list(total_area = 0)) %>%
@@ -291,23 +292,23 @@ protected_area_by_eco <- function(data, eco_input){
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
     # Fill in missing dates all the way to max
     complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
-             fill = list(area = 0, missing = FALSE)) %>%
+             fill = list(total_area = 0, missing = FALSE)) %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type, missing, date) %>%
-    summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
+    summarize(total_area = as.numeric(sum(total_area)), .groups = "drop") %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
     mutate(cum_type = cumsum(total_area),
            total_type = sum(total_area)) %>%
-    group_by(ecoregion_code, type) %>%
-    mutate(total_region = sum(total_area)) %>%
-    #left_join(eco_input, by = "ecoregion_code") %>%
+    ungroup() %>%
+    left_join(eco_totals, by = c("ecoregion_code", "ecoregion_name" ,"type")) %>%
     # Get regional values
     group_by(ecoregion_code, type) %>%
-    mutate(p_type = total_type / total_ecoregion_by_type * 100,
-           p_region = total_region / total_ecoregion_by_type * 100,
-           cum_p_type = cum_type / total_ecoregion_by_type * 100) %>%
+    mutate(both_park_type_sum = sum(total_area),
+           p_type = total_type / total_ecoregion_by_type * 100,
+           cum_p_type = cum_type / total_ecoregion_by_type * 100,
+           p_region = both_park_type_sum/total_ecoregion_by_type * 100) %>%
     ungroup() %>%
-    arrange(desc(type), p_region) %>%
+    arrange(desc(type), p_type) %>%
     mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
   write_rds(output, "out/eco_area.rds")
   output
@@ -316,6 +317,7 @@ protected_area_by_eco <- function(data, eco_input){
 protected_area_totals<- function(data, eco_area_data){
   pa_eco_all_df <- data %>%
     mutate(total_area = st_area(geometry),
+           total_area = set_units(total_area, km^2),
            d_max = max(date, na.rm = TRUE)) %>%
     st_set_geometry(NULL) %>%
     # Add placeholder for missing dates for plots (max year plus 1)
@@ -326,43 +328,32 @@ protected_area_totals<- function(data, eco_area_data){
     # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
     complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
              fill = list(total_area = 0, missing = FALSE)) %>%
+    ungroup() %>%
+    group_by(date) %>%
+    complete(type = c("land", "water"), park_type = c("OECM", "PPA"),
+             fill = list(total_area = 0, missing = FALSE)) %>%
     group_by(park_type, type, missing, date) %>%
-    summarize(total_area = as.numeric(sum(total_area)) / 10000, .groups = "drop") %>%
+    summarize(total_area = as.numeric(sum(total_area)), .groups = "drop") %>%
     group_by(park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
     mutate(cum_type = cumsum(total_area),
-           total_type = sum(total_area)) %>%
-    ungroup() %>%
-    mutate(total = sum(eco_area_data$total),
-           p_type = total_type / total * 100,
-           cum_p_type = cum_type / total * 100) %>%
-    group_by(date) %>%
-    complete(type = c("land", "water"), park_type = c("OECM", "PPA"),
-             fill = list(cum_p_type = 0, missing = FALSE)) %>%
-    ungroup()
-  #write_rds(pa_eco_all_df, "out/eco_area_all.rds")
+           total_type = sum(total_area))
 
-  #find total area of land/water by adding ecoregion area
-  bc_totals<- eco_area_data %>%
+  bc_water_total<- eco_area_data %>%
     group_by(ecoregion_name) %>%
     slice_head(n=1) %>%
     ungroup() %>%
-    group_by(type) %>%
-    summarize(bc_total_by_type = sum(total)) %>%
-    ungroup()
+    dplyr::filter(type=="water") %>%
+    summarize(bc_water_total = sum(total_ecoregion_by_type))
 
-  #find sum of park type by year for area plot
   output <- pa_eco_all_df %>%
-    replace_na(list(total_area=0)) %>%
+    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total,
+                                     type=="land" ~ bcmaps::bc_area())) %>%
     group_by(date, park_type, type) %>%
-    summarize(total_annual_by_park_type = sum(total_area), .groups = "drop") %>%
-    left_join(bc_totals)%>%
-    group_by(type, park_type) %>%
     arrange(date, .by_group = TRUE) %>%
-    mutate(cumulative_by_type=cumsum(total_annual_by_park_type),
-           cum_p_type = cumulative_by_type/bc_total_by_type*100) %>%
-    ungroup()
-  write_rds(output, "out/pa_eco_sum.rds")
+    mutate(perc_year_type = total_area/bc_total_area,
+           cum_year_type = cum_type/bc_total_area,
+           summary_total = total_type/bc_total_area)
   output
 }
 
@@ -519,7 +510,7 @@ bc_map <- function(data){
   map
 }
 
-eco_static <- function(data, input, coordinates){
+eco_static <- function(data, input){
 
   input <- input %>%
     group_by(ecoregion_name, type) %>%
@@ -528,11 +519,9 @@ eco_static <- function(data, input, coordinates){
 
   data <- data %>%
     mutate(ecoregion_name = as.factor(ecoregion_name),
-           type=as.factor(type),
-           coo) %>%
-    mutate(type=as.factor(type)) %>%
+           type=as.factor(type)) %>%
+  left_join(input, by = c("ecoregion_name", "type"))
 
-    left_join(input, by = c("ecoregion_name", "type"))
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
   g <- ggplot() +
