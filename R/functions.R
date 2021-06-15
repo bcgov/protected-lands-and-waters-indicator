@@ -168,41 +168,57 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
 }
 
 fix_ecoregions <- function(data){
-  m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
+  #m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
-  eco_marine_sites <- data %>%
-    dplyr::filter(ecoregion_code %in% m_ecoregions)
+  m_ecoregions <- c("SBC", "TPC", "OPS", "IPS")
+  m_t_ecoregions <- c("GPB", "COG", "NRA", "HCS")
+
+  eco_m_t_sites <- data %>%
+    dplyr::filter(ecoregion_code %in% m_t_ecoregions)
+
+  eco_other <- data %>%
+    dplyr::filter(!ecoregion_code %in% m_t_ecoregions)
 
   bc_bound_hres <- bcmaps::bc_bound_hres()
 
   ## Extract the terrestrial and marine portions of GPB into separate objects
-  eco_terrestrial <- ms_clip(data, bc_bound_hres)
-  eco_marine <- ms_erase(eco_marine_sites, bc_bound_hres)
+  eco_mixed_terrestrial <- ms_clip(eco_m_t_sites, bc_bound_hres)
+  eco_mixed_marine <- ms_erase(eco_m_t_sites, bc_bound_hres)
 
   ## Fix it up:
-  eco_terrestrial <- fix_geo_problems(eco_terrestrial)
-  eco_marine <- fix_geo_problems(eco_marine)
+  eco_mixed_terrestrial <- fix_geo_problems(eco_mixed_terrestrial)
+  eco_mixed_marine <- fix_geo_problems(eco_mixed_marine)
+  eco_other <- fix_geo_problems(eco_other)
 
+  #casewhen block here to determine type, if in m__ecor
 
-  eco_terrestrial <- eco_terrestrial %>%
+  eco_mixed_terrestrial <- eco_mixed_terrestrial %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           total_ecoregion_by_type = as.numeric(set_units(ecoregion_area, km^2)),
+           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
            type = "land") %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
     summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
     ungroup()
 
-
-  eco_marine <- eco_marine %>%
+  eco_mixed_marine <- eco_mixed_marine %>%
     mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           total_ecoregion_by_type = as.numeric(set_units(ecoregion_area, km^2)),
+           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
            type = "water") %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
     summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
     ungroup()
 
+  eco_other <- eco_other %>%
+    mutate(ecoregion_area = as.numeric(st_area(geometry)),
+           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
+           type = case_when(ecoregion_code %in% m_ecoregions ~ "water",
+                            !ecoregion_code %in% c(m_ecoregions, m_t_ecoregions) ~ "land")) %>%
+    group_by(ecoregion_code, ecoregion_name, type) %>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
+    ungroup()
+
   ## Create simplified versions for visualization
-  ecoregions_comb <- rbind(eco_terrestrial, eco_marine)
+  ecoregions_comb <- rbind(eco_other, eco_mixed_marine, eco_mixed_terrestrial)
   ecoregions_comb
 }
 
@@ -402,37 +418,46 @@ plot_by_bec_zone <- function(data){
 }
 
 plot_bec_zone_totals<- function(data){
-  bar2 <- ggplot(data %>%  select(zone_name, zone, perc_zone) %>% distinct(),
-                 aes(x = perc_zone, y = zone_name, fill = zone)) +
-    theme_minimal(base_size = 14) +
-    theme(panel.grid.major.y = element_blank()) +
-    geom_bar(width = 0.9, stat = "identity") +
-    labs(x = "Percent Area Protected (%)", y = "Biogeoclimatic Zone") +
-    scale_fill_manual(values = bec_colours(), guide = FALSE) +
-    scale_x_continuous(expand = c(0,0))
-  ggsave("out/bec_bar2.png", bar2, width = 6, height = 6, dpi = 300)
-  bar2
+  # bar2 <- ggplot(data %>%  select(zone_name, zone, perc_zone) %>% distinct(),
+  #                aes(x = perc_zone, y = zone_name, fill = zone)) +
+  #   theme_minimal(base_size = 14) +
+  #   theme(panel.grid.major.y = element_blank()) +
+  #   geom_bar(width = 0.9, stat = "identity") +
+  #   labs(x = "Percent Area Protected (%)", y = "Biogeoclimatic Zone") +
+  #   scale_fill_manual(values = bec_colours(), guide = FALSE) +
+  #   scale_x_continuous(expand = c(0,0))
+  # ggsave("out/bec_bar2.png", bar2, width = 6, height = 6, dpi = 300)
+  # bar2
 
   bec_totals <- data %>%
     dplyr::filter(park_type == "PPA") %>%
     mutate(total_bc = bcmaps::bc_area()) %>%
-    mutate(bec_rep = total/total_bc *100) %>%
+    mutate(bec_rep = total/total_bc) %>%
     select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
     arrange(desc(perc_zone))
 
-  bar3 <- ggplot(bec_totals, aes(x=bec_rep, y= zone_name, fill=zone))+
+  # bar3 <- ggplot(bec_totals, aes(x=bec_rep, y= zone_name, fill=zone))+
+  #   theme_minimal(base_size = 14) +
+  #   theme(panel.grid.major.y = element_blank()) +
+  #   geom_bar(width = 0.9, stat = "identity") +
+  #   labs(x = "BEC Zone Distribution Across B.C. (%)", y = "") +
+  #   scale_fill_manual(values = bec_colours(), guide = FALSE) +
+  #   scale_x_continuous(expand = c(0,0))
+  # ggsave("out/bec_bar3.png", bar3, width = 6, height = 6, dpi = 300)
+
+  # joined_bar<-plot_grid(bar2, bar3, align="h")
+  # ggsave("out/bec_join.png", joined_bar, width = 12, height = 6, dpi = 300)
+
+  scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, color= zone, label= zone_name))+
     theme_minimal(base_size = 14) +
-    theme(panel.grid.major.y = element_blank()) +
-    geom_bar(width = 0.9, stat = "identity") +
-    labs(x = "BEC Zone Distribution Across B.C. (%)", y = "") +
+    #theme(panel.grid.major.y = element_blank()) +
+    geom_point(size=2)+
+    ggrepel::geom_text_repel()+
+    theme(legend.position = "none") +
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
-    scale_x_continuous(expand = c(0,0))
-  ggsave("out/bec_bar3.png", bar3, width = 6, height = 6, dpi = 300)
+    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
+  ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
 
-  joined_bar<-plot_grid(bar2, bar3, align="h")
-  ggsave("out/bec_join.png", joined_bar, width = 12, height = 6, dpi = 300)
-
-  scatterplot <- ggplot(bec)
 }
 
 bec_zone_map <- function(data){
@@ -513,22 +538,35 @@ bc_map <- function(data){
 eco_static <- function(data, input){
 
   input <- input %>%
-    group_by(ecoregion_name, type) %>%
+    dplyr::filter(park_type == "PPA") %>%
+    group_by(ecoregion_name, ecoregion_code, type) %>%
     dplyr::filter(date == 2020) %>%
-    select(ecoregion_name, type, p_region)
+    select(ecoregion_name, ecoregion_code, type, p_region)
+
+  #data <- cbind(data, st_coordinates(st_centroid(data)))
+  label <- data %>%
+    group_by(ecoregion_name, ecoregion_code) %>%
+    slice_max(total_ecoregion_by_type) %>%
+    ungroup()
 
   data <- data %>%
     mutate(ecoregion_name = as.factor(ecoregion_name),
            type=as.factor(type)) %>%
-  left_join(input, by = c("ecoregion_name", "type"))
+    left_join(input, by = c("ecoregion_name", "ecoregion_code", "type"))
+
 
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
-  g <- ggplot() +
+  g <- ggplot(data) +
     theme_void() +
     geom_sf(data=data, mapping=aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
     geom_sf(data=bc_bound_hres(), mapping=aes(fill=NA))+
     theme(plot.margin = unit(c(0,0,0,0), "pt")) +
+    #geom_text(data=data, aes(X, Y, label=ecoregion_name))+
+    #geom_sf_text_repel(aes(label=ecoregion_name))+
+    ggrepel::geom_text_repel(data=label, aes(label=ecoregion_name, geometry=geometry),
+                             stat="sf_coordinates",
+                             min.segment.length=0)+
     scale_fill_manual(values = scale_map, guide=NULL) +
     scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected") +
     scale_x_continuous(expand = c(0,0)) +
@@ -538,7 +576,7 @@ eco_static <- function(data, input){
     theme(legend.justification=c("center"),
           legend.position=c(0.9, 0.6))+
     guides(alpha = guide_legend(override.aes = list(fill = "black")))#+
-    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
+  #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
   ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
   g
 }

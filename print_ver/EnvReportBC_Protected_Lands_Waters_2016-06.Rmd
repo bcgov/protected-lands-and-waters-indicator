@@ -114,12 +114,17 @@ include_graphics(path = here("out", "prov_map.png"))
 
 ### Trends in the Protection of British Columbia's Terrestrial and Marine Ecoregions (1886-2020)
 
-* To help B.C. is divided into ecoregions to  The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
+* To help visualize where protected areas are located in B.C., two different ecosystemB.C. is divided into ecoregions to  The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
 * The most protected ecoregions include 
 
 \vspace{16pt}
 
 ```{r include=is_pdf, eval=is_pdf, out.width="100%"}
+include_graphics(path = here("out", "bec_scatter.png"))
+```
+```{r include=is_html, eval=is_html, out.width="100%"}
+
+
 include_graphics(path = here("out", "ecoregion_map.png"))
 ```
 
@@ -147,14 +152,12 @@ The distribution of protected areas is also shown by [biogeoclimatic
 
 \vspace{16pt}
 
-```{r bec-bar-chart, fig.height=5}
-zone_barplot +
-  theme(plot.margin = unit(c(1,1,1,1), "lines"))
+```{r bec-zones-map, fig.alt = "Map of the biogeoclimatic zones across B.C."}
+include_graphics(path = here("out", "bec_map.png"))
 ```
 
-```{r bec-zone-map, fig.height=6}
-bec_zone_map +
-  theme(plot.title = element_text(size = 12, face = "bold"))
+```{r include=is_pdf, eval=is_pdf, out.width="100%"}
+include_graphics(path = here("out", "ecoregion_map.png"))
 ```
 
 
