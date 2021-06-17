@@ -67,11 +67,12 @@ There are different types of conserved areas in B.C. that contribute to Canada's
 
 ```{r}
 
-total_prot_area <- readRDS("out/pa_eco_sum.rds")
+total_prot_area <- readRDS("C:/tmp/protected-lands-and-waters-indicator/out/total_prot_area.rds")
 
 pa_total <- total_prot_area %>% 
-  group_by(park_type) %>% 
-  filter(date == 2020)
+  group_by(park_type, type) %>% 
+  filter(date == 2020) %>% 
+  select(summary_total)
 
 land_ppa <- pa_total %>% 
   filter(park_type == "PPA"&type =="land")
@@ -85,9 +86,9 @@ water_ppa <- pa_total %>%
 water_oecm <- pa_total %>% 
   filter(park_type == "OECM"&type =="water")
 
-land_total <- round(land_ppa$cum_p_type + land_oecm$cum_p_type, digits=1)
+land_total <- round(land_ppa$summary_total + land_oecm$summary_total, digits=1)
 
-water_total <- round(water_ppa$cum_p_type + water_oecm$cum_p_type, digits=1)
+water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=1) #watertotal
 ```
 
 ### Map of Protected Areas Across B.C. (2020)
@@ -96,10 +97,10 @@ water_total <- round(water_ppa$cum_p_type + water_oecm$cum_p_type, digits=1)
     B.C.'s terrestrial areas and inland water and `r water total`% of
     coastal and marine areas.**
 -   For terrestrial areas/inland water, the protected areas are
-    comprised of `r land_ppa$cum_p_type`% PPAs and
-    `r land_oecm$cum_p_type`% OECMs.
--   Coastal areas in B.C. are comprised of `r water_ppa$cum_p_type`%
-    PPAs and `r water_oecm$cum_p_type`% OECMs.
+    comprised of `r land_ppa$summary_total`% PPAs and
+    `r land_oecm$summary_total`% OECMs.
+-   Coastal areas in B.C. are comprised of `r water_ppa$summary_total`%
+    PPAs and `r water_oecm$summary_total`% OECMs.
 -   The amount of protected land and water varies across B.C. The
     distribution is shown below by two different ecosystem classification systems below. 
 
@@ -120,12 +121,43 @@ include_graphics(path = here("out", "prov_map.png"))
 \vspace{16pt}
 
 ```{r include=is_pdf, eval=is_pdf, out.width="100%"}
-include_graphics(path = here("out", "bec_scatter.png"))
-```
-```{r include=is_html, eval=is_html, out.width="100%"}
-
-
 include_graphics(path = here("out", "ecoregion_map.png"))
+```
+
+
+```{r include=is_html, eval=is_html, out.width="100%"}
+pa_bec_sum <- read_rds("C:/tmp/protected-lands-and-waters-indicator/out/bec_area.rds")
+
+bec_totals <- pa_bec_sum %>%
+    dplyr::filter(park_type == "PPA") %>%
+    mutate(total_bc = bcmaps::bc_area()) %>%
+    mutate(bec_rep = total/total_bc) %>%
+    select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
+    arrange(desc(perc_zone))
+
+labels <- pa_bec_sum %>% 
+    group_by(zone_name, park_type) %>%
+    mutate(tooltip = glue(
+    "<strong>PPAs:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "<strong>OECM:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+   ungroup()
+
+scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, color= zone, label= zone_name))+
+    theme_minimal(base_size = 14) +
+    #theme(panel.grid.major.y = element_blank()) +
+    geom_point(size=2)+
+    geom_interactive(data= labels, aes(tooltip=tooltip)) +
+    ggrepel::geom_text_repel()+
+    theme(legend.position = "none") +
+    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
+  ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
+  write_rds(scatterplot, "out/bec_scatter.rds")
+
+scatterplot
+
 ```
 
 \newpage

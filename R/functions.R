@@ -363,13 +363,14 @@ protected_area_totals<- function(data, eco_area_data){
     summarize(bc_water_total = sum(total_ecoregion_by_type))
 
   output <- pa_eco_all_df %>%
-    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total,
+    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total/1000000,
                                      type=="land" ~ bcmaps::bc_area())) %>%
     group_by(date, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
-    mutate(perc_year_type = total_area/bc_total_area,
-           cum_year_type = cum_type/bc_total_area,
-           summary_total = total_type/bc_total_area)
+    mutate(perc_year_type = total_area/bc_total_area*100,
+           cum_year_type = cum_type/bc_total_area*100,
+           summary_total = total_type/bc_total_area*100)
+  write_rds(output, "out/total_prot_area.rds")
   output
 }
 
@@ -457,7 +458,7 @@ plot_bec_zone_totals<- function(data){
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
     labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
   ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
-
+  write_rds(scatterplot, "out/bec_scatter.rds")
 }
 
 bec_zone_map <- function(data){
