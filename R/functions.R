@@ -419,16 +419,6 @@ plot_by_bec_zone <- function(data){
 }
 
 plot_bec_zone_totals<- function(data){
-  # bar2 <- ggplot(data %>%  select(zone_name, zone, perc_zone) %>% distinct(),
-  #                aes(x = perc_zone, y = zone_name, fill = zone)) +
-  #   theme_minimal(base_size = 14) +
-  #   theme(panel.grid.major.y = element_blank()) +
-  #   geom_bar(width = 0.9, stat = "identity") +
-  #   labs(x = "Percent Area Protected (%)", y = "Biogeoclimatic Zone") +
-  #   scale_fill_manual(values = bec_colours(), guide = FALSE) +
-  #   scale_x_continuous(expand = c(0,0))
-  # ggsave("out/bec_bar2.png", bar2, width = 6, height = 6, dpi = 300)
-  # bar2
 
   bec_totals <- data %>%
     dplyr::filter(park_type == "PPA") %>%
@@ -437,25 +427,13 @@ plot_bec_zone_totals<- function(data){
     select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
     arrange(desc(perc_zone))
 
-  # bar3 <- ggplot(bec_totals, aes(x=bec_rep, y= zone_name, fill=zone))+
-  #   theme_minimal(base_size = 14) +
-  #   theme(panel.grid.major.y = element_blank()) +
-  #   geom_bar(width = 0.9, stat = "identity") +
-  #   labs(x = "BEC Zone Distribution Across B.C. (%)", y = "") +
-  #   scale_fill_manual(values = bec_colours(), guide = FALSE) +
-  #   scale_x_continuous(expand = c(0,0))
-  # ggsave("out/bec_bar3.png", bar3, width = 6, height = 6, dpi = 300)
-
-  # joined_bar<-plot_grid(bar2, bar3, align="h")
-  # ggsave("out/bec_join.png", joined_bar, width = 12, height = 6, dpi = 300)
-
-  scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, color= zone, label= zone_name))+
+  scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, label= zone_name))+
     theme_minimal(base_size = 14) +
     #theme(panel.grid.major.y = element_blank()) +
-    geom_point(size=2)+
+    geom_point(size=2, aes(color=zone))+
     ggrepel::geom_text_repel()+
     theme(legend.position = "none") +
-    scale_fill_manual(values = bec_colours(), guide = FALSE) +
+    scale_color_manual(values = bec_colours(), guide = FALSE) +
     labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
   ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
   write_rds(scatterplot, "out/bec_scatter.rds")
@@ -542,7 +520,8 @@ eco_static <- function(data, input){
     dplyr::filter(park_type == "PPA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
     dplyr::filter(date == 2020) %>%
-    select(ecoregion_name, ecoregion_code, type, p_region)
+    select(ecoregion_name, ecoregion_code, type, p_region) %>%
+
 
   #data <- cbind(data, st_coordinates(st_centroid(data)))
   label <- data %>%
@@ -580,4 +559,49 @@ eco_static <- function(data, input){
   #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
   ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
   g
+}
+
+eco_bar <- function(data){
+
+  data <- data %>%
+    group_by(ecoregion_name, ecoregion_code, type, park_type) %>%
+    dplyr::filter(date == 2020) %>%
+    select(ecoregion_name, ecoregion_code, type, park_type, p_type, p_region) %>%
+    arrange(desc(p_type)) %>%
+    mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         type_combo = factor(type_combo,
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA")),
+         ecoregion_type_combo = glue("{ecoregion_name} - {tools::toTitleCase(type)}"))
+
+  scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
+  scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
+  scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
+  scale_combo <- setNames(c(scale_land, scale_water),
+                          c("Land - OECM", "Land - PPA",
+                            "Water - OECM", "Water - PPA"))
+
+  data <- data %>%
+    group_by(type) %>%
+    mutate(ecoregion_name = as.factor(ecoregion_name),
+           ecoregion_name = fct_reorder(ecoregion_name, p_region))
+
+    bar1 <- ggplot(data,
+                   aes(x = round(p_type,2), y = ecoregion_name,
+                       fill = type, alpha = park_type, label=ecoregion_name)) +
+      theme_minimal(base_size = 14) +
+      theme(panel.grid.major.y = element_blank(),
+            legend.position = c(0.7, 0.3)) +
+      geom_bar(width = 0.9, stat = "identity") +
+      labs(x = "Percent Area Protected Within Ecoregion (%)", y = "Ecoregion") +
+      scale_fill_manual(values = scale_map, guide = FALSE) +
+      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+      scale_x_continuous(expand = c(0,0)) +
+      guides(alpha = guide_legend(override.aes = list(fill = "black"))) +
+      facet_grid(rows=vars(tools::toTitleCase(type)), scales="free_y", space="free_y")+
+      theme(strip.text.y = element_blank())
+    ggsave("out/eco_bar_all.png", bar1, width = 8, height = 9, dpi = 300)
+    bar1
+
+
 }

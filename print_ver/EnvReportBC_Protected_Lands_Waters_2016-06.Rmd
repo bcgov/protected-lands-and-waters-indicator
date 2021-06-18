@@ -34,6 +34,7 @@ library(here)
 library(reshape2)
 library(plotly)
 library(targets)
+library(ggiraph)
 
 
 opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
@@ -91,18 +92,12 @@ land_total <- round(land_ppa$summary_total + land_oecm$summary_total, digits=1)
 water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=1) #watertotal
 ```
 
-### Map of Protected Areas Across B.C. (2020)
+## Map of Protected Areas Across B.C. (2020)
 
--   **As of 2020, protected lands and water cover `r land_total`% of
-    B.C.'s terrestrial areas and inland water and `r water total`% of
-    coastal and marine areas.**
--   For terrestrial areas/inland water, the protected areas are
-    comprised of `r land_ppa$summary_total`% PPAs and
-    `r land_oecm$summary_total`% OECMs.
--   Coastal areas in B.C. are comprised of `r water_ppa$summary_total`%
-    PPAs and `r water_oecm$summary_total`% OECMs.
--   The amount of protected land and water varies across B.C. The
-    distribution is shown below by two different ecosystem classification systems below. 
+* **As of 2020, protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water total`% of coastal and marine areas.**
+* For terrestrial areas/inland water, the protected areas are comprised of `r land_ppa$summary_total`% PPAs and `r land_oecm$summary_total`% OECMs.
+* Coastal areas in B.C. are comprised of `r water_ppa$summary_total`% PPAs and `r water_oecm$summary_total`% OECMs.
+* The amount of protected land and water is not evenly distributed across B.C. The B.C. distribution is shown below and is also separated into two different ecosystem classification systems below. 
 
 \vspace{16pt}
 
@@ -113,62 +108,26 @@ include_graphics(path = here("out", "prov_map.png"))
 
 \newpage
 
-### Trends in the Protection of British Columbia's Terrestrial and Marine Ecoregions (1886-2020)
+## Trends in the Protection of British Columbia's Terrestrial and Marine Ecoregions
 
-* To help visualize where protected areas are located in B.C., two different ecosystemB.C. is divided into ecoregions to  The map below shows the percent protected of B.C.'s 43 [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
+* B.C. is divided into [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. There are 39 terrestrial and 4 marine ecoregions in B.C. 
 * The most protected ecoregions include 
 
 \vspace{16pt}
 
 ```{r include=is_pdf, eval=is_pdf, out.width="100%"}
 include_graphics(path = here("out", "ecoregion_map.png"))
+include_graphics(path = here("out", "eco_bar_all.png"))
 ```
 
-
-```{r include=is_html, eval=is_html, out.width="100%"}
-pa_bec_sum <- read_rds("C:/tmp/protected-lands-and-waters-indicator/out/bec_area.rds")
-
-bec_totals <- pa_bec_sum %>%
-    dplyr::filter(park_type == "PPA") %>%
-    mutate(total_bc = bcmaps::bc_area()) %>%
-    mutate(bec_rep = total/total_bc) %>%
-    select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
-    arrange(desc(perc_zone))
-
-labels <- pa_bec_sum %>% 
-    group_by(zone_name, park_type) %>%
-    mutate(tooltip = glue(
-    "<strong>PPAs:</strong> ",
-    "{format(round(perc_type_zone[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
-    "<strong>OECM:</strong> ",
-    "{format(round(perc_type_zone[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
-   ungroup()
-
-scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, color= zone, label= zone_name))+
-    theme_minimal(base_size = 14) +
-    #theme(panel.grid.major.y = element_blank()) +
-    geom_point(size=2)+
-    geom_interactive(data= labels, aes(tooltip=tooltip)) +
-    ggrepel::geom_text_repel()+
-    theme(legend.position = "none") +
-    scale_fill_manual(values = bec_colours(), guide = FALSE) +
-    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
-  ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
-  write_rds(scatterplot, "out/bec_scatter.rds")
-
-scatterplot
-
-```
 
 \newpage
 
-### Terrestrial Ecosystem Representation within Protected Lands in B.C.
+## Terrestrial Ecosystem Representation within Protected Lands in B.C.
 
-The distribution of protected areas is also shown by [biogeoclimatic
+The distribution of protected areas is also shown across [biogeoclimatic
     zones (BEC)](https://www.for.gov.bc.ca/hre/becweb/). 
-* BEC zones are defined by the biological communities that can develop in an area due to the climate and geography. They provide insight into the soils and plant communities you would expect to see in an area. 
--   Ecosystems in British Columbia are characterized as  - geographic areas
-    with similar patterns of energy flow, vegetation and soils.
+* BEC zones are defined by the plant communities that can develop in an area due to the climate and geography. They provide insight into the soils and plant communities you would expect to see in an area. 
 -   Protected lands are not evenly distributed among British Columbia's
     ecosystems. High elevation and mountainous areas such as the Spruce
     -- Willow -- Birch, Boreal Altai Fescue Alpine, and Interior
@@ -188,12 +147,42 @@ The distribution of protected areas is also shown by [biogeoclimatic
 include_graphics(path = here("out", "bec_map.png"))
 ```
 
-```{r include=is_pdf, eval=is_pdf, out.width="100%"}
-include_graphics(path = here("out", "ecoregion_map.png"))
+```{r include=is_html, eval=is_html, out.width="100%"}
+pa_bec_sum <- read_rds("C:/tmp/protected-lands-and-waters-indicator/out/bec_area.rds")
+
+bec_totals <- pa_bec_sum %>%
+    group_by(zone_name) %>% 
+    mutate(tooltip = glue(
+    "<strong>PPA:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "<strong>OECM:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    ungroup() %>% 
+    dplyr::filter(park_type == "PPA") %>%
+    mutate(total_bc = bcmaps::bc_area()) %>%
+    mutate(bec_rep = total/total_bc) %>%
+    select(zone, zone_name, perc_zone, total, total_bc, bec_rep, tooltip) %>%
+    arrange(desc(perc_zone))
+
+scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, label= zone_name))+
+    theme_minimal(base_size = 14) +
+    #theme(panel.grid.major.y = element_blank()) +
+    #geom_point(size=2)+
+    geom_point_interactive(aes(color= zone, tooltip=tooltip))+
+    ggrepel::geom_text_repel()+
+    theme(legend.position = "none") +
+    scale_color_manual(values = bec_colours(), guide = FALSE) +
+    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
+
+girafe(ggobj=scatterplot)
 ```
 
 
-### Details of Protected Land & Water Designations in B.C.
+```{r include=is_pdf, eval=is_pdf, out.width="100%"}
+include_graphics(path = here("out", "bec_scatter.png"))
+```
+
+## Details of Protected Land & Water Designations in B.C.
 
 -   **BC Parks (14.4% terrestrial; 0.9% marine)**
 
@@ -259,7 +248,7 @@ organizations, but are administered by the province. These lands are
 included in both categories, but the overlap is removed in the overall
 provincial and ecoregional analyses.
 
-### Methods
+## Methods
 
 This indicator uses data from 3 sources: the 2015 [Canadian Council on
 Ecological Areas (CCEA) shapefile database of protected areas in
@@ -278,7 +267,7 @@ presented on this page is [available on
 GitHub](https://github.com/bcgov/protected_areas_analysis). Overlaps
 between protected areas have been accounted for in the analyses.
 
-### References and Other Useful Links
+## References and Other Useful Links
 
 [Canadian Environmental Sustainability Indicators: Canada's Protected
 Areas](https://www.ec.gc.ca/indicateurs-indicators/default.asp?lang=en&n=478A1D3D-1)
