@@ -520,7 +520,7 @@ eco_static <- function(data, input){
     dplyr::filter(park_type == "PPA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
     dplyr::filter(date == 2020) %>%
-    select(ecoregion_name, ecoregion_code, type, p_region) %>%
+    select(ecoregion_name, ecoregion_code, type, p_region)
 
 
   #data <- cbind(data, st_coordinates(st_centroid(data)))
@@ -572,7 +572,9 @@ eco_bar <- function(data){
          type_combo = factor(type_combo,
                              levels = c("Land - OECM", "Land - PPA",
                                         "Water - OECM", "Water - PPA")),
-         ecoregion_type_combo = glue("{ecoregion_name} - {tools::toTitleCase(type)}"))
+         ecoregion_type_combo = glue("{ecoregion_name} - {tools::toTitleCase(type)}"),
+         ecoregion_name = as.factor(ecoregion_name)) %>%
+    ungroup()
 
   scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
   scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
@@ -581,27 +583,39 @@ eco_bar <- function(data){
                           c("Land - OECM", "Land - PPA",
                             "Water - OECM", "Water - PPA"))
 
-  data <- data %>%
-    group_by(type) %>%
-    mutate(ecoregion_name = as.factor(ecoregion_name),
-           ecoregion_name = fct_reorder(ecoregion_name, p_region))
-
-    bar1 <- ggplot(data,
-                   aes(x = round(p_type,2), y = ecoregion_name,
-                       fill = type, alpha = park_type, label=ecoregion_name)) +
+    land <- ggplot(data=dplyr::filter(data, type=="land"),
+                   aes(x = round(p_type,2), y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
+                       fill = type, alpha = park_type)) +
       theme_minimal(base_size = 14) +
       theme(panel.grid.major.y = element_blank(),
             legend.position = c(0.7, 0.3)) +
       geom_bar(width = 0.9, stat = "identity") +
-      labs(x = "Percent Area Protected Within Ecoregion (%)", y = "Ecoregion") +
+      labs(y = "Ecoregion") +
+      theme(axis.title.x=element_blank())+
       scale_fill_manual(values = scale_map, guide = FALSE) +
       scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
-      scale_x_continuous(expand = c(0,0)) +
-      guides(alpha = guide_legend(override.aes = list(fill = "black"))) +
-      facet_grid(rows=vars(tools::toTitleCase(type)), scales="free_y", space="free_y")+
-      theme(strip.text.y = element_blank())
-    ggsave("out/eco_bar_all.png", bar1, width = 8, height = 9, dpi = 300)
-    bar1
+      scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
+      guides(alpha = guide_legend(override.aes = list(fill = "black"))) #+
+    land
+
+    water <-ggplot(data=dplyr::filter(data, type=="water"),
+                       aes(x = round(p_type,2), y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
+                           fill = type, alpha = park_type)) +
+      theme_minimal(base_size = 14) +
+      theme(panel.grid.major.y = element_blank(),
+            legend.position = c(0.7, 0.5)) +
+      geom_bar(width = 0.9, stat = "identity") +
+      labs(x = "Percent Protected Within Ecoregion (%)") +
+      theme(axis.title.y=element_blank())+
+      scale_fill_manual(values = scale_map, guide = FALSE) +
+      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+      scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
+      theme(legend.position='none')
+    water
+
+    combined <- plot_grid(land, water, ncol=1, align="v", rel_heights=c(4,1))
 
 
+    ggsave("out/eco_bar_all.png", combined, width = 9, height = 9, dpi = 300)
+    combined
 }

@@ -2,9 +2,9 @@
 topic: "Land"
 title: "Protected Lands & Waters in B.C."
 output: 
-  pdf_document: envreportutils.internal::print_ver
   html_document:
     self_contained: false
+  pdf_document: envreportutils.internal::print_ver
 ---
 
 ```{=html}
@@ -35,6 +35,9 @@ library(reshape2)
 library(plotly)
 library(targets)
 library(ggiraph)
+library(readr)
+library(glue)
+library(bcmaps)
 
 
 opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
@@ -92,16 +95,18 @@ land_total <- round(land_ppa$summary_total + land_oecm$summary_total, digits=1)
 water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=1) #watertotal
 ```
 
+\newpage
+
 ## Map of Protected Areas Across B.C. (2020)
 
-* **As of 2020, protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water total`% of coastal and marine areas.**
-* For terrestrial areas/inland water, the protected areas are comprised of `r land_ppa$summary_total`% PPAs and `r land_oecm$summary_total`% OECMs.
-* Coastal areas in B.C. are comprised of `r water_ppa$summary_total`% PPAs and `r water_oecm$summary_total`% OECMs.
+* **As of 2020, protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water_total`% of coastal and marine areas.**
+* For terrestrial areas/inland water, the protected areas are comprised of `r round(land_ppa$summary_total,1)`% PPAs and `r round(land_oecm$summary_total,1)`% OECMs.
+* Coastal areas in B.C. are comprised of `r round(water_ppa$summary_total, 1)`% PPAs and `r round(water_oecm$summary_total,1)`% OECMs.
 * The amount of protected land and water is not evenly distributed across B.C. The B.C. distribution is shown below and is also separated into two different ecosystem classification systems below. 
 
 \vspace{16pt}
 
-```{r prot-areas-map, fig.alt = "Map of protected lands and waters across B.C."}
+```{r prot-areas-map, fig.alt = "Map of protected lands and waters across B.C.", out.width="100%"}
 
 include_graphics(path = here("out", "prov_map.png"))
 ```
@@ -115,7 +120,8 @@ include_graphics(path = here("out", "prov_map.png"))
 
 \vspace{16pt}
 
-```{r include=is_pdf, eval=is_pdf, out.width="100%"}
+```{r include=is_pdf, eval=is_pdf, out.width="100%", fig.align='center'}
+
 include_graphics(path = here("out", "ecoregion_map.png"))
 include_graphics(path = here("out", "eco_bar_all.png"))
 ```
@@ -143,7 +149,7 @@ The distribution of protected areas is also shown across [biogeoclimatic
 
 \vspace{16pt}
 
-```{r bec-zones-map, fig.alt = "Map of the biogeoclimatic zones across B.C."}
+```{r bec-zones-map, fig.alt = "Map of the biogeoclimatic zones across B.C.", out.width="100%"}
 include_graphics(path = here("out", "bec_map.png"))
 ```
 
@@ -337,35 +343,4 @@ administered by the province. These lands are included in both
 categories, but the overlap is removed in the overall provincial and
 ecoregional analyses.
 
-### Terrestrial
 
-\scriptsize
-
-```{r}
-bc_designations_summary$category <- gsub(" and ", " & ", 
-                                         bc_designations_summary$category)
-
-col_names <- c("Category", "Designation", "Total Area (Ha)", "Number", 
-               "Percent of B.C.")
-
-col_digits <- c(NA, NA , 2, 0, 4)
-
-knitr::kable(bc_designations_summary[bc_designations_summary$BIOME == "T", 2:6], 
-      col.names = col_names, row.names = FALSE, digits = col_digits)
-```
-
-\normalsize
-
-### Marine
-
-\scriptsize
-
-```{r}
-col_names <- c("Category", "Designation", "Total Area (Ha)", "Number", 
-               "Percent of B.C.")
-
-knitr::kable(bc_designations_summary[bc_designations_summary$BIOME == "M", 2:6], 
-      col.names = col_names, row.names = FALSE, digits = col_digits)
-```
-
-\normalsize
