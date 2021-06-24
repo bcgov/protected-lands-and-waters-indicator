@@ -1,6 +1,6 @@
 ---
 topic: "land"
-title: "Protected Lands & Waters in B.C."
+title: "Conserved Lands & Waters in B.C."
 output: 
   pdf_document: envreportutils.internal::print_ver
   html_document:
@@ -89,12 +89,12 @@ land_total <- round(land_ppa$summary_total + land_oecm$summary_total, digits=1)
 water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=1) #watertotal
 ```
 
-* Protected lands and waters are legally established areas set aside to conserve nature and cultural values. Protected areas, particularly BC Parks, are well-used by British Columbians with 6 in 10 people visiting a provincial park each year^1^.
-* **Protected lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water_total`% of coastal and marine areas.** B.C.'s network of protected lands and waters contribute to the [Convention on Biological Diversity Aichi Target 11](https://www.cbd.int/aichi-targets/target/11) commitments to set aside 17% of terrestrial areas and 10% of marine areas by 2023 (was previously 2020). 
-* B.C.'s protected areas include national and provincial parks and protected areas (PPAs) and other effective area-based conservation measures [(OECMs)](https://www.iucn.org/commissions/world-commission-protected-areas/our-work/oecms#:~:text=What%20is%20an%20'OECM'%3F,biodiversity%20outside%20of%20protected%20areas). 
-* For terrestrial areas/inland water, the protected areas are comprised of `r round(land_ppa$summary_total,1)`% PPAs and `r round(land_oecm$summary_total,1)`% OECMs.
+* Conserved lands and waters are legally established areas set aside to conserve nature and cultural values. Conserved areas, particularly BC Parks, are well-used by British Columbians with 6 in 10 people visiting a provincial park each year^1^.
+* **Conserved lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water_total`% of coastal and marine areas.** B.C.'s network of conserved lands and waters contribute to the [Convention on Biological Diversity Aichi Target 11](https://www.cbd.int/aichi-targets/target/11) commitments to set aside 17% of terrestrial areas and 10% of marine areas by 2023 (was previously 2020). 
+* B.C.'s conserved areas include national and provincial parks and protected areas (PPAs) and other effective area-based conservation measures [(OECMs)](https://www.iucn.org/commissions/world-commission-protected-areas/our-work/oecms#:~:text=What%20is%20an%20'OECM'%3F,biodiversity%20outside%20of%20protected%20areas). 
+* For terrestrial areas/inland water, the conserved areas are comprised of `r round(land_ppa$summary_total,1)`% PPAs and `r round(land_oecm$summary_total,1)`% OECMs.
 * Marine areas in B.C. are comprised of `r round(water_ppa$summary_total, 1)`% PPAs and `r round(water_oecm$summary_total,1)`% OECMs.
-* The amount of protected lands and water is not evenly distributed across B.C. The following provides a glance at the distribution of protected areas across B.C. and the representation of different ecosystems. 
+* The amount of conserved lands and water is not evenly distributed across B.C. The following provides a glance at the distribution of conserved areas across B.C. and the representation of different ecosystems. 
 
 \newpage
 

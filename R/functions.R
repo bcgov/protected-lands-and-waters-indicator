@@ -409,7 +409,7 @@ plot_by_bec_zone <- function(data){
     theme(panel.grid.major.y = element_blank(),
           legend.position = c(0.7, 0.3)) +
     geom_bar(width = 0.9, stat = "identity") +
-    labs(x = "Percent Area Protected", y = "Biogeoclimatic Zone") +
+    labs(x = "Percent Area Conserved (%)", y = "Biogeoclimatic Zone") +
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
     scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
     scale_x_continuous(expand = c(0,0)) +
@@ -434,7 +434,7 @@ plot_bec_zone_totals<- function(data){
     ggrepel::geom_text_repel()+
     theme(legend.position = "none") +
     scale_color_manual(values = bec_colours(), guide = FALSE) +
-    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
+    labs(x = "BEC Zone Composition (%)", y = "Percentage of BEC Zone Conserved (%)")
   ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
   write_rds(scatterplot, "out/bec_scatter.rds")
 }
@@ -450,7 +450,7 @@ bec_zone_map <- function(data){
     theme(legend.title=element_blank()) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
-    labs(title = "Distribution of BEC Zones Across B.C.")
+    labs(title = "BEC Zones in B.C.")
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
@@ -506,7 +506,7 @@ bc_map <- function(data){
     scale_fill_manual(values = scale_combo) +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
-    labs(title = "Distribution of Protected Areas in B.C.") +
+    labs(title = "Distribution of Conserved Areas in B.C.") +
     theme(legend.title=element_blank())+
     theme(legend.justification=c("center"),
           legend.position=c(0.9, 0.6))
@@ -548,10 +548,10 @@ eco_static <- function(data, input){
                              stat="sf_coordinates",
                              min.segment.length=0)+
     scale_fill_manual(values = scale_map, guide=NULL) +
-    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected") +
+    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Conserved") +
     scale_x_continuous(expand = c(0,0)) +
     scale_y_continuous(expand = c(0,0)) +
-    labs(title = "Area Protected by Ecoregion") +
+    labs(title = "Area Conserved by Ecoregion") +
     theme(plot.title = element_text(hjust=0.5, size = 25)) +
     theme(legend.justification=c("center"),
           legend.position=c(0.9, 0.6))+
@@ -605,7 +605,7 @@ eco_bar <- function(data){
       theme(panel.grid.major.y = element_blank(),
             legend.position = c(0.7, 0.5)) +
       geom_bar(width = 0.9, stat = "identity") +
-      labs(x = "Percent Protected Within Ecoregion (%)") +
+      labs(x = "Percent Conserved Within Ecoregion (%)") +
       theme(axis.title.y=element_blank())+
       scale_fill_manual(values = scale_map, guide = FALSE) +
       scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
