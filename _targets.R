@@ -69,8 +69,8 @@ analyze_data <- list(
 # supplemental bec zone plots ---------------------------------------------
 plot_data <- list(
   #tar_target(bec_plot_type, plot_by_bec_zone(pa_bec_sum)),
-  tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum)),
-  tar_target(bec_map_figure, bec_zone_map(map_bec_background)),
+  tar_target(bec_plot_total, plot_bec_zone_totals(pa_bec_sum, map_bec_background)),
+  #tar_target(bec_map_figure, bec_zone_map(map_bec_background)),
   tar_target(bc_map_all, bc_map(pa_eco)),
   tar_target(bc_button, create_bc_button()),
   tar_target(bc_eco_map, eco_static(map_eco_background, pa_eco_sum)),

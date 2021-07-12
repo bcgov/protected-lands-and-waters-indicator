@@ -326,7 +326,7 @@ protected_area_by_eco <- function(data, eco_totals){
     ungroup() %>%
     arrange(desc(type), p_type) %>%
     mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
-  write_rds(output, "out/eco_area.rds")
+  write_rds(output, "out/pa_eco_sum.rds")
   output
 }
 
@@ -418,7 +418,7 @@ plot_by_bec_zone <- function(data){
   bar1
 }
 
-plot_bec_zone_totals<- function(data){
+plot_bec_zone_totals<- function(data, data2){
 
   bec_totals <- data %>%
     dplyr::filter(park_type == "PPA") %>%
@@ -435,16 +435,13 @@ plot_bec_zone_totals<- function(data){
     theme(legend.position = "none") +
     scale_color_manual(values = bec_colours(), guide = FALSE) +
     labs(x = "BEC Zone Composition (%)", y = "Percentage of BEC Zone Conserved (%)")
-  ggsave("out/bec_scatter.png", scatterplot, width = 8, height = 6, dpi = 300)
+  ggsave("out/bec_scatter.png", scatterplot, width = 6, height = 6, dpi = 300)
   write_rds(scatterplot, "out/bec_scatter.rds")
-}
-
-bec_zone_map <- function(data){
 
   map<-ggplot() +
     theme_void() +
-    theme(plot.title = element_text(hjust = 0.5, size = 25)) +
-    geom_sf(data = data, aes(fill = zone), colour = NA)+
+    theme(plot.title = element_text(hjust = 0.5, size = 15)) +
+    geom_sf(data = data2, aes(fill = zone), colour = NA)+
     geom_sf(data = bc_bound_hres(), aes(fill=NA))+
     scale_fill_manual(values = bec_colours()) +
     theme(legend.title=element_blank()) +
@@ -453,6 +450,12 @@ bec_zone_map <- function(data){
     labs(title = "BEC Zones in B.C.")
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
+
+  combined <- plot_grid(map, scatterplot, ncol=1, align="v", rel_heights=c(1.25,1))
+
+  ggsave("out/bec_comb.png", combined, width = 8, height = 10, dpi = 300)
+  combined
+
 }
 
 create_bc_button <- function(){
