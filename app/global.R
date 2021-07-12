@@ -32,7 +32,8 @@ pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
 
-pa_eco_sum <- readRDS("../out/pa_eco_sum.rds") %>%
+#pa_eco_sum <- readRDS("../out/total_prot_area.rds") %>%
+yearly_sums <- readRDS("../out/total_prot_area.rds") %>%
   mutate(tooltip_date = as.character(date),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
@@ -42,12 +43,13 @@ pa_eco_sum <- readRDS("../out/pa_eco_sum.rds") %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_p_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "{format(round(cum_year_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
     "<strong>OECM:</strong> ",
-    "{format(round(cum_p_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
 
-eco_area <- readRDS("../out/eco_area.rds") %>%
+#readRDS("../out/pa_eco_sum.rds")
+eco_area <- pa_eco_sum %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
                                 as.character(date))) %>%
@@ -63,7 +65,7 @@ eco_area <- readRDS("../out/eco_area.rds") %>%
 eco_area_sum <- eco_area %>%
   select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
   distinct() %>%
-  group_by(ecoregion_code) %>%
+  group_by(ecoregion_code, type) %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
                              levels = c("Land - OECM", "Land - PPA",
@@ -75,7 +77,7 @@ eco_area_sum <- eco_area %>%
                         "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
 
 # Add tool tip to map so they match
-eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
+eco <- select(eco_area_sum, ecoregion_code, p_region, type, tooltip) %>%
   distinct() %>%
   left_join(eco, ., by = "ecoregion_code")
 

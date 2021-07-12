@@ -28,14 +28,14 @@ shinyServer(function(input, output, session) {
   g_bc <- g +
     theme(legend.position = c(0.85, 0.7)) +
     geom_sf_interactive(data = eco,
-                        aes(tooltip = tooltip, fill = type, alpha = p_region,
+                        aes(tooltip = tooltip, fill = type.x, alpha = p_region,
                             data_id = ecoregion_code), size = 0.1, colour = "black") +
     guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))
 
   g_legend_water <- g +
     theme(legend.position = c(0.78, 0.7)) +
     theme(legend.text = element_blank()) +
-    geom_sf_interactive(data = filter(eco, type == "water"),
+    geom_sf_interactive(data = filter(eco, type.x == "water"),
                         aes(tooltip = tooltip, fill = type, alpha = p_region,
                             data_id = ecoregion_code), size = 0.1, colour = "black") +
     guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
@@ -125,7 +125,7 @@ shinyServer(function(input, output, session) {
 
     if(is.null(input$top_selected) || input$top_selected == "reset") {
       # Bottom #1 - Provincial Area plot
-      r <- mutate(pa_eco_sum, park_type = type_combo)
+      r <- mutate(yearly_sums, park_type = type_combo)
       g <- gg_area(r, type = "all")
     } else {
       # Bottom #2 - Ecoregion Area plot
