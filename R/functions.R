@@ -321,7 +321,7 @@ protected_area_by_eco <- function(data, eco_totals){
     group_by(ecoregion_code, type) %>%
     mutate(both_park_type_sum = sum(total_area),
            p_type = total_type / total_ecoregion_by_type * 100,
-           cum_p_type = cum_type / total_ecoregion_by_type * 100,
+           cum_year_type = cum_type / total_ecoregion_by_type * 100,
            p_region = both_park_type_sum/total_ecoregion_by_type * 100) %>%
     ungroup() %>%
     arrange(desc(type), p_type) %>%
