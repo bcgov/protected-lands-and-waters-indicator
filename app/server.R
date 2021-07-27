@@ -28,14 +28,14 @@ shinyServer(function(input, output, session) {
   g_bc <- g +
     theme(legend.position = c(0.85, 0.7)) +
     geom_sf_interactive(data = eco,
-                        aes(tooltip = tooltip, fill = type.x, alpha = p_region,
+                        aes(tooltip = tooltip, fill = type, alpha = p_region,
                             data_id = ecoregion_code), size = 0.1, colour = "black") +
     guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))
 
   g_legend_water <- g +
     theme(legend.position = c(0.78, 0.7)) +
     theme(legend.text = element_blank()) +
-    geom_sf_interactive(data = filter(eco, type.x == "water"),
+    geom_sf_interactive(data = filter(eco, type == "water"),
                         aes(tooltip = tooltip, fill = type, alpha = p_region,
                             data_id = ecoregion_code), size = 0.1, colour = "black") +
     guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
@@ -46,7 +46,7 @@ shinyServer(function(input, output, session) {
   g_bc <- ggdraw(g_bc + theme(legend.position = "none")) +
     draw_plot(g_legend_water, x = 0, y = 0, width = 1, height = 1) +
     draw_plot(g_legend_land, x = 0, y = 0, width = 1, height = 1) +
-    draw_label("Percent\nProtected", x = 0.8, y = 0.82, size = 12, colour = "black")
+    draw_label("Percent\nConserved", x = 0.8, y = 0.82, size = 12, colour = "black")
 
 
   # Top Panel ---------------------------------------------------------------
@@ -57,19 +57,41 @@ shinyServer(function(input, output, session) {
 
     if(is.null(input$top_selected) || input$top_selected == "reset") {
 
-      # Top Right #1 - Provincial Bar plot
-      g2 <- ggplot(data = eco_area_sum,
-                   aes(x = p_type, y = ecoregion_name, fill = type_combo)) +
+      land <- ggplot(data=dplyr::filter(eco_area_sum, type=="land"),
+                     aes(x = p_type, y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
+                         fill = type, alpha = park_type)) +
         theme_minimal(base_size = 10) +
         theme(panel.grid.major.y = element_blank(),
-              axis.title.y = element_blank(), legend.position = c(0.5, 0.5),
-              plot.margin = unit(c(0,0,0,0), "pt")) +
+              legend.position = c(0.7, 0.3)) +
         geom_bar_interactive(aes(tooltip = tooltip, data_id = ecoregion_code),
                              width = 0.75, stat = "identity") +
+        theme(axis.title.x=element_blank()) +
+        theme(axis.title.y=element_blank())+
+        scale_fill_manual(values = scale_map, guide = FALSE) +
+        scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+        scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
+        guides(alpha = guide_legend(override.aes = list(fill = "black"))) #+
+      land
+
+      water <-ggplot(data=dplyr::filter(eco_area_sum, type=="water"),
+                     aes(x = p_type, y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
+                         fill = type, alpha = park_type)) +
+        theme_minimal(base_size = 10) +
+        theme(panel.grid.major.y = element_blank(),
+              legend.position = c(0.7, 0.5)) +
+        geom_bar_interactive(aes(tooltip = tooltip, data_id = ecoregion_code),
+                             width = 0.75, stat = "identity")+
         labs(x = lab_total_area) +
-        scale_fill_manual(name = lab_oecm, values = scale_combo) +
-        scale_x_continuous(expand = c(0,0), position = "top") +
-        coord_fixed(ratio = 5)
+        theme(axis.title.y=element_blank())+
+        scale_fill_manual(values = scale_map, guide = FALSE) +
+        scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+        scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
+        theme(legend.position='none')
+      water
+
+      g2 <- plot_grid(land, water, ncol=1, align="v", rel_heights=c(4,1))
+
+    #} else if (if(filter(pa_eco, ecoregion_code == input$top_selected, type == "water" & type == "land")
 
     } else {
       region <- filter(pa_eco, ecoregion_code == input$top_selected) %>%

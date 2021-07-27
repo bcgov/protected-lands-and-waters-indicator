@@ -22,6 +22,7 @@ library(ggplot2)
 library(cowplot)
 library(glue)
 library(sf)
+library(forcats)
 
 
 # Constants ---------------------------------------------------------------
@@ -49,7 +50,7 @@ yearly_sums <- readRDS("../out/total_prot_area.rds") %>%
   ungroup()
 
 #readRDS("../out/pa_eco_sum.rds")
-eco_area <- pa_eco_sum %>%
+eco_area <- readRDS("../out/pa_eco_sum.rds") %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
                                 as.character(date))) %>%
@@ -57,9 +58,9 @@ eco_area <- pa_eco_sum %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_p_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "{format(round(cum_year_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
     "<strong>OECM:</strong> ",
-    "{format(round(cum_p_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
 
 eco_area_sum <- eco_area %>%
@@ -77,9 +78,9 @@ eco_area_sum <- eco_area %>%
                         "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
 
 # Add tool tip to map so they match
-eco <- select(eco_area_sum, ecoregion_code, p_region, type, tooltip) %>%
+eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
   distinct() %>%
-  left_join(eco, ., by = "ecoregion_code")
+  left_join(eco, ., by = c("ecoregion_code", "type"))
 
 bc_button <- readRDS("../out/bc_button.rds")
 
@@ -107,9 +108,9 @@ hover <- "#FFFF99"
 select <- "#FFFFFF"
 
 # Labels
-lab_total_area <- "Percent Area Protected"
+lab_total_area <- "Percent Area Conserved"
 lab_year <- "Year"
-lab_growth <- "Cumulative\n% Protected"
+lab_growth <- "Cumulative\n% Conserved"
 lab_oecm <- "Type"
 
 # Points and lines
@@ -136,11 +137,11 @@ gg_area <- function(data, type = "region") {
 
   data <- data %>%
     group_by(type, date) %>%
-    arrange(date, desc(park_type)) %>%
-    mutate(point = cumsum(cum_p_type)) %>%
+    arrange(date, desc(cum_year_type)) %>%
+    mutate(point = cumsum(cum_year_type)) %>%
     ungroup()
 
-  g <- ggplot(data = data, aes(x = date, y = cum_p_type)) +
+  g <- ggplot(data = data, aes(x = date, y = cum_year_type)) +
     theme_minimal(base_size = 14) +
     theme(panel.grid.minor.x = element_blank(),
           axis.line = element_line(),
