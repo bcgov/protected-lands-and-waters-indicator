@@ -43,62 +43,24 @@ The analysis uses data from several sources. The data does not need to be pre-do
     
 ### Code
 
-There are four core scripts that are required for the analysis; they need to be run in order:
+Installation
+This project leverages the {targets} package, a pipeline toolkit for data science projects in R. You can install {targets} from CRAN:
 
-- `01_load.R` - unzips the data files in the data folder
-- `02_clean.R` - cleans and prepares the spatial data for analysis, especially resolving overlaps among types of protected area designations
-- `03_analysis.R` - performs the spatial intersections and creates data summaries
-- `04_plot.R` - creates plots for communicating the results
+`r install.packages{"targets"}`
 
-The file `fun.R` contains a few custom functions required for the analysis.
+Usage
+Run `r targets::tar_make()` to run project. This will run all of the analysis - no individual scripts are required. 
 
 #### Required R packages:
 
-Spatial packages:
-```
-sp
-rgdal
-rgeos
-raster
-maptools
-geojsonio
-bcmaps
-rmapshaper
-```
+The packages used in this analysis are catalogued in `r packages.R`. It is likely that some of those packages won't be installed on your system. Those will need to be installed for this project to run.
 
-General data manipulation packages:
-```
-dplyr
-tidyr
-readr
-```
+#### Conserved Areas Shiny app
 
-Plotting packages:
-```
-ggplot2
-RColorBrewer
-ggthemes
-envreportutils
-```
+Part of the conserved areas indicator is a shiny app that details the percentage of conserved area by ecoregion. The shiny app can be opened after the targets workflow has been run via the following code: 
 
-Most packages used in the analysis can be installed from CRAN using `install.packages()`, but there are a few you will need to install using devtools:
-
-```r
-install.packages("devtools") # If you don't already have it installed
-
-library(devtools)
-install_github("bcgov/envreportutils")
-install_github("bcgov/bcmaps")
-```
-
-#### Other required software
-
-You will also need the [mapshaper](https://github.com/mbloch/mapshaper) node package, and for this you will require Node.js to be installed. 
-You can install it from [here](https://nodejs.org/en/), then on the command line type:
-
-```
-npm install -g mapshaper
-```
+`r install.packages("shiny")`
+`r shiny::runApp('app')`
 
 
 ## Getting Help or Reporting an Issue
