@@ -32,40 +32,41 @@ be pre-downloaded to run the code.
     (Licence: [Open Government Licence - British
     Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-### Code
+### Targets Workflow
 
-Installation This project leverages the `targets` package, a pipeline
-toolkit for data science projects in R. You can install `targets` from
-CRAN:
+This project leverages the `targets` package, a pipeline toolkit for
+data science projects in R. You can install `targets` from CRAN:
 
 ``` r
 #install.packages("targets")
 ```
 
-Usage Run `targets::tar_make()` to run project. This will run all of the
-analysis - no individual scripts are required.
+\#Usage Run `targets::tar_make()` to run project. This will run all of
+the analysis - no individual scripts are required.
 
-#### Required R packages:
+### Required R packages
 
-The packages used in this analysis are catalogued in packages.R. It is
-likely that some of those packages won’t be installed on your system.
-Those will need to be installed for this project to run.
+The packages used in this analysis are catalogued in `packages.R`. The
+packages will be loaded automatically with `tar_make()` but some may
+need to be installed prior to initiating the workflow.
 
-#### Conserved Areas Shiny app
+## Conserved Areas Shiny app
 
-Part of the conserved areas indicator is a shiny app that details the
-percentage of conserved area by ecoregion. The shiny app can be opened
-after the targets workflow has been run via the following code:
+One component of the conserved areas indicator is a shiny app that
+details the percentage of conserved area by ecoregion. The shiny app can
+be opened separately after the targets workflow has been run completely
+via the following code:
 
 ``` r
 #install.packages("shiny")
+#library("shiny")
 #shiny::runApp('app')
 ```
 
 ## Getting Help or Reporting an Issue
 
 To report bugs/issues/feature requests, please file an
-[issue](https://github.com/bcgov/bc_population_indicator/issues/).
+[issue](https://github.com/bcgov/protected-lands-and-waters-indicator/issues).
 
 ## How to Contribute
 
