@@ -54,7 +54,7 @@ Run `targets::tar_make()` to run project. This will run all of the analysis - no
 
 #### Required R packages:
 
-The packages used in this analysis are catalogued in packages.R. It is likely that some of those packages won't be installed on your system. Those will need to be installed for this project to run.
+The packages used in this analysis are catalogued in `packages.R`. It is likely that some of those packages won't be installed on your system. Those will need to be installed for this project to run.
 
 #### Conserved Areas Shiny app
 
