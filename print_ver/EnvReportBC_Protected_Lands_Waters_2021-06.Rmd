@@ -2,9 +2,9 @@
 topic: "land"
 title: "Conserved Lands & Waters in B.C."
 output: 
-  pdf_document: envreportutils.internal::print_ver
   html_document:
-    self_contained: false
+    self_contained: true
+  pdf_document: envreportutils.internal::print_ver
 ---
 
 ```{=html}
@@ -38,8 +38,8 @@ library(ggiraph)
 library(readr)
 library(glue)
 library(bcmaps)
-
-#setwd("/tmp/protected-lands-water-indicator")
+library(here)
+library(shiny)
 
 
 opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
@@ -67,7 +67,7 @@ is_html <- knitr::is_html_output()
 is_pdf <- knitr::is_latex_output()
 if (is_pdf) opts_chunk$set(fig.width = 6.5)
 
-total_prot_area <- readRDS('out/total_prot_area.rds')
+total_prot_area <- read_rds("out/total_prot_area.rds")
 
 pa_total <- total_prot_area %>% 
   group_by(park_type, type) %>% 
@@ -103,6 +103,7 @@ water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=
 ```{r prot-areas-map, results='asis', fig.alt = "Map of protected lands and waters across B.C.", out.width="100%"}
 
 include_graphics(path = here("out", "prov_map.png"))
+
 ```
 
 \newpage
@@ -117,10 +118,15 @@ include_graphics(path = here("out", "prov_map.png"))
 
 \vspace{16pt}
 
-```{r include=is_pdf, eval=is_pdf, out.width="100%", fig.align='center'}
+```{r ecoregions, include=is_pdf, eval=is_pdf, out.width="100%", fig.align='center'}
 
 include_graphics(path = here("out", "ecoregion_map.png"))
 include_graphics(path = here("out", "eco_bar_all.png"))
+```
+```{r ecoregion-shiny, include=is_html, eval=is_pdf, out.width="100%"}
+
+knitr::include_url("https://bcgov-env.shinyapps.io/conserved-lands-and-waters/")
+
 ```
 
 
@@ -135,12 +141,16 @@ include_graphics(path = here("out", "eco_bar_all.png"))
 
 \newpage
 
-```{r bec-zones-map, fig.alt = "Map of the biogeoclimatic zones across B.C.", out.width="100%"}
+```{r bec-zones-map, include=is_pdf, eval=is_pdf, out.width="100%"}
+
 include_graphics(path = here("out", "bec_comb.png"))
 ```
 
-```{r include=is_html, eval=is_html, out.width="80%"}
-pa_bec_sum <- read_csv("out/bec_area.rds")
+```{r bec-zone-html, include=is_html, eval=is_html, fig.alt = "Map of the biogeoclimatic zones across B.C.", out.width="80%"}
+
+include_graphics(path = here("out", "bec_map.png"))
+
+pa_bec_sum <- read_rds("out/bec_area.rds")
 
 bec_totals <- pa_bec_sum %>%
     group_by(zone_name) %>% 
@@ -171,7 +181,8 @@ girafe(ggobj=scatterplot)
 
 
 ```{r}
-pa_type <- read_csv("out/pa_type.csv")
+
+pa_type <- read_csv("pa_type.csv")
 
 
 ```
