@@ -29,7 +29,6 @@ A set of R scripts to complete the analysis behind the Environmental Indicator [
 
 **Note**: Moving forward this analysis and indicator will be updated using the analysis and approach found [here](https://github.com/bcgov/land-designations-indicator).
 
-## Usage
 
 ### Data
 
@@ -44,23 +43,26 @@ The analysis uses data from several sources. The data does not need to be pre-do
 ### Code
 
 Installation
-This project leverages the {targets} package, a pipeline toolkit for data science projects in R. You can install {targets} from CRAN:
+This project leverages the `targets` package, a pipeline toolkit for data science projects in R. You can install `targets` from CRAN:
 
-`r install.packages{"targets"}`
+```{r}
+#install.packages("targets")
+```
 
 Usage
-Run `r targets::tar_make()` to run project. This will run all of the analysis - no individual scripts are required. 
+Run `targets::tar_make()` to run project. This will run all of the analysis - no individual scripts are required. 
 
 #### Required R packages:
 
-The packages used in this analysis are catalogued in `r packages.R`. It is likely that some of those packages won't be installed on your system. Those will need to be installed for this project to run.
+The packages used in this analysis are catalogued in packages.R. It is likely that some of those packages won't be installed on your system. Those will need to be installed for this project to run.
 
 #### Conserved Areas Shiny app
 
 Part of the conserved areas indicator is a shiny app that details the percentage of conserved area by ecoregion. The shiny app can be opened after the targets workflow has been run via the following code: 
-
-`r install.packages("shiny")`
-`r shiny::runApp('app')`
+```{r}
+#install.packages("shiny")
+#shiny::runApp('app')
+```
 
 
 ## Getting Help or Reporting an Issue
@@ -90,3 +92,4 @@ Please note that this project is released with a [Contributor Code of Conduct](C
     limitations under the License.
     
 This repository is maintained by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B). Click [here](https://github.com/bcgov/EnvReportBC) for a complete list of our repositories on GitHub.
+
