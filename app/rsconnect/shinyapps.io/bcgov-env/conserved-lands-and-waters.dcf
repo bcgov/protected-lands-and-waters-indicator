@@ -1,0 +1,13 @@
+name: conserved-lands-and-waters
+title: conserved-lands-and-waters
+username:
+account: bcgov-env
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4412724
+bundleId: 4873087
+url: https://bcgov-env.shinyapps.io/conserved-lands-and-waters/
+when: 1627670160.65791
+lastSyncTime: 1627670160.65791
+asMultiple: FALSE
+asStatic: FALSE

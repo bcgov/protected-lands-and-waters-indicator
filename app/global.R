@@ -28,13 +28,12 @@ library(forcats)
 # Constants ---------------------------------------------------------------
 
 # Data
-eco <- readRDS("../out/eco_simp.rds")
-pa_eco <- readRDS("../out/CPCAD_Dec2020_eco_simp.rds") %>%
+eco <- readRDS("out/eco_simp.rds")
+pa_eco <- readRDS("out/CPCAD_Dec2020_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
 
-#pa_eco_sum <- readRDS("../out/total_prot_area.rds") %>%
-yearly_sums <- readRDS("../out/total_prot_area.rds") %>%
+yearly_sums <- readRDS("out/total_prot_area.rds") %>%
   mutate(tooltip_date = as.character(date),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
@@ -50,7 +49,7 @@ yearly_sums <- readRDS("../out/total_prot_area.rds") %>%
   ungroup()
 
 #readRDS("../out/pa_eco_sum.rds")
-eco_area <- readRDS("../out/pa_eco_sum.rds") %>%
+eco_area <- readRDS("out/pa_eco_sum.rds") %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
                                 as.character(date))) %>%
@@ -82,7 +81,7 @@ eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
   distinct() %>%
   left_join(eco, ., by = c("ecoregion_code", "type"))
 
-bc_button <- readRDS("../out/bc_button.rds")
+bc_button <- readRDS("out/bc_button.rds")
 
 # Sizes
 app_width <- 900

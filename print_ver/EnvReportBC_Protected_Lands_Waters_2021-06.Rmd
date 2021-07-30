@@ -179,14 +179,6 @@ scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, label= zone_name)
 girafe(ggobj=scatterplot)
 ```
 
-
-```{r}
-
-pa_type <- read_csv("pa_type.csv")
-
-
-```
-
 \newpage
 
 ## Details of Conserved Land & Water Designations in B.C. - NOT UPDATED YET
