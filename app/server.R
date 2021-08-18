@@ -69,8 +69,8 @@ shinyServer(function(input, output, session) {
         theme(axis.title.y=element_blank())+
         scale_fill_manual(values = scale_map, guide = FALSE) +
         scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
-        scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
-        guides(alpha = guide_legend(override.aes = list(fill = "black"))) #+
+        scale_x_continuous(expand = c(0,0), limits=c(0,110))  +
+        theme(legend.position='none')
       land
 
       water <-ggplot(data=dplyr::filter(eco_area_sum, type=="water"),
@@ -100,8 +100,35 @@ shinyServer(function(input, output, session) {
         pull(geometry)
 
       n <- region$ecoregion_name[1]
-      if(region$type[1] == "land") s <- scale_land else s <- scale_water
 
+      if(length(unique(region$type==2))){
+        s <- scale_map
+        g2 <- ggplot(data = region) +
+          theme_void() +
+          theme(plot.title = element_text(hjust = 0.5, size = 15),
+                plot.margin = unit(c(0,0,0,0), "pt")) +
+          geom_sf(data = r, fill = "grey80", colour = NA) +
+          geom_sf(aes(fill = factor(type), alpha = park_type), colour = NA) +
+          scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+          scale_fill_manual(name = scale_combo, values = s, guide = FALSE) +
+          scale_x_continuous(expand = c(0,0)) +
+          scale_y_continuous(expand = c(0,0)) +
+          labs(title = " ") +
+          guides(alpha = guide_legend(override.aes = list(fill = "black")))
+      } else if (region$type[1] == "land"){
+        s <- scale_land
+        g2 <- ggplot(data = region) +
+          theme_void() +
+          theme(plot.title = element_text(hjust = 0.5, size = 15),
+                plot.margin = unit(c(0,0,0,0), "pt")) +
+          geom_sf(data = r, fill = "grey80", colour = NA) +
+          geom_sf(aes(fill = factor(park_type)), colour = NA) +
+          scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
+          scale_x_continuous(expand = c(0,0)) +
+          scale_y_continuous(expand = c(0,0)) +
+          labs(title = " ")+
+          guides(alpha = guide_legend(override.aes = list(fill = "#056100")))
+      } else {s <- scale_water
       # Top Right #2 - Ecoregion map
       g2 <- ggplot(data = region) +
         theme_void() +
@@ -112,7 +139,9 @@ shinyServer(function(input, output, session) {
         scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
         scale_x_continuous(expand = c(0,0)) +
         scale_y_continuous(expand = c(0,0)) +
-        labs(title = " ")
+        labs(title = " ")+
+        guides(alpha = guide_legend(override.aes = list(fill = "#0a7bd1")))
+      }
 
       g2 <- ggdraw(g2) +
         draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,

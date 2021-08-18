@@ -128,10 +128,12 @@ gg_area <- function(data, type = "region") {
 
   if(type == "all") {
     scale <- scale_combo
-  } else if(data$type[1] == "land") {
+  } else if(all(data$type == "land")) {
     scale <- scale_land
-  } else {
+  } else if(all(data$type == "water")) {
     scale <- scale_water
+  } else {
+    scale <- scale_combo
   }
 
   data <- data %>%
@@ -166,7 +168,9 @@ gg_area <- function(data, type = "region") {
 
   if(type == "all") {
     g <- g + facet_wrap(~ type, nrow = 1)
-  } else lim <- NULL
+  } else if (length(unique(region$type==2))){
+    g <- g + facet_wrap(~ type, nrow = 1)
+  } else {lim <- NULL}
 
   g <- g + scale_y_continuous(expand = expansion(mult = c(0, 0.05)))
 
