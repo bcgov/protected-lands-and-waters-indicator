@@ -17,8 +17,6 @@ shinyUI(fluidPage(
     tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
 
-  titlePanel("Conserved Lands and Waters Indicator"),
-
   fixedRow(
     align = "center",
     div(style = glue("width: {app_width}px"),

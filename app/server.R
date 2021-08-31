@@ -158,6 +158,7 @@ shinyServer(function(input, output, session) {
     } else selected <- input$top_selected
 
     girafe(ggobj = g, width_svg = app_width/72, height_svg = top_height/72,
+           fonts = list(sans = "Roboto"),
            options = list(opts_hover(css = glue("fill:{hover};fill-opacity:1;")),
                           opts_selection(selected = selected,
                                          type = "single",
