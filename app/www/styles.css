@@ -1,0 +1,18 @@
+
+.recalculating {opacity: 1.0;}
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+body, text {
+  font-family: "Myriad-Pro",sans-serif;
+  font-family: "Roboto",sans-serif;
+  color: #494949;
+}
+
+h2 {
+  font-family: "Myriad-Pro",sans-serif;
+  font-family: "Roboto",sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+

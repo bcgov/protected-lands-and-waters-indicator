@@ -1,37 +1,28 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 [![img](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Analysis of trends and current amounts of protected lands and waters in B.C.
-============================================================================
+# Analysis of trends and current amounts of protected lands and waters in B.C.
 
 A set of R scripts to complete the analysis behind the Environmental
-Indicator [Protected Lands & Waters in
+Indicator [Conserved Lands & Waters in
 B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html),
 published by [Environmental Reporting
 BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B)
-in June 2016.
+in 2021.
 
 **Note**: Moving forward this analysis and indicator will be updated
 using the analysis and approach found
 [here](https://github.com/bcgov/land-designations-indicator).
 
-Usage
------
-
 ### Data
 
-The analysis uses data from several sources; they should be downloaded
-and stored in the `data` folder:
+The analysis uses data from several sources. The data does not need to
+be pre-downloaded to run the code.
 
--   [Canadian Council on Ecological Areas (CCEA) shapefile database of
-    protected areas in Canada](http://www.ccea.org/download-carts-data/)
--   [B.C. Government Conservation
-    Lands](https://catalogue.data.gov.bc.ca/dataset/68327529-c0d5-4fcb-b84e-f8d98a7f8612)
-    (Licence: [Open Government Licence - British
-    Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
--   [B.C. NGO Conservation Areas Database — Fee Simple
-    Areas](http://ltabc.ca/resources/2012-02-05-22-20-02)
+-   [Canadian Protected and Conserved Areas Database
+    (CPCAD)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
 -   [Ecoregions - Ecoregion Ecosystem Classification of British
     Columbia](https://catalogue.data.gov.bc.ca/dataset/d00389e0-66da-4895-bd56-39a0dd64aa78)
     (Licence: [Open Government Licence - British
@@ -41,77 +32,43 @@ and stored in the `data` folder:
     (Licence: [Open Government Licence - British
     Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
-### Code
+### Targets Workflow
 
-There are four core scripts that are required for the analysis; they
-need to be run in order:
-
--   `01_load.R` - unzips the data files in the data folder
--   `02_clean.R` - cleans and prepares the spatial data for analysis,
-    especially resolving overlaps among types of protected area
-    designations
--   `03_analysis.R` - performs the spatial intersections and creates
-    data summaries
--   `04_plot.R` - creates plots for communicating the results
-
-The file `fun.R` contains a few custom functions required for the
-analysis.
-
-#### Required R packages:
-
-Spatial packages:
-
-    sp
-    rgdal
-    rgeos
-    raster
-    maptools
-    geojsonio
-    bcmaps
-    rmapshaper
-
-General data manipulation packages:
-
-    dplyr
-    tidyr
-    readr
-
-Plotting packages:
-
-    ggplot2
-    RColorBrewer
-    ggthemes
-    envreportutils
-
-Most packages used in the analysis can be installed from CRAN using
-`install.packages()`, but there are a few you will need to install using
-devtools:
+This project leverages the `targets` package, a pipeline toolkit for
+data science projects in R. You can install `targets` from CRAN:
 
 ``` r
-install.packages("devtools") # If you don't already have it installed
-
-library(devtools)
-install_github("bcgov/envreportutils")
-install_github("bcgov/bcmaps")
+#install.packages("targets")
 ```
 
-#### Other required software
+\#Usage Run `targets::tar_make()` to run project. This will run all of
+the analysis - no individual scripts are required.
 
-You will also need the [mapshaper](https://github.com/mbloch/mapshaper)
-node package, and for this you will require Node.js to be installed. You
-can install it from [here](https://nodejs.org/en/), then on the command
-line type:
+### Required R packages
 
-    npm install -g mapshaper
+The packages used in this analysis are catalogued in `packages.R`. The
+packages will be loaded automatically with `tar_make()` but some may
+need to be installed prior to initiating the workflow.
 
-Getting Help or Reporting an Issue
-----------------------------------
+## Conserved Areas Shiny app
+
+One component of the conserved areas indicator is a shiny app that
+details the percentage of conserved area by ecoregion. The shiny app can
+be opened separately after the targets workflow has been run completely
+via the following code:
+
+``` r
+#install.packages("shiny")
+#library("shiny")
+#shiny::runApp('app')
+```
+
+## Getting Help or Reporting an Issue
 
 To report bugs/issues/feature requests, please file an
-[issue](https://github.com/bcgov/bc_population_indicator/issues/).
+[issue](https://github.com/bcgov/protected-lands-and-waters-indicator/issues).
 
-How to Contribute
------------------
+## How to Contribute
 
 If you would like to contribute, please see our
 [CONTRIBUTING](CONTRIBUTING.md) guidelines.
@@ -120,8 +77,7 @@ Please note that this project is released with a [Contributor Code of
 Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree
 to abide by its terms.
 
-License
--------
+## License
 
     Copyright 2016 Province of British Columbia
 

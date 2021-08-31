@@ -1,0 +1,149 @@
+---
+title: "Appendix"
+author: "Environmental Reporting BC"
+date: "12/05/2021"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2) #plotting
+library(envreportutils) #for theme_soe and theme_soe_facet
+library(scales) #for label = comma
+library(forcats) # fct_rev() for stacking order
+library(RColorBrewer) #for colour palette
+library(dplyr)
+library(knitr) #for rendering the PDF
+library(here)
+library(reshape2)
+library(plotly)
+library(targets)
+
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Protected Areas Across B.C.'s Terrestrial Ecoregions 
+
+\vspace{.8cm}
+
+```{r include=knitr::is_latex_output(), out.width="100%"}
+
+total_prot_area <- readRDS("out/pa_eco_sum.rds")
+
+scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
+breaks_int <- function(x) {
+    unique(floor(base::pretty(seq(min(x), (max(x))))))
+    
+land_data<- pa_eco_sum %>% 
+    dplyr::filter(type=="land") %>% 
+    dplyr::filter(cum_p_type > 0)
+
+eco_land <- ggplot(land_data, aes(x = date, y = cum_p_type)) +
+    theme(panel.grid.minor.x = element_blank(),
+          legend.title = element_blank(),
+          plot.margin = unit(c(5,10,0,0), "pt"))+
+    geom_area(aes(fill = park_type)) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
+                       breaks = breaks_int) +
+    scale_fill_manual(name = "Type", values = scale_land) +
+    labs(x = "Year", y = "Percent Protected (%)")+
+    coord_cartesian(xlim = c(min(land_data$date), max(land_data$date))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
+    facet_wrap_paginate(vars(ecoregion_name), nrow=4, ncol=3, page=1)
+ggsave("out/ecoregion_land_pdf-1.png", eco_land, width = 10, height = 11, dpi = 300)
+
+include_graphics(path = here("out", "ecoregion_land_pdf-1.png"))
+```
+
+\newpage
+
+```{r include=knitr::is_latex_output(), out.width="100%"}
+eco_land <- ggplot(land_data, aes(x = date, y = cum_p_type)) +
+    theme(panel.grid.minor.x = element_blank(),
+          legend.title = element_blank(),
+          plot.margin = unit(c(5,10,0,0), "pt"))+
+    geom_area(aes(fill = park_type)) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
+                       breaks = breaks_int) +
+    scale_fill_manual(name = "Type", values = scale_land) +
+    labs(x = "Year", y = "Percent Protected (%)")+
+    coord_cartesian(xlim = c(min(land_data$date), max(land_data$date))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
+    facet_wrap_paginate(vars(ecoregion_name), nrow=4, ncol=3, page=2)
+ggsave("out/ecoregion_land_pdf-2.png", eco_land, width = 10, height = 11, dpi = 300)
+
+include_graphics(path = here("out", "ecoregion_land_pdf-2.png"))
+```
+
+\newpage
+
+```{r include=knitr::is_latex_output(), out.width="100%"}
+eco_land <- ggplot(land_data, aes(x = date, y = cum_p_type)) +
+    theme(panel.grid.minor.x = element_blank(),
+          legend.title = element_blank(),
+          plot.margin = unit(c(5,10,0,0), "pt"))+
+    geom_area(aes(fill = park_type)) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
+                       breaks = breaks_int) +
+    scale_fill_manual(name = "Type", values = scale_land) +
+    labs(x = "Year", y = "Percent Protected (%)")+
+    coord_cartesian(xlim = c(min(land_data$date), max(land_data$date))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
+    facet_wrap_paginate(vars(ecoregion_name), nrow=4, ncol=3, page=3)
+ggsave("out/ecoregion_land_pdf-3.png", eco_land, width = 10, height = 11, dpi = 300)
+
+include_graphics(path = here("out", "ecoregion_land_pdf-3.png"))
+```
+
+\newpage
+
+```{r include=knitr::is_latex_output(), out.width="100%"}
+eco_land <- ggplot(land_data, aes(x = date, y = cum_p_type)) +
+    theme(panel.grid.minor.x = element_blank(),
+          legend.title = element_blank(),
+          plot.margin = unit(c(5,10,0,0), "pt"))+
+    geom_area(aes(fill = park_type)) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
+                       breaks = breaks_int) +
+    scale_fill_manual(name = "Type", values = scale_land) +
+    labs(x = "Year", y = "Percent Protected (%)")+
+    coord_cartesian(xlim = c(min(land_data$date), max(land_data$date))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
+    facet_wrap_paginate(vars(ecoregion_name), nrow=4, ncol=3, page=4)
+ggsave("out/ecoregion_land_pdf-4.png", eco_land, width = 10, height = 11, dpi = 300)
+
+include_graphics(path = here("out", "ecoregion_land_pdf-4.png"))
+```
+
+\newpage
+
+## Protected Areas Across B.C.'s Marine Ecoregions 
+
+\vspace{.8cm}
+
+```{r include=knitr::is_latex_output(), out.width="100%"}
+
+scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
+
+water_data<- data %>% dplyr::filter(type=="water")
+
+eco_water <- ggplot(water_data, aes(x = date, y = cum_p_type)) +
+    theme(panel.grid.minor.x = element_blank(),
+          legend.title = element_blank(),
+          plot.margin = unit(c(5,10,0,0), "pt"))+
+    geom_area(aes(fill = park_type)) +
+    scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
+                       breaks = breaks_int) +
+    scale_fill_manual(name = "Type", values = scale_water) +
+    labs(x = "Year", y = "Percent Protected (%)")+
+    coord_cartesian(xlim = c(dplyr::first(water_data$cum_p_type != 0), max(water_data$date))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.05)))+
+    facet_wrap(vars(ecoregion_name))
+
+  ggsave("out/ecoregion_water_pdf.png", eco_water, width = 14, height = 11, dpi = 300)
+
+include_graphics(path = here("out", "ecoregion_water_pdf.png"))
+}
+```
+
+
