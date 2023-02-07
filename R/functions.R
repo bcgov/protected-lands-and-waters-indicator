@@ -27,7 +27,7 @@ get_ogma_data <- function(){
 }
 
 get_cpcad_bc_data <- function() {
-  f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
+  f <- "CPCAD-BDCAPC_Dec2021.gdb.zip"
   ff <- file.path("data", str_remove(f, ".zip"))
   if(!dir.exists(ff)){
     download.file(file.path("https://cws-scf.ca", f), destfile = f)
@@ -35,7 +35,7 @@ get_cpcad_bc_data <- function() {
     unlink(f)
   }
 
-  pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
+  pa <- st_read(ff, layer = "CPCAD_Dec2021") %>%
     rename_all(tolower) %>%
     dplyr::filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
     dplyr::filter(!(aichi_t11 == "No" & oecm == "No")) %>%
@@ -117,7 +117,7 @@ remove_overlaps <- function(data, output){
     st_difference() %>%                             # Remove overlaps (~45min)
     st_make_valid()        # Fix Self-intersections (again!)
   output
-  write_rds(output, "data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") #save to disk for date checks
+  write_rds(output, "data/CPCAD_Dec2021_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
 
 # classify_land_type <- function(data){
@@ -248,7 +248,7 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
     eco_simp <- rbind(eco_simp, region)
   }
   output <- dplyr::filter(eco_simp, !st_is_empty(eco_simp))
-  write_rds(eco_simp, "out/CPCAD_Dec2020_eco_simp.rds")
+  write_rds(eco_simp, "out/CPCAD_Dec2021_eco_simp.rds")
   output
 }
 
@@ -257,8 +257,8 @@ simplify_beczones<-function(data){# Simplify bec zones for plotting  ---
 
   system(glue("mapshaper-xl data/pa_bec.geojson ",
               "-simplify 5% keep-shapes ",
-              "-o out/CPCAD_Dec2020_bec_simp.geojson"))
-  output<-st_read("out/CPCAD_Dec2020_bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+              "-o out/CPCAD_Dec2021_bec_simp.geojson"))
+  output<-st_read("out/CPCAD_Dec2021_bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
@@ -522,7 +522,7 @@ eco_static <- function(data, input){
   input <- input %>%
     dplyr::filter(park_type == "PPA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
-    dplyr::filter(date == 2020) %>%
+    dplyr::filter(date == 2021) %>%
     select(ecoregion_name, ecoregion_code, type, p_region)
 
 
@@ -568,7 +568,7 @@ eco_bar <- function(data){
 
   data <- data %>%
     group_by(ecoregion_name, ecoregion_code, type, park_type) %>%
-    dplyr::filter(date == 2020) %>%
+    dplyr::filter(date == 2021) %>%
     select(ecoregion_name, ecoregion_code, type, park_type, p_type, p_region) %>%
     arrange(desc(p_type)) %>%
     mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
