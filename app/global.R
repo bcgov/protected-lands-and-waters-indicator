@@ -29,7 +29,7 @@ library(forcats)
 
 # Data
 eco <- readRDS("out/eco_simp.rds")
-pa_eco <- readRDS("out/CPCAD_Dec2020_eco_simp.rds") %>%
+pa_eco <- readRDS("out/CPCAD_Dec2021_eco_simp.rds") %>%
   mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
 
 

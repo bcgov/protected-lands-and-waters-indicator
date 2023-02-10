@@ -10,7 +10,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and limitations under the License.
 
+# Check that we have the required folders ---------------------------------
 
+set_directories <- function(){
+  if(!dir.exists('out')) dir.create('out')
+  if(!dir.exists('data')) dir.create('data')
+}
 # Loading data functions --------------------------------------------------
 
 get_wha_data <- function(){
@@ -35,7 +40,7 @@ get_cpcad_bc_data <- function() {
     unlink(f)
   }
 
-  pa <- st_read(ff, layer = "CPCAD_Dec2021") %>%
+  pa <- st_read(ff, layer = "CPCAD_BDCAPC_Dec2021") %>%
     rename_all(tolower) %>%
     dplyr::filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
     dplyr::filter(!(aichi_t11 == "No" & oecm == "No")) %>%
@@ -78,7 +83,9 @@ fill_in_dates <- function(data, column, join, landtype, output){
         tibble::rownames_to_column(), .
     ) %>%
     group_by(rowname) %>%
-    slice_max(column, with_ties = FALSE)
+    arrange(desc(column)) %>%
+    slice(1)
+    # slice_max(column, with_ties = FALSE)
   output
 }
 
@@ -268,12 +275,16 @@ simplify_eco_background<- function(data){# Simplify ecoregions background map --
   output
 }
 
-simplify_bec_background<-function(){# Simplify bec zones background map ---
-  system(glue("mapshaper-xl data/bec_clipped.geojson ",
+simplify_bec_background<-function(data){# Simplify bec zones background map ---
+  # browser()
+  system(glue("mapshaper-xl data/bec_clipped_simp.geojson ",
               "-simplify 1% keep-shapes ",
               "-o out/bec_simp.geojson"))
   output<-st_read("out/bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
+  # output <- ms_simplify(data, keep = 0.01)
+  # write_sf(output, "out/bec_simp.geojson")
+  # output
 }
 
 # Calculate ecoregion and bec zone protected areas ------------------------
@@ -293,7 +304,8 @@ protected_area_by_eco <- function(data, eco_totals){
     st_set_geometry(NULL)
   output <- data %>%
     mutate(total_area = as.numeric(st_area(geometry)),
-           total_area = set_units(total_area, km^2)) %>%
+           # total_area = units::set_units(total_area, km^2)
+           ) %>%
     st_set_geometry(NULL) %>%
     group_by(ecoregion_code, ecoregion_name, type, date) %>%
     complete(park_type = c("OECM", "PPA"),
@@ -332,8 +344,8 @@ protected_area_by_eco <- function(data, eco_totals){
 
 protected_area_totals<- function(data, eco_area_data){
   pa_eco_all_df <- data %>%
-    mutate(total_area = st_area(geometry),
-           total_area = set_units(total_area, km^2),
+    mutate(total_area = as.numeric(st_area(geometry)),
+           # total_area = units::set_units(total_area, km^2),
            d_max = max(date, na.rm = TRUE)) %>%
     st_set_geometry(NULL) %>%
     # Add placeholder for missing dates for plots (max year plus 1)
@@ -364,7 +376,7 @@ protected_area_totals<- function(data, eco_area_data){
 
   output <- pa_eco_all_df %>%
     mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total/1000000,
-                                     type=="land" ~ bcmaps::bc_area())) %>%
+                                     type=="land" ~ as.numeric(bcmaps::bc_area()))) %>%
     group_by(date, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
     mutate(perc_year_type = total_area/bc_total_area*100,

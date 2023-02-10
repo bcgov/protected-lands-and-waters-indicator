@@ -14,6 +14,8 @@ library(targets)
 library(tarchetypes)
 source("packages.R")
 source("R/functions.R")
+
+set_directories()
 #tar_option_set(packages=c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
 #                          "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
 #                          "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
@@ -55,7 +57,7 @@ simplify_data <- list(
   tar_target(map_eco, simplify_ecoregions(pa_eco)),
   tar_target(map_bec, simplify_beczones(pa_bec)),
   tar_target(map_eco_background, simplify_eco_background(mod_ecoregions)),
-  tar_target(map_bec_background, simplify_bec_background())
+  tar_target(map_bec_background, simplify_bec_background(pa_bec))
 )
 
 # analyze and prepare for visualization -----------------------------------

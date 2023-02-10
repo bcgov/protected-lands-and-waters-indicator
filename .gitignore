@@ -12,3 +12,4 @@ print_ver/*.pdf
 docs/*
 *.log
 backup*
+app/out
