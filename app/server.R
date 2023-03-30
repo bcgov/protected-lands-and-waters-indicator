@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-
 shinyServer(function(input, output, session) {
 
   # Create BC Map with custom legends on app load

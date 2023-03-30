@@ -12,4 +12,5 @@ print_ver/*.pdf
 docs/*
 *.log
 backup*
-app/out
+app/out/
+simple_app/out/*.rds
