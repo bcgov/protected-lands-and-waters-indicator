@@ -34,7 +34,7 @@ shinyServer(function(input, output, session) {
   g_legend_water <- g +
     theme(legend.position = c(0.78, 0.7)) +
     theme(legend.text = element_blank()) +
-    geom_sf_interactive(data = filter(eco, type == "water"),
+    geom_sf_interactive(data = dplyr::filter(eco, type == "water"),
                         aes(tooltip = tooltip, fill = type, alpha = p_region,
                             data_id = ecoregion_code), size = 0.1, colour = "black") +
     guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
@@ -90,12 +90,12 @@ shinyServer(function(input, output, session) {
 
       g2 <- plot_grid(land, water, ncol=1, align="v", rel_heights=c(4,1))
 
-    #} else if (if(filter(pa_eco, ecoregion_code == input$top_selected, type == "water" & type == "land")
+    #} else if (if(dplyr::filter(pa_eco, ecoregion_code == input$top_selected, type == "water" & type == "land")
 
     } else {
-      region <- filter(pa_eco, ecoregion_code == input$top_selected) %>%
+      region <- dplyr::filter(pa_eco, ecoregion_code == input$top_selected) %>%
         select(park_type, geometry, ecoregion_name, type)
-      r <- filter(eco, ecoregion_code == input$top_selected) %>%
+      r <- dplyr::filter(eco, ecoregion_code == input$top_selected) %>%
         pull(geometry)
 
       n <- region$ecoregion_name[1]
@@ -180,7 +180,7 @@ shinyServer(function(input, output, session) {
       g <- gg_area(r, type = "all")
     } else {
       # Bottom #2 - Ecoregion Area plot
-      r <- filter(eco_area, ecoregion_code == input$top_selected)
+      r <- dplyr::filter(eco_area, ecoregion_code == input$top_selected)
       g <- gg_area(r, type = "region")
     }
 
