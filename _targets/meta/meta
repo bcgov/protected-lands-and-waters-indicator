@@ -1,8 +1,8 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|e3446adc43a97365|||||||||||||||
+.Random.seed|object|43e93b9062ab44cc|||||||||||||||
 analyze_data|object|ecd74fc6ab25fd89|||||||||||||||
 bc_button|stem|9d8968aaadd25a48|0a4cce8bd4d85272|0d905a8872b8625f|-1151363025||t19643.6834654097s|4ead80c6e940d961|86390|rds|local|vector|||0.68||
-bc_eco_map|stem|923450a279905ecf|cbdfdd50055ec82c|2c72c17c054366bb|1195638497||t19643.6979165931s|015e10d8746fddf4|154542143|rds|local|vector|||3.39||
+bc_eco_map|stem|27b4f3af6676cb09|cbdfdd50055ec82c|3b49e45cb3784534|1195638497||t19643.7054318924s|31287780cb438fed|154546064|rds|local|vector|||4.55||
 bc_map|function|c8ca06067b9a2ded|||||||||||||||
 bc_map_all|stem|ea5482d64254a946|90082c6c34f4bc17|63b17ddb1f9aba28|-69113116||t19643.6972479171s|185fa2758002fb79|288212791|rds|local|vector|||6.21||
 bec_plot_total|stem|e4fb5930b26f072d|27e2579fa9ef3ee7|43614572c099366a|-875136637||t19643.6977608819s|f5ab4f144148b16b|435071729|rds|local|vector|||10.66|Graphs cannot be vertically aligned unless the axis parameter is set. Placing graphs unaligned.|
@@ -15,9 +15,9 @@ clip_bec_to_bc_boundary|function|de129f5efe27472f|||||||||||||||
 clipped_bec|stem|34bd22e95b1276c0|ceb3769185a7f7ab|aa6e12921bc34903|1060466162||t19643.6853065243s|84542f398d7282a5|66450882|rds|local|vector|||149.63||
 create_bc_button|function|22c2d46210b85a45|||||||||||||||
 data_load|object|67b348ed2f63f0ee|||||||||||||||
-eco_bar|function|6b59c18a38c24284|||||||||||||||
-eco_bar_all|stem|e3e55d61c111adda|fbc1b0c3356c6a1a|fb7685ea648e3901|-143912284||t19643.6979237367s|71fff2316012df53|214624|rds|local|vector|||0.4|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
-eco_static|function|bc0a2b3f00f58c75|||||||||||||||
+eco_bar|function|10658f385cc04b78|||||||||||||||
+eco_bar_all|stem|cd13b07ffe665c38|fbc1b0c3356c6a1a|1f01dd9e26da258b|-143912284||t19643.7054432244s|0036002804a21369|290849|rds|local|vector|||0.73|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
+eco_static|function|ab08d51bf88646d4|||||||||||||||
 ecoregions|stem|5f9f5e91f6e3a0a0|99fca2e360722cd5|2d5729a95e44e3b9|1384595621||t19643.6827396093s|aeb254b8a49ae042|4629729|rds|local|vector|||0.15|polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only|
 fill_in_dates|function|47a87ff52abfa831|||||||||||||||
 fix_ecoregions|function|16c08b2ac1eb18ef|||||||||||||||
