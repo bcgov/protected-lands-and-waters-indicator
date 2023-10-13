@@ -533,7 +533,7 @@ eco_static <- function(data, input){
   input <- input %>%
     dplyr::filter(park_type == "PPA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
-    dplyr::filter(date == 2023) %>%
+    dplyr::filter(date == max(date)) %>%
     select(ecoregion_name, ecoregion_code, type, p_region)
 
 
@@ -579,7 +579,7 @@ eco_bar <- function(data){
 
   data <- data %>%
     group_by(ecoregion_name, ecoregion_code, type, park_type) %>%
-    dplyr::filter(date == 2023) %>%
+    dplyr::filter(date == max(date)) %>%
     select(ecoregion_name, ecoregion_code, type, park_type, p_type, p_region) %>%
     arrange(desc(p_type)) %>%
     mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
