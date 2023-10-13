@@ -1,91 +1,58 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|e40347a31d2cd908|||||||||||||||
-analyze_data|object|667e326479644deb|||||||||||||||
-bc_button|stem|d50a56182273f6a8|0a4cce8bd4d85272|0d905a8872b8625f|-1151363025||t19395.9141764246s|d72a5a9289a11750|86215|rds|local|vector|||0.58||
-bc_eco_map|stem|0b93065eedc3f6c4|cbdfdd50055ec82c|2456a915098bef84|1195638497||t19396.7227427853s|a5df791968dcd1c1|184038473|rds|local|vector|||4.75||
-bc_map|function|f7b83fc2f26734d0|||||||||||||||
-bc_map_all|stem|6c873924b06783c5|90082c6c34f4bc17|6a262c0a2ecbfd17|-69113116||t19396.7220180859s|d75ce5fdc077c8f0|1467797653|rds|local|vector|||32.13||
-bec_plot_total|stem|8f8652e9b45bffea|27e2579fa9ef3ee7|f9b8b15f0624da31|-875136637||t19396.7225057873s|020eb7f3dae9b834|454197871|rds|local|vector|||9.03|Graphs cannot be vertically aligned unless the axis parameter is set. Placing graphs unaligned.|
-bec_zones|stem|53105386a1c88d73|ef965463471c9699|5e567469eddc4e2f|-1451387721||t19395.9451094479s|94fc82cb9f524951|121538586|rds|local|vector|||5.12||
-clean_data|object|d3b5717263e2d8bd|||||||||||||||
-clean_dates_pa|stem|5735b229436c470c|13df8cd549bac8c6|a8d870a637f48cd8|-1425482524||t19396.0283399506s|7334913e038b1550|160333438|rds|local|vector|||0.54||
-clean_pa|stem|4e770a5de1feb41f|ed714907031907ba|1df7561b1bf77a78|-740000161||t19396.0486879745s|4d7a94a5dbc88ef0|162271220|rds|local|vector|||1745.53||
-clean_up_dates|function|797657bf093d691e|||||||||||||||
-clip_bec_to_bc_boundary|function|68890a4e4bb64970|||||||||||||||
-clipped_bec|stem|5164741d2a914d43|ceb3769185a7f7ab|d7597521e39b2c04|1060466162||t19395.9575811661s|0d4f57571d5ef3db|67528174|rds|local|vector|||260.72|st_crs  replacing crs does not reproject data use st_transform for that|
+.Random.seed|object|e3446adc43a97365|||||||||||||||
+analyze_data|object|ecd74fc6ab25fd89|||||||||||||||
+bc_button|stem|9d8968aaadd25a48|0a4cce8bd4d85272|0d905a8872b8625f|-1151363025||t19643.6834654097s|4ead80c6e940d961|86390|rds|local|vector|||0.68||
+bc_eco_map|stem|923450a279905ecf|cbdfdd50055ec82c|2c72c17c054366bb|1195638497||t19643.6979165931s|015e10d8746fddf4|154542143|rds|local|vector|||3.39||
+bc_map|function|c8ca06067b9a2ded|||||||||||||||
+bc_map_all|stem|ea5482d64254a946|90082c6c34f4bc17|63b17ddb1f9aba28|-69113116||t19643.6972479171s|185fa2758002fb79|288212791|rds|local|vector|||6.21||
+bec_plot_total|stem|e4fb5930b26f072d|27e2579fa9ef3ee7|43614572c099366a|-875136637||t19643.6977608819s|f5ab4f144148b16b|435071729|rds|local|vector|||10.66|Graphs cannot be vertically aligned unless the axis parameter is set. Placing graphs unaligned.|
+bec_zones|stem|2886fbe6dd1932fd|ef965463471c9699|5e567469eddc4e2f|-1451387721||t19643.6813345395s|68edaf66bbbafb4f|119909049|rds|local|vector|||4.19|polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only|
+clean_data|object|1fad9a744e9c0497|||||||||||||||
+clean_dates_pa|stem|9dedf8a41444f7cd|13df8cd549bac8c6|62a4a1ee30049332|-1425482524||t19643.6957807839s|bc383b8694e282ae|23820937|rds|local|vector|||0.17||
+clean_pa|stem|565b52e8bfe47e2f|ed714907031907ba|68f78cd4b4aaba19|-740000161||t19643.6958903675s|f050c359539a622f|23939433|rds|local|vector|||8.09||
+clean_up_dates|function|26bcb0a43371db64|||||||||||||||
+clip_bec_to_bc_boundary|function|de129f5efe27472f|||||||||||||||
+clipped_bec|stem|34bd22e95b1276c0|ceb3769185a7f7ab|aa6e12921bc34903|1060466162||t19643.6853065243s|84542f398d7282a5|66450882|rds|local|vector|||149.63||
 create_bc_button|function|22c2d46210b85a45|||||||||||||||
-data_load|object|387b14038f438bef|||||||||||||||
-eco_bar|function|e4cff1e09aec8602|||||||||||||||
-eco_bar_all|stem|1f4906e6f980cbae|fbc1b0c3356c6a1a|5f84bd08b43465ed|-143912284||t19396.7225199934s|726d05777b91effd|236794|rds|local|vector|||0.72|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
-eco_static|function|358ea137fc95375b|||||||||||||||
-ecoregions|stem|64a788d17be9cf23|99fca2e360722cd5|2d5729a95e44e3b9|1384595621||t19395.9448274057s|10b54fd777a9213f|6956235|rds|local|vector|||0.13||
+data_load|object|67b348ed2f63f0ee|||||||||||||||
+eco_bar|function|6b59c18a38c24284|||||||||||||||
+eco_bar_all|stem|e3e55d61c111adda|fbc1b0c3356c6a1a|fb7685ea648e3901|-143912284||t19643.6979237367s|71fff2316012df53|214624|rds|local|vector|||0.4|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
+eco_static|function|bc0a2b3f00f58c75|||||||||||||||
+ecoregions|stem|5f9f5e91f6e3a0a0|99fca2e360722cd5|2d5729a95e44e3b9|1384595621||t19643.6827396093s|aeb254b8a49ae042|4629729|rds|local|vector|||0.15|polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only|
 fill_in_dates|function|47a87ff52abfa831|||||||||||||||
-fix_ecoregions|function|555485713239163d|||||||||||||||
-get_cpcad_bc_data|function|1f4307ab5cc9138d|||||||||||||||
+fix_ecoregions|function|16c08b2ac1eb18ef|||||||||||||||
+get_cpcad_bc_data|function|dc1a10cadeaa6eda|||||||||||||||
 get_ogma_data|function|8a1bad5c82d2abe0|||||||||||||||
 get_wha_data|function|b69ab176bb17be26|||||||||||||||
-intersect_data|object|f18b362383422e21|||||||||||||||
+intersect_data|object|2c72e89433296a04|||||||||||||||
 intersect_pa|function|f83c94a3135de523|||||||||||||||
 load_bec|function|d513c8fd563dcb9f|||||||||||||||
 load_ecoregions|function|c6a493c09d7c07d4|||||||||||||||
-map_bec|stem|814868d22068fe49|492f19b1a88440d1|449a47d2ab5dfb53|1188460840||t19396.6874784081s|821881f89a064322|19162817|rds|local|vector|||293.9|st_crs  replacing crs does not reproject data use st_transform for that|
-map_bec_background|stem|09df3993ac476876|091b64702d0d5cf2|65b7e24321a2d335|83221933||t19396.6839805619s|27224de2dc3533d0|2408535|rds|local|vector|||11.56|st_crs  replacing crs does not reproject data use st_transform for that|
-map_eco|stem|777a9571133f783e|aa2d29b4e623edd7|f695e1ca37c016c4|-376909769||t19396.7202537973s|7121bdd0360101c5|27209118|rds|local|vector|||327.74||
-map_eco_background|stem|50c189b6f401fef1|e90a185b199b2625|ff35258491abbbe1|-2063016726||t19396.0281783322s|75482621180c33ee|3088270|rds|local|vector|||25.75||
-mod_ecoregions|stem|9524d27c8ca7de3f|28283fdbf11748e8|537d971da076b5bb|1745798325||t19395.9544113631s|885768c375e6e037|29676179|rds|local|vector|||88.73||
-ogma_data|stem|c7c7faee9b49ca29|dc911e2bf5f9781a|9cf244f6208cf516|-322052464||t19395.9525591489s|64038de87583933c|45037812|rds|local|vector|||70||
-pa_bec|stem|e57407fa5354517d|527cfbd2b730cb53|8aa76c63efc34b80|670660464||t19396.0512511198s|2499de1c010e6e9d|177870253|rds|local|vector|||205.11|attribute variables are assumed to be spatially constant throughout all geometries|
-pa_bec_sum|stem|92311bfd0281c2c5|3eb340feadefa09e|cd99fe47b6af8e95|432742036||t19396.6840507337s|ebdd8f828a92eda8|1572|rds|local|vector|||3.63||
-pa_data|stem|3ac77608366ba16b|17ec38d30fc198a7|757f6411132a9e1b|1826686162||t19395.9516612113s|391f47e9bad9d658|160039724|rds|local|vector|||364.57|GDAL Message 1 organizePolygons received a polygon with more than 100 parts. The processing may be really slow.  You can skip the processing by setting METHODSKIP, or only make it analyze counterclock wise parts by setting METHODONLY_CCW if you can assume that the outline of holes is counterclock wise defined|
-pa_eco|stem|c57a68d0807f1af4|49e2f584f07588c3|06716d28cefc62b3|1127889111||t19396.0654179366s|8f5b3213f5fe026c|188345691|rds|local|vector|||1209.06|attribute variables are assumed to be spatially constant throughout all geometries|
-pa_eco_sum|stem|282d838f82dbb871|226369e1be6ab9e6|b024f32ac93ca041|-1391432804||t19396.7496457375s|2b3f30fa87ffcf3c|39096|rds|local|vector|||9.67|1m22mReturning more or less than 1 row per summarise group was deprecated indplyr 1.1.0.36mℹ39m Please use reframe instead.36mℹ39m When switching from summarise to reframe, remember that reframe  always returns an ungrouped data frame and adjust accordingly.36mℹ39m The deprecated feature was likely used in the 34mtidyr39m package.  Please report the issue at 3m34m8httpsgithub.comtidyversetidyrissueshttpsgithub.comtidyversetidyrissues839m23m.|
-pa_ogma|stem|3e3633b74adaa7e8|c56c8cd284f2a1bb|a72658b85eb1d9bb|523659132||t19396.02777902s|050b8b884cf48dab|60666312|rds|local|vector|||4.39||
-pa_wha|stem|99a77d002064c4a2|77ca62d6dab9129a|8769e47c0793a03e|366601541||t19396.0278728104s|cf369807662884dc|46435746|rds|local|vector|||3.76||
-plot_bec_zone_totals|function|848627adef25c4eb|||||||||||||||
+map_bec|stem|fe7984c71a382e50|492f19b1a88440d1|051a4224f818de5c|1188460840||t19643.6967974281s|d9685a6486c6f271|9810642|rds|local|vector|||10.32||
+map_bec_background|stem|cc943499c8a0d4ed|091b64702d0d5cf2|56c6b2d6f687ae94|83221933||t19643.6969445088s|539c719a8da7fad3|1788555|rds|local|vector|||9.14||
+map_eco|stem|ac2facb726aed897|aa2d29b4e623edd7|cf1d9a3e30109e8c|-376909769||t19643.6973387263s|9d4eab35f603ece4|9068137|rds|local|vector|||7.06||
+map_eco_background|stem|c317daf12af6676f|e90a185b199b2625|dbd8e9d525b5e058|-2063016726||t19643.6957632143s|3955474a659c4130|397554|rds|local|vector|||4.03||
+mod_ecoregions|stem|117eb04a51416a96|28283fdbf11748e8|a34ec185813c7d8c|1745798325||t19643.6956897902s|b0e3db69c9867974|17500513|rds|local|vector|||54.04||
+ogma_data|stem|c182e69e85352057|dc911e2bf5f9781a|9cf244f6208cf516|-322052464||t19643.6834567321s|3baa958c4c5d768f|45519833|rds|local|vector|||55.58||
+pa_bec|stem|63d05047e7f45114|527cfbd2b730cb53|20c4ba4fc3590347|670660464||t19643.6964135905s|880be7751a6442ac|33008132|rds|local|vector|||41.5|attribute variables are assumed to be spatially constant throughout all geometries|
+pa_bec_sum|stem|4697faaba065f4a1|3eb340feadefa09e|2342bfa3dfc76231|432742036||t19643.6968365721s|f05b7d2b38f0a388|1287|rds|local|vector|||1.83||
+pa_data|stem|29d6e6f15faeae5a|17ec38d30fc198a7|eda1506a8d85741e|1826686162||t19643.6827282766s|11aaae7ba9c95de2|23767387|rds|local|vector|||78.11|GDAL Message 1 organizePolygons received a polygon with more than 100 parts. The processing may be really slow.  You can skip the processing by setting METHODSKIP, or only make it analyze counterclock wise parts by setting METHODONLY_CCW if you can assume that the outline of holes is counterclock wise defined. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only. polygon from first part only|
+pa_eco|stem|3da6a65c272c92cf|49e2f584f07588c3|da349674e44d0994|1127889111||t19643.696664693s|e5df24a4d41b9890|19827350|rds|local|vector|||20.39|attribute variables are assumed to be spatially constant throughout all geometries|
+pa_eco_sum|stem|8f98020efc31ebde|226369e1be6ab9e6|bb968204d892375e|-1391432804||t19643.6969650299s|cad0a3210378a7e1|24140|rds|local|vector|||1.75||
+pa_ogma|stem|882fd8a42002caa6|c56c8cd284f2a1bb|ed2189cc456e1066|523659132||t19643.69571591s|bb01e80a7cc55d69|3555|rds|local|vector|||1.6||
+pa_wha|stem|478577e07c67d9c6|77ca62d6dab9129a|d76a605bf4159728|366601541||t19643.6853177641s|383253dc58e6c0b9|10280|rds|local|vector|||0.91||
+plot_bec_zone_totals|function|a13430d08506e5f1|||||||||||||||
 plot_by_bec_zone|function|bcfc0b12902cbea8|||||||||||||||
-plot_data|object|2e46924a6e181bed|||||||||||||||
+plot_data|object|a9f496a9601fd8f0|||||||||||||||
 protected_area_by_bec|function|5c25554442e811d3|||||||||||||||
 protected_area_by_eco|function|f7b4a3f1e95b216d|||||||||||||||
 protected_area_totals|function|0f39a4014137080d|||||||||||||||
-remove_overlaps|function|a9a53c7c7f214450|||||||||||||||
+remove_overlaps|function|b9731b38066944be|||||||||||||||
 set_directories|function|8b6f1d75d2035ad2|||||||||||||||
-simplify_bec_background|function|8bbed5f03607604d|||||||||||||||
-simplify_beczones|function|3aa0a5853c448af1|||||||||||||||
-simplify_data|object|729f752c48dad6d7|||||||||||||||
+simplify_bec_background|function|b66d1b2b27a5e3ad|||||||||||||||
+simplify_beczones|function|003cb8c043382311|||||||||||||||
+simplify_data|object|3cacc4f3074d6647|||||||||||||||
 simplify_eco_background|function|1d48a02c181592c9|||||||||||||||
-simplify_ecoregions|function|037e53644583ad75|||||||||||||||
-total_prot_area|stem|79169cb7093ee479|2a307a807e1c1fca|fc1ab12059dc4b98|268663819||t19396.799479887s|a959fe1b12faac1e|9432|rds|local|vector|||3.71|1m22mReturning more or less than 1 row per summarise group was deprecated indplyr 1.1.0.36mℹ39m Please use reframe instead.36mℹ39m When switching from summarise to reframe, remember that reframe  always returns an ungrouped data frame and adjust accordingly.36mℹ39m The deprecated feature was likely used in the 34mtidyr39m package.  Please report the issue at 3m34m8httpsgithub.comtidyversetidyrissueshttpsgithub.comtidyversetidyrissues839m23m.|
-wha_data|stem|196d0e251e13b002|222f618c9ae48599|d178dcad06200687|-1366756412||t19395.9533406814s|426b30a7fda3b06b|50536937|rds|local|vector|||63.23||
-plot_by_bec_zone|function|2ea0fba0a0959779
-simplify_eco_background|function|8ce6d626dbe31777
-set_directories|function|8b6f1d75d2035ad2
-protected_area_totals|function|c10e2e1f6213bbc1
-data_load|object|387b14038f438bef
-protected_area_by_eco|function|9d6a508dba146a63
-load_ecoregions|function|c6a493c09d7c07d4
-load_bec|function|d513c8fd563dcb9f
-get_wha_data|function|b69ab176bb17be26
-get_cpcad_bc_data|function|1f4307ab5cc9138d
-eco_bar|function|8ae3aed475d43780
-create_bc_button|function|2763f2f03b1dfc89
-eco_static|function|3b011473a01502f3
-clean_data|object|d3b5717263e2d8bd
-protected_area_by_bec|function|12de3ee10e66bc3c
-simplify_bec_background|function|e69d94445a2d9951
-fix_ecoregions|function|555485713239163d
-analyze_data|object|667e326479644deb
-remove_overlaps|function|a9a53c7c7f214450
-fill_in_dates|function|47a87ff52abfa831
-simplify_ecoregions|function|c818554b0d8efd1a
-clean_up_dates|function|797657bf093d691e
-intersect_data|object|f18b362383422e21
-simplify_data|object|729f752c48dad6d7
-clip_bec_to_bc_boundary|function|68890a4e4bb64970
-.Random.seed|object|b6d6eb46737660e5
-simplify_beczones|function|39ea91594ff515a2
-intersect_pa|function|f83c94a3135de523
-plot_bec_zone_totals|function|872b83771885ed6d
-plot_data|object|2e46924a6e181bed
-bc_map|function|227d5adb3eba504f
-get_ogma_data|function|8a1bad5c82d2abe0
-bc_button|stem|d50a56182273f6a8|0a4cce8bd4d85272|bdef1c98d518e8e3|-1151363025||t19396.9877934532s|d72a5a9289a11750|86215|rds|local|vector|||0.62||
+simplify_ecoregions|function|ec474461de5d5fba|||||||||||||||
+total_prot_area|stem|cdb6ed68002836b8|2a307a807e1c1fca|8e053051810aa5ca|268663819||t19643.6979299098s|a60cede9c01bd648|7254|rds|local|vector|||0.52||
+wha_data|stem|934a210d81767054|222f618c9ae48599|d178dcad06200687|-1366756412||t19643.6818077798s|541423f743e1cba2|50711309|rds|local|vector|||37.41||
