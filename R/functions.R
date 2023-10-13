@@ -607,7 +607,7 @@ eco_bar <- function(data){
       labs(y = "Ecoregion") +
       theme(axis.title.x=element_blank())+
       scale_fill_manual(values = scale_map, guide = FALSE) +
-      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PPA" = 1)) +
       scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
       guides(alpha = guide_legend(override.aes = list(fill = "black"))) #+
     land
@@ -622,7 +622,7 @@ eco_bar <- function(data){
       labs(x = "Percent Conserved Within Ecoregion (%)") +
       theme(axis.title.y=element_blank())+
       scale_fill_manual(values = scale_map, guide = FALSE) +
-      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+      scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PPA" = 1)) +
       scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
       theme(legend.position='none')
     water
