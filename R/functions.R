@@ -268,12 +268,9 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
 }
 
 simplify_beczones<-function(data){# Simplify bec zones for plotting  ---
-  geojson_write(data, file = "data/pa_bec.geojson")
 
-  system(glue("mapshaper-xl data/pa_bec.geojson ",
-              "-simplify 5% keep-shapes ",
-              "-o out/CPCAD_Dec2021_bec_simp.geojson"))
-  output<-st_read("out/CPCAD_Dec2021_bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  CPCAD_Oct2023_bec_simp = ms_simplify(data, 0.5, sys = T)
+  output<-st_transform(CPCAD_Oct2023_bec_simp, crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
@@ -284,11 +281,8 @@ simplify_eco_background<- function(data){# Simplify ecoregions background map --
 }
 
 simplify_bec_background<-function(data){# Simplify bec zones background map ---
-  # browser()
-  system(glue("mapshaper-xl data/bec_clipped_simp.geojson ",
-              "-simplify 1% keep-shapes ",
-              "-o out/bec_simp.geojson"))
-  output<-st_read("out/bec_simp.geojson", crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  bec_simp = ms_simplify(data, 0.01, keep_shapes = T, sys = T)
+  output<-st_transform(bec_simp, crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
   # output <- ms_simplify(data, keep = 0.01)
   # write_sf(output, "out/bec_simp.geojson")
