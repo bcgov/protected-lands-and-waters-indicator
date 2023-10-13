@@ -40,10 +40,10 @@ get_cpcad_bc_data <- function() {
     unlink(f)
   }
 
-  pa <- st_read(ff, layer = "CPCAD_BDCAPC_Dec2021") %>%
+  pa <- st_read(ff, layer = "ProtectedConservedArea") %>%
     rename_all(tolower) %>%
-    dplyr::filter(str_detect(loc_e, "Pacific|British Columbia")) %>%
-    dplyr::filter(!(aichi_t11 == "No" & oecm == "No")) %>%
+    dplyr::filter(loc %in% c(2,16,19)) %>%
+    dplyr::filter(pa_oecm_df %in% c(1,2)) %>% # removes interim pa and pecm
     st_make_valid() %>%
     st_transform(st_crs(3005)) %>% # Apply crs from wildlife habitat area for direct comparison
     mutate(area_all = as.numeric(st_area(.))) %>%
