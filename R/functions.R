@@ -284,9 +284,6 @@ simplify_bec_background<-function(data){# Simplify bec zones background map ---
   bec_simp = ms_simplify(data, 0.01, keep_shapes = T, sys = T)
   output<-st_transform(bec_simp, crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
-  # output <- ms_simplify(data, keep = 0.01)
-  # write_sf(output, "out/bec_simp.geojson")
-  # output
 }
 
 # Calculate ecoregion and bec zone protected areas ------------------------
