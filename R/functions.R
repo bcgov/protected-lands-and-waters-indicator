@@ -422,7 +422,7 @@ plot_by_bec_zone <- function(data){
     geom_bar(width = 0.9, stat = "identity") +
     labs(x = "Percent Area Conserved (%)", y = "Biogeoclimatic Zone") +
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
-    scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+    scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) + # is there a better way of presenting this?
     scale_x_continuous(expand = c(0,0)) +
     guides(alpha = guide_legend(override.aes = list(fill = "black")))
   ggsave("out/bec_bar1.png", bar1, width = 6, height = 6, dpi = 300)
