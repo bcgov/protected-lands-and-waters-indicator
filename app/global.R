@@ -122,7 +122,7 @@ breaks_int <- function(x) {
   unique(floor(base::pretty(seq(min(x), (max(x))))))
 }
 
-gg_area <- function(data, type = "region") {
+gg_area <- function(data, type = "region") { # cannot figure out why hecate continental shelf is grey
 
   if(type == "all") {
     scale <- scale_combo
@@ -166,7 +166,7 @@ gg_area <- function(data, type = "region") {
 
   if(type == "all") {
     g <- g + facet_wrap(~ type, nrow = 1)
-  } else if (length(unique(region$type==2))){
+  } else if (length(unique(data$type==2))){
     g <- g + facet_wrap(~ type, nrow = 1)
   } else {lim <- NULL}
 
