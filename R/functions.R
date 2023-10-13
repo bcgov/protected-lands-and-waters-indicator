@@ -138,7 +138,7 @@ remove_overlaps <- function(data, output){
     st_difference() %>%                             # Remove overlaps (~45min)
     st_make_valid()        # Fix Self-intersections (again!)
   output
-  write_rds(output, "data/CPCAD_Dec2021_BC_clean_no_ovlps.rds") #save to disk for date checks
+  write_rds(output, "data/CPCAD_Oct2023_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
 
 # classify_land_type <- function(data){
@@ -171,17 +171,11 @@ remove_overlaps <- function(data, output){
 
 clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
   bc <- bc_bound_hres(ask = FALSE)
-  geojson_write(data, file = "data/bec.geojson")
-  geojson_write(bc, file = "data/bc.geojson")
 
-  system(glue("mapshaper-xl data/bec.geojson ",
-              "-clip data/bc.geojson remove-slivers ",
-              "-o data/bec_clipped.geojson"))
+  bec_clipped = ms_clip(data, bc, remove_slivers = T, sys = T)
+  bec_clipped_simp = ms_simplify(bec_clipped, 0.5, sys = T)
 
-  system(glue("mapshaper-xl data/bec_clipped.geojson ",
-              "-simplify 50% ",
-              "-o data/bec_clipped_simp.geojson"))
-  output <- st_read("data/bec_clipped_simp.geojson", crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  output <- st_transform(bec_clipped_simp, crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
     st_make_valid() %>%
     st_cast() %>%
     st_cast(to="POLYGON", warn = FALSE)
