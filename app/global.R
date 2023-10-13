@@ -47,7 +47,6 @@ yearly_sums <- readRDS("out/total_prot_area.rds") %>%
     "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
 
-#readRDS("../out/pa_eco_sum.rds")
 eco_area <- readRDS("out/pa_eco_sum.rds") %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
