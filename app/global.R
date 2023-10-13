@@ -29,8 +29,7 @@ library(forcats)
 
 # Data
 eco <- readRDS("out/eco_simp.rds")
-pa_eco <- readRDS("out/CPCAD_Dec2021_eco_simp.rds") %>%
-  mutate(park_type = if_else(oecm == "Yes", "OECM", "PPA"))
+pa_eco <- readRDS("out/CPCAD_Oct2023_eco_simp.rds")
 
 
 yearly_sums <- readRDS("out/total_prot_area.rds") %>%
