@@ -554,7 +554,7 @@ eco_static <- function(data, input){
   g <- ggplot(data) +
     theme_void() +
     geom_sf(data=data, mapping=aes(fill = type, alpha = p_region), size = 0.1, colour = "black")+
-    geom_sf(data=bc_bound_hres(), mapping=aes(fill=NA))+
+    geom_sf(data=bc_bound_hres(), fill=NA)+
     theme(plot.margin = unit(c(0,0,0,0), "pt")) +
     #geom_text(data=data, aes(X, Y, label=ecoregion_name))+
     #geom_sf_text_repel(aes(label=ecoregion_name))+
