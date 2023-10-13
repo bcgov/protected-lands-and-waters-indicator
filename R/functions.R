@@ -94,24 +94,38 @@ fill_in_dates <- function(data, column, join, landtype, output){
 clean_up_dates <- function(data, input1, input2, output){
   output <- data %>%
     dplyr::filter(!name_e %in% c("Wildlife Habitat Areas",
-                          "Old Growth Management Areas (Mapped Legal)")) %>%
+                                 "Old Growth Management Areas (Mapped Legal)")) %>%
     bind_rows(input1, input2)
 
   output <- output %>%
     mutate(
-      date = case_when(!is.na(protdate) ~ protdate,
+      date = case_when(!is.na(estyear) ~ estyear,
                        !is.na(approval_date) ~ as.integer(year(approval_date)),
                        !is.na(legalization_frpa_date) ~ as.integer(year(legalization_frpa_date)),
-                       name_e == "Lazo Marsh-North East Comox Wildlife Management Area" ~ 2001L,
-                       name_e == "S'Amunu Wildlife Management Area" ~ 2018L,
-                       name_e == "Swan Lake Wildlife Management Area" ~ 2018L,
-                       name_e == "Mctaggart-Cowan/Nsek'Iniw'T Wildlife Management Area" ~ 2013L,
-                       name_e == "Sea To Sky Wildland Zones" ~ 2011L),
-      iucn_cat = factor(iucn_cat, levels = c("Ia", "Ib", "II", "III", "IV",
-                                             "V", "VI", "Yes", "N/A")),
+                       name_e == "Sea To Sky Wildland Zones" ~ 2011L,
+                       name_e == "Muskwa-Kechika Special Wildland Areas" ~ 2002L, # based on website
+                       name_e == "Flathead Watershed Area" ~ 2011L), #based on online act
+      iucn_cat = fct_recode(as.factor(iucn_cat), Ia = "1",
+                            Ib = "2",
+                            II = "3",
+                            III = "4",
+                            IV = "5",
+                            V = "6",
+                            VI = "7",
+                            `N/R` = "8",
+                            `N/A` = "9"),
       name_e = str_replace(name_e, "Widllife", "Wildlife"),
-      park_type = if_else(oecm == "Yes", "OECM", "PPA")) %>%
-    arrange(desc(oecm), iucn_cat, date, area_all) %>%
+      park_type = if_else(pa_oecm_df == 1, "PPA", "OECM")) %>%
+    mutate(iucn_cat = fct_relevel(iucn_cat, c("Ia",
+                                              "Ib",
+                                              "II",
+                                              "III",
+                                              "IV",
+                                              "V",
+                                              "VI",
+                                              "N/R",
+                                              "N/A"))) %>%
+    arrange(park_type, iucn_cat, date, area_all) %>%
     st_cast() %>%
     st_cast(to="POLYGON", warn = FALSE)
   output
