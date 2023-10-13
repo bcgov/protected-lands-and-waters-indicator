@@ -579,7 +579,7 @@ eco_bar <- function(data){
 
   data <- data %>%
     group_by(ecoregion_name, ecoregion_code, type, park_type) %>%
-    dplyr::filter(date == 2021) %>%
+    dplyr::filter(date == 2023) %>%
     select(ecoregion_name, ecoregion_code, type, park_type, p_type, p_region) %>%
     arrange(desc(p_type)) %>%
     mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
