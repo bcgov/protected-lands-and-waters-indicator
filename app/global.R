@@ -119,7 +119,7 @@ size_line_missing <- 0.5
 
 # https://stackoverflow.com/a/39877048/3362144
 breaks_int <- function(x) {
-  unique(floor(pretty(seq(min(x), (max(x))))))
+  unique(floor(base::pretty(seq(min(x), (max(x))))))
 }
 
 gg_area <- function(data, type = "region") {
