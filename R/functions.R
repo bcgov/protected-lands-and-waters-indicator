@@ -32,10 +32,10 @@ get_ogma_data <- function(){
 }
 
 get_cpcad_bc_data <- function() {
-  f <- "CPCAD-BDCAPC_Dec2021.gdb.zip"
+  f <- "ProtectedConservedArea.gdb.zip"
   ff <- file.path("data", str_remove(f, ".zip"))
   if(!dir.exists(ff)){
-    download.file(file.path("https://cws-scf.ca", f), destfile = f)
+    download.file(file.path("https://data-donnees.ec.gc.ca/data/species/protectrestore/canadian-protected-conserved-areas-database", f), destfile = f)
     unzip(f, exdir = "data")
     unlink(f)
   }
