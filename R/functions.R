@@ -201,9 +201,9 @@ fix_ecoregions <- function(data){
   eco_mixed_marine <- ms_erase(eco_m_t_sites, bc_bound_hres)
 
   ## Fix it up:
-  eco_mixed_terrestrial <- fix_geo_problems(eco_mixed_terrestrial)
-  eco_mixed_marine <- fix_geo_problems(eco_mixed_marine)
-  eco_other <- fix_geo_problems(eco_other)
+  eco_mixed_terrestrial <- st_make_valid(eco_mixed_terrestrial)
+  eco_mixed_marine <- st_make_valid(eco_mixed_marine)
+  eco_other <- st_make_valid(eco_other)
 
   #casewhen block here to determine type, if in m__ecor
 
