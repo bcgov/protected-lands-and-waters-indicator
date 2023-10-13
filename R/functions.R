@@ -453,7 +453,7 @@ plot_bec_zone_totals<- function(data, data2){
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, size = 15)) +
     geom_sf(data = data2, aes(fill = zone), colour = NA)+
-    geom_sf(data = bc_bound_hres(), aes(fill=NA))+
+    geom_sf(data = bc_bound_hres(), fill=NA)+
     scale_fill_manual(values = bec_colours()) +
     theme(legend.title=element_blank()) +
     scale_x_continuous(expand = c(0,0)) +
@@ -514,7 +514,7 @@ bc_map <- function(data){
     theme_void() +
     theme(plot.title = element_text(hjust =0.5, size = 25)) +
     geom_sf(data = output, aes(fill = type_combo), colour = NA)+
-    geom_sf(data = bc_bound_hres(), aes(fill=NA))+
+    geom_sf(data = bc_bound_hres(), fill=NA)+
     geom_sf(data=ld_cities)+
     geom_text(data=ld_cities, aes(x=longitude, y=latitude, label=NAME))+
     scale_fill_manual(values = scale_combo) +
