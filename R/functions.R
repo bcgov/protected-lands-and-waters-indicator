@@ -263,7 +263,7 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
     eco_simp <- rbind(eco_simp, region)
   }
   output <- dplyr::filter(eco_simp, !st_is_empty(eco_simp))
-  write_rds(eco_simp, "out/CPCAD_Dec2021_eco_simp.rds")
+  write_rds(eco_simp, "out/CPCAD_Oct2023_eco_simp.rds")
   output
 }
 
