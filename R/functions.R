@@ -533,7 +533,7 @@ eco_static <- function(data, input){
   input <- input %>%
     dplyr::filter(park_type == "PPA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
-    dplyr::filter(date == 2021) %>%
+    dplyr::filter(date == 2023) %>%
     select(ecoregion_name, ecoregion_code, type, p_region)
 
 
