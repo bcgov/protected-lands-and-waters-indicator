@@ -43,10 +43,11 @@ get_cpcad_bc_data <- function() {
   pa <- st_read(ff, layer = "ProtectedConservedArea") %>%
     rename_all(tolower) %>%
     dplyr::filter(loc %in% c(2,16,19)) %>%
-    dplyr::filter(pa_oecm_df %in% c(1,2)) %>% # removes interim pa and pecm
+    dplyr::filter(pa_oecm_df %in% c(1:4)) %>%
     st_make_valid() %>%
     st_transform(st_crs(3005)) %>% # Apply crs from wildlife habitat area for direct comparison
     mutate(area_all = as.numeric(st_area(.))) %>%
+    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%
     st_cast(to = "POLYGON", warn = FALSE)
   pa
 }
@@ -57,6 +58,7 @@ load_ecoregions <- function(){
     rename_all(tolower) %>%
     select(ecoregion_code, ecoregion_name) %>%
     mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name))) %>%
+    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
     st_cast(to="POLYGON", warn = FALSE)
   eco
 }
@@ -126,7 +128,7 @@ clean_up_dates <- function(data, input1, input2, output){
                                               "N/R",
                                               "N/A"))) %>%
     arrange(park_type, iucn_cat, date, area_all) %>%
-    st_cast() %>%
+    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
     st_cast(to="POLYGON", warn = FALSE)
   output
 }
@@ -177,7 +179,7 @@ clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
 
   output <- st_transform(bec_clipped_simp, crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
     st_make_valid() %>%
-    st_cast() %>%
+    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
     st_cast(to="POLYGON", warn = FALSE)
   output
 }
@@ -374,8 +376,8 @@ protected_area_totals<- function(data, eco_area_data){
     summarize(bc_water_total = sum(total_ecoregion_by_type))
 
   output <- pa_eco_all_df %>%
-    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total/1000000,
-                                     type=="land" ~ as.numeric(bcmaps::bc_area()))) %>%
+    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total,
+                                     type=="land" ~ as.numeric(bcmaps::bc_area(units = "m2")))) %>%
     group_by(date, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
     mutate(perc_year_type = total_area/bc_total_area*100,
