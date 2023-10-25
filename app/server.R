@@ -94,22 +94,22 @@ shinyServer(function(input, output, session) {
 
     } else {
       region <- dplyr::filter(pa_eco, ecoregion_code == input$top_selected) %>%
-        select(park_type, geometry, ecoregion_name, type)
+        select(park_type, type_combo, geometry, ecoregion_name, type)
       r <- dplyr::filter(eco, ecoregion_code == input$top_selected) %>%
         pull(geometry)
 
       n <- region$ecoregion_name[1]
-
-      if(length(unique(region$type==2))){
+      # Top Right #2 - Ecoregion map
+      if(length(unique(region$type))==2){
         s <- scale_map
         g2 <- ggplot(data = region) +
           theme_void() +
           theme(plot.title = element_text(hjust = 0.5, size = 15),
                 plot.margin = unit(c(0,0,0,0), "pt")) +
           geom_sf(data = r, fill = "grey80", colour = NA) +
-          geom_sf(aes(fill = factor(type), alpha = park_type), colour = NA) +
-          scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
-          scale_fill_manual(name = scale_combo, values = s, guide = FALSE) +
+          geom_sf(aes(fill = factor(type_combo)), colour = NA) +
+          # scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+          scale_fill_manual(values = scale, guide = FALSE) +
           scale_x_continuous(expand = c(0,0)) +
           scale_y_continuous(expand = c(0,0)) +
           labs(title = " ") +
@@ -127,8 +127,8 @@ shinyServer(function(input, output, session) {
           scale_y_continuous(expand = c(0,0)) +
           labs(title = " ")+
           guides(alpha = guide_legend(override.aes = list(fill = "#056100")))
-      } else {s <- scale_water
-      # Top Right #2 - Ecoregion map
+      } else {
+        s <- scale_water
       g2 <- ggplot(data = region) +
         theme_void() +
         theme(plot.title = element_text(hjust = 0.5, size = 15),
@@ -176,7 +176,7 @@ shinyServer(function(input, output, session) {
 
     if(is.null(input$top_selected) || input$top_selected == "reset") {
       # Bottom #1 - Provincial Area plot
-      r <- mutate(yearly_sums, park_type = type_combo)
+      r <- yearly_sums
       g <- gg_area(r, type = "all")
     } else {
       # Bottom #2 - Ecoregion Area plot

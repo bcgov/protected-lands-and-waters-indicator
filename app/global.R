@@ -29,8 +29,11 @@ library(forcats)
 
 # Data
 eco <- readRDS("out/eco_simp.rds")
-pa_eco <- readRDS("out/CPCAD_Oct2023_eco_simp.rds")
-
+pa_eco <- readRDS("out/CPCAD_Oct2023_eco_simp.rds") %>%
+  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         type_combo = factor(type_combo,
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA")))
 
 yearly_sums <- readRDS("out/total_prot_area.rds") %>%
   mutate(tooltip_date = as.character(date),
@@ -50,7 +53,11 @@ yearly_sums <- readRDS("out/total_prot_area.rds") %>%
 eco_area <- readRDS("out/pa_eco_sum.rds") %>%
   mutate(tooltip_date = if_else(missing,
                                 "Inc. unknown year of protection",
-                                as.character(date))) %>%
+                                as.character(date)),
+         type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         type_combo = factor(type_combo,
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA"))) %>%
   group_by(ecoregion_code, type, date) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
@@ -94,12 +101,16 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
                 font-size: 12px; border-width 2px; border-color: black;"
 
 # Colours - Somewhat matches msw-disposal-indicator and original
+scale = c("Land - OECM" = "#93c288",
+          "Land - PPA" = "#004529",
+          "Water - OECM" = "#0a7bd1",
+          "Water - PPA" = "#063c4e")
 scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
 scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
 scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
-scale_combo <- setNames(c(scale_land, scale_water),
-                        c("Land - OECM", "Land - PPA",
-                          "Water - OECM", "Water - PPA"))
+# scale_combo <- setNames(c(scale_land, scale_water),
+#                         c("Land - OECM", "Land - PPA",
+#                           "Water - OECM", "Water - PPA"))
 
 hover <- "#FFFF99"
 select <- "#FFFFFF"
@@ -124,15 +135,15 @@ breaks_int <- function(x) {
 
 gg_area <- function(data, type = "region") { # cannot figure out why hecate continental shelf is grey
 
-  if(type == "all") {
-    scale <- scale_combo
-  } else if(all(data$type == "land")) {
-    scale <- scale_land
-  } else if(all(data$type == "water")) {
-    scale <- scale_water
-  } else {
-    scale <- scale_combo
-  }
+  # if(type == "all") {
+  #   scale <- scale_combo
+  # } else if(all(data$type == "land")) {
+  #   scale <- scale_land
+  # } else if(all(data$type == "water")) {
+  #   scale <- scale_water
+  # } else {
+  #   scale <- scale_combo
+  # }
 
   data <- data %>%
     group_by(type, date) %>%
@@ -146,13 +157,14 @@ gg_area <- function(data, type = "region") { # cannot figure out why hecate cont
           axis.line = element_line(),
           axis.title.x = element_blank(),
           legend.title = element_blank(),
-          legend.position = if_else(type == "region", "bottom", "none"),
+          legend.position = "top",
+          legend.justification = "right",
           legend.box.margin = margin(),
           legend.margin = margin(),
           plot.margin = unit(c(5,10,0,0), "pt"),
           strip.background = element_blank(),
           strip.text = element_blank()) +
-    geom_area(aes(fill = park_type)) +
+    geom_area(aes(fill = type_combo)) +
     geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
                          na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
     scale_x_continuous(expand = expansion(mult = c(0, 0.01)),
