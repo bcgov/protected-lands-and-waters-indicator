@@ -93,59 +93,64 @@ shinyServer(function(input, output, session) {
     #} else if (if(dplyr::filter(pa_eco, ecoregion_code == input$top_selected, type == "water" & type == "land")
 
     } else {
-      region <- dplyr::filter(pa_eco, ecoregion_code == input$top_selected) %>%
-        select(park_type, type_combo, geometry, ecoregion_name, type)
-      r <- dplyr::filter(eco, ecoregion_code == input$top_selected) %>%
-        pull(geometry)
 
-      n <- region$ecoregion_name[1]
-      # Top Right #2 - Ecoregion map
-      if(length(unique(region$type))==2){
-        s <- scale_map
-        g2 <- ggplot(data = region) +
-          theme_void() +
-          theme(plot.title = element_text(hjust = 0.5, size = 15),
-                plot.margin = unit(c(0,0,0,0), "pt")) +
-          geom_sf(data = r, fill = "grey80", colour = NA) +
-          geom_sf(aes(fill = factor(type_combo)), colour = NA) +
-          # scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
-          scale_fill_manual(values = scale, guide = FALSE) +
-          scale_x_continuous(expand = c(0,0)) +
-          scale_y_continuous(expand = c(0,0)) +
-          labs(title = " ") +
-          guides(alpha = guide_legend(override.aes = list(fill = "black")))
-      } else if (region$type[1] == "land"){
-        s <- scale_land
-        g2 <- ggplot(data = region) +
-          theme_void() +
-          theme(plot.title = element_text(hjust = 0.5, size = 15),
-                plot.margin = unit(c(0,0,0,0), "pt")) +
-          geom_sf(data = r, fill = "grey80", colour = NA) +
-          geom_sf(aes(fill = factor(park_type)), colour = NA) +
-          scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
-          scale_x_continuous(expand = c(0,0)) +
-          scale_y_continuous(expand = c(0,0)) +
-          labs(title = " ")+
-          guides(alpha = guide_legend(override.aes = list(fill = "#056100")))
-      } else {
-        s <- scale_water
-      g2 <- ggplot(data = region) +
-        theme_void() +
-        theme(plot.title = element_text(hjust = 0.5, size = 15),
-              plot.margin = unit(c(0,0,0,0), "pt")) +
-        geom_sf(data = r, fill = "grey80", colour = NA) +
-        geom_sf(aes(fill = factor(park_type)), colour = NA) +
-        scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
-        scale_x_continuous(expand = c(0,0)) +
-        scale_y_continuous(expand = c(0,0)) +
-        labs(title = " ")+
-        guides(alpha = guide_legend(override.aes = list(fill = "#0a7bd1")))
-      }
+      g2 = readPNG(paste0("out/ecoregion_maps/",input$top_selected,".png"))
 
-      g2 <- ggdraw(g2) +
-        draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
-                  hjust = 0, vjust = 0) +
-        draw_label(n, x = 0.5, y = 0.98, size = 16, colour = "black")
+      g2 = ggdraw() + draw_image(g2)
+
+      # region <- dplyr::filter(pa_eco, ecoregion_code == input$top_selected) %>%
+      #   select(park_type, type_combo, geometry, ecoregion_name, type)
+      # r <- dplyr::filter(eco, ecoregion_code == input$top_selected) %>%
+      #   pull(geometry)
+      #
+      # n <- region$ecoregion_name[1]
+      # # Top Right #2 - Ecoregion map
+      # if(length(unique(region$type))==2){
+      #   s <- scale_map
+      #   g2 <- ggplot(data = region) +
+      #     theme_void() +
+      #     theme(plot.title = element_text(hjust = 0.5, size = 15),
+      #           plot.margin = unit(c(0,0,0,0), "pt")) +
+      #     geom_sf(data = r, fill = "grey80", colour = NA) +
+      #     geom_sf(aes(fill = factor(type_combo)), colour = NA) +
+      #     # scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+      #     scale_fill_manual(values = scale, guide = FALSE) +
+      #     scale_x_continuous(expand = c(0,0)) +
+      #     scale_y_continuous(expand = c(0,0)) +
+      #     labs(title = " ") +
+      #     guides(alpha = guide_legend(override.aes = list(fill = "black")))
+      # } else if (region$type[1] == "land"){
+      #   s <- scale_land
+      #   g2 <- ggplot(data = region) +
+      #     theme_void() +
+      #     theme(plot.title = element_text(hjust = 0.5, size = 15),
+      #           plot.margin = unit(c(0,0,0,0), "pt")) +
+      #     geom_sf(data = r, fill = "grey80", colour = NA) +
+      #     geom_sf(aes(fill = factor(park_type)), colour = NA) +
+      #     scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
+      #     scale_x_continuous(expand = c(0,0)) +
+      #     scale_y_continuous(expand = c(0,0)) +
+      #     labs(title = " ")+
+      #     guides(alpha = guide_legend(override.aes = list(fill = "#056100")))
+      # } else {
+      #   s <- scale_water
+      # g2 <- ggplot(data = region) +
+      #   theme_void() +
+      #   theme(plot.title = element_text(hjust = 0.5, size = 15),
+      #         plot.margin = unit(c(0,0,0,0), "pt")) +
+      #   geom_sf(data = r, fill = "grey80", colour = NA) +
+      #   geom_sf(aes(fill = factor(park_type)), colour = NA) +
+      #   scale_fill_manual(name = lab_oecm, values = s, guide = FALSE) +
+      #   scale_x_continuous(expand = c(0,0)) +
+      #   scale_y_continuous(expand = c(0,0)) +
+      #   labs(title = " ")+
+      #   guides(alpha = guide_legend(override.aes = list(fill = "#0a7bd1")))
+      # }
+      #
+      # g2 <- ggdraw(g2) +
+      #   draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
+      #             hjust = 0, vjust = 0) +
+      #   draw_label(n, x = 0.5, y = 0.98, size = 16, colour = "black")
     }
 
     g <- plot_grid(g1, g2, nrow = 1)
