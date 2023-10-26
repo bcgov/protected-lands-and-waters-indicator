@@ -635,3 +635,44 @@ eco_bar <- function(data){
     ggsave("out/eco_bar_all.png", combined, width = 9, height = 9, dpi = 300)
     combined
 }
+
+eco_map = function(df, r){
+
+scale = c("Land - OECM" = "#93c288",
+          "Land - PPA" = "#004529",
+          "Water - OECM" = "#0a7bd1",
+          "Water - PPA" = "#063c4e")
+
+df = df %>%
+  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+         type_combo = factor(type_combo,
+                             levels = c("Land - OECM", "Land - PPA",
+                                        "Water - OECM", "Water - PPA")))
+
+map(unique(df$ecoregion_code),
+    function(.x) {
+      df = df %>%
+        dplyr::filter(ecoregion_code == .x)
+      r = r %>%
+        dplyr::filter(ecoregion_code == .x)
+
+      png(paste0("out/ecoregion_maps/",.x,".png"))
+
+      p = ggplot(df) +
+        theme_void() +
+        theme(plot.title = element_text(hjust = 0.5, size = 15),
+              plot.margin = unit(c(0,0,0,0), "pt")) +
+        geom_sf(data = r, fill = "grey80", col = NA) +
+        geom_sf(aes(fill = type_combo), colour = NA) +
+        scale_fill_manual(values = scale, guide = FALSE) +
+        scale_x_continuous(expand = c(0,0)) +
+        scale_y_continuous(expand = c(0,0)) +
+        labs(title = " ") +
+        guides(alpha = guide_legend(override.aes = list(fill = "black")))
+
+      plot(p)
+
+      dev.off()
+    })
+
+}
