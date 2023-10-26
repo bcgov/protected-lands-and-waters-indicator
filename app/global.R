@@ -23,6 +23,8 @@ library(cowplot)
 library(glue)
 library(sf)
 library(forcats)
+library(png)
+library(magick)
 
 
 # Constants ---------------------------------------------------------------
@@ -133,8 +135,7 @@ breaks_int <- function(x) {
   unique(floor(base::pretty(seq(min(x), (max(x))))))
 }
 
-gg_area <- function(data, type = "region") { # cannot figure out why hecate continental shelf is grey
-
+gg_area <- function(data, type = "region") {
   # if(type == "all") {
   #   scale <- scale_combo
   # } else if(all(data$type == "land")) {
