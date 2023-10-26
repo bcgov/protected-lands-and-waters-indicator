@@ -76,7 +76,8 @@ plot_data <- list(
   tar_target(bc_map_all, bc_map(pa_eco)),
   tar_target(bc_button, create_bc_button()),
   tar_target(bc_eco_map, eco_static(map_eco_background, pa_eco_sum)),
-  tar_target(eco_bar_all, eco_bar(pa_eco_sum))
+  tar_target(eco_bar_all, eco_bar(pa_eco_sum)),
+  tar_target(ecoregion_maps, eco_map(map_eco, map_eco_background))
 )
 
 # targets pipeline --------------------------------------------------------
