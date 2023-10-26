@@ -1,5 +1,5 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|05e1caeb7759fdb0|||||||||||||||
+.Random.seed|object|7e05e81ffcb99248|||||||||||||||
 analyze_data|object|ecd74fc6ab25fd89|||||||||||||||
 bc_button|stem|9d8968aaadd25a48|0a4cce8bd4d85272|0d905a8872b8625f|-1151363025||t19643.6834654097s|4ead80c6e940d961|86390|rds|local|vector|||0.68||
 bc_eco_map|stem|20e414105509bd39|cbdfdd50055ec82c|98a567b4367df8ad|1195638497||t19648.8081463383s|533b4c9db1069032|177549180|rds|local|vector|||4.97||
@@ -17,7 +17,9 @@ create_bc_button|function|22c2d46210b85a45|||||||||||||||
 data_load|object|67b348ed2f63f0ee|||||||||||||||
 eco_bar|function|10658f385cc04b78|||||||||||||||
 eco_bar_all|stem|ea20869ebf4a5172|fbc1b0c3356c6a1a|ed012ffc0630e158|-143912284||t19648.8081595799s|0dd1848ee8e0da8b|298613|rds|local|vector|||0.86|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
+eco_map|function|c81728e2b7cb86be|||||||||||||||
 eco_static|function|ab08d51bf88646d4|||||||||||||||
+ecoregion_maps|stem|be805c0b2adfb0c1|5678335c9d50ec30|d46d92ac14ec6cd2|818409598||t19656.7447976156s|e42ed4625f93f45f|114|rds|local|vector|||25.27|1m22mThe guide argument in scale_ cannot be FALSE. This was deprecated inggplot2 3.3.4.36mℹ39m Please use none instead.|
 ecoregions|stem|c2ccc28b903ab1b5|99fca2e360722cd5|72b249a5d357849d|1384595621||t19648.7887436437s|e9066430ead99bf1|6943566|rds|local|vector|||0.26||
 fill_in_dates|function|47a87ff52abfa831|||||||||||||||
 fix_ecoregions|function|16c08b2ac1eb18ef|||||||||||||||
@@ -43,7 +45,7 @@ pa_ogma|stem|d75a5797e2cfbc43|c56c8cd284f2a1bb|840ce5e5c9ae4e47|523659132||t1964
 pa_wha|stem|455b90d7f95b2481|77ca62d6dab9129a|f02d654e7b0e8145|366601541||t19648.6821362578s|ff6ebcecf921bebf|46453225|rds|local|vector|||2.86||
 plot_bec_zone_totals|function|a13430d08506e5f1|||||||||||||||
 plot_by_bec_zone|function|bcfc0b12902cbea8|||||||||||||||
-plot_data|object|a9f496a9601fd8f0|||||||||||||||
+plot_data|object|a8e8b66868600be7|||||||||||||||
 pro_ecotected_area_totals|function|ff83ab4c766f83df|||||||||||||||
 protected_area_by_bec|function|5c25554442e811d3|||||||||||||||
 protected_area_by_eco|function|f7b4a3f1e95b216d|||||||||||||||
