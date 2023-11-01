@@ -3,7 +3,7 @@ topic: "land"
 title: "Conserved Lands & Waters in B.C."
 output: 
   html_document:
-    self_contained: true
+    self_contained: false
   pdf_document: envreportutils.internal::print_ver
 ---
 
@@ -101,9 +101,7 @@ water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=
 \newpage
 
 ```{r prot-areas-map, results='asis', fig.alt = "Map of protected lands and waters across B.C.", out.width="100%"}
-
 include_graphics(path = here("out", "prov_map.png"))
-
 ```
 
 \newpage
@@ -119,14 +117,12 @@ include_graphics(path = here("out", "prov_map.png"))
 \vspace{16pt}
 
 ```{r ecoregions, include=is_pdf, eval=is_pdf, out.width="100%", fig.align='center'}
-
 include_graphics(path = here("out", "ecoregion_map.png"))
 include_graphics(path = here("out", "eco_bar_all.png"))
 ```
-```{r ecoregion-shiny, include=is_html, eval=is_pdf, out.width="100%"}
 
+```{r ecoregion-shiny, include=is_html, eval=is_html, out.width="100%"}
 knitr::include_url("https://bcgov-env.shinyapps.io/conserved-lands-and-waters/")
-
 ```
 
 
@@ -142,7 +138,6 @@ knitr::include_url("https://bcgov-env.shinyapps.io/conserved-lands-and-waters/")
 \newpage
 
 ```{r bec-zones-map, include=is_pdf, eval=is_pdf, out.width="100%"}
-
 include_graphics(path = here("out", "bec_comb.png"))
 ```
 
