@@ -184,13 +184,52 @@ girafe(ggobj=scatterplot)
 \newpage
 
 ```{r}
+ld = read_rds("out/land_designations.rds")
 
+prov_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "Provincial") %>%
+  pull(perc_total)
+
+prov_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "Provincial") %>%
+  pull(perc_total)
+
+fed_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "Federal") %>%
+  pull(perc_total) %>%
+  .[2]
+
+fed_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "Federal") %>%
+  pull(perc_total) %>%
+  .[2]
+
+pacl_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "PACL") %>%
+  pull(perc_total) 
+
+pacl_terr_total = sum(pacl_terr)
+
+pacl_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "PACL") %>%
+  pull(perc_total)
+
+pacl_mar_total = sum(pacl_mar)
+
+ngo_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "NGO") %>%
+  pull(perc_total)
+
+ngo_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "NGO") %>%
+  pull(perc_total) 
+  
 ```
 
 
-## Details of Conserved Land & Water Designations in B.C. - NOT UPDATED YET
+## Details of Conserved Land & Water Designations in B.C.
 
--   **BC Parks (14.4% terrestrial; 0.9% marine)**
+-   **BC Parks (`r prov_terr`% terrestrial; `r prov_mar`% marine)**
 
     -   Most of the protected land and a third of the protected waters
         in B.C. are managed by [BC
@@ -202,7 +241,7 @@ girafe(ggobj=scatterplot)
         Reserve, Provincial Park, Protected Area, Conservancy,
         Recreation Area.
 
--   **National Protected Areas (0.7% terrestrial; 2.2% marine)**
+-   **National Protected Areas (`r fed_terr`% terrestrial; `r fed_mar`% marine)**
 
     -   The Government of Canada has established protected land and
         marine areas in British Columbia, for example National Parks,
@@ -217,8 +256,8 @@ girafe(ggobj=scatterplot)
         the [*Oceans Act
         (1996)*](http://laws-lois.justice.gc.ca/eng/acts/O-2.4/).
 
--   **B.C. Provincial Administered Conservation Lands (0.26%
-    terrestrial; 0.07% marine)**
+-   **B.C. Provincial Administered Conservation Lands (`r pacl_terr_total`%
+    terrestrial; `r pacl_mar_total`% marine)**
 
     -   [Administered Conservation
         Lands](http://www.env.gov.bc.ca/fw/habitat/conservation-lands/)
@@ -236,7 +275,7 @@ girafe(ggobj=scatterplot)
         (through direct purchase, donation, or land exchange), and Lease
         Sites.
 
--   **B.C. Non-Government Organization Conservation Areas (0.1%
+-   **B.C. Non-Government Organization Conservation Areas (`r ngo_terr`%
     terrestrial)**
 
     -   [B.C. Non-Government Organization Conservation
