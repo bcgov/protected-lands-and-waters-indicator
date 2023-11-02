@@ -135,10 +135,10 @@ clean_up_dates <- function(data, input1, input2, output){
 
 remove_overlaps <- function(data, output){
   output <- data %>%
-    mutate(area_single = as.numeric(st_area(.))) %>% # Calculate indiv area
     st_make_valid() %>%
     st_difference() %>%                             # Remove overlaps (~45min)
-    st_make_valid()        # Fix Self-intersections (again!)
+    st_make_valid() %>%     # Fix Self-intersections (again!)
+  mutate(area_single = as.numeric(st_area(.))) # Calculate indiv area
   output
   write_rds(output, "data/CPCAD_Oct2023_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
