@@ -65,7 +65,8 @@ analyze_data <- list(
   #tar_target(ecoregion_totals, find_ecoregion_size(mod_ecoregions)),
   tar_target(pa_eco_sum, protected_area_by_eco(pa_eco, mod_ecoregions)),
   tar_target(pa_bec_sum, protected_area_by_bec(bec_zones, pa_bec)),
-  tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum))
+  tar_target(total_prot_area, protected_area_totals(pa_eco, pa_eco_sum)),
+  tar_target(land_designations, prep_land_des(pa_eco, total_prot_area))
 )
 
 # supplemental bec zone plots ---------------------------------------------
