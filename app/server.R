@@ -96,7 +96,15 @@ shinyServer(function(input, output, session) {
 
       g2 = readPNG(paste0("out/ecoregion_maps/",input$top_selected,".png"))
 
-      g2 = ggdraw() + draw_image(g2)
+      n <- pa_eco %>%
+        dplyr::filter(ecoregion_code == input$top_selected) %>%
+        pull(ecoregion_name)
+
+        g2 = ggdraw() + draw_image(g2) +
+        draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
+                  hjust = 0, vjust = 0) +
+         draw_label(n, x = 0.5, y = 0.98, size = 16, colour = "black")
+
 
       # region <- dplyr::filter(pa_eco, ecoregion_code == input$top_selected) %>%
       #   select(park_type, type_combo, geometry, ecoregion_name, type)
