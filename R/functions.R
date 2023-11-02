@@ -413,6 +413,52 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
   output
 }
 
+prep_land_des = function(data, totals) {
+df = data %>%
+  select(name_e, type, park_type, type_e, owner_e, geometry) %>%
+  mutate(aream2 = as.numeric(st_area(.))) %>%
+  left_join(unique(totals[,c(2,8)]), by = "type") %>%
+  group_by(owner_e, type_e, type, park_type) %>%
+  st_drop_geometry() %>%
+  summarise(total_area = sum(aream2),
+            bc_total_area = unique(bc_total_area),
+            perc = (total_area/bc_total_area)*100)
+
+designations = df %>%
+  mutate(designation = as.factor(case_when(type_e %in% c("National Wildlife Area",
+                                                         "Marine National Wildlife Area",
+                                                         "Migratory Bird Sanctuary",
+                                                         "Marine Protected Area",
+                                                         "National Park",
+                                                         "National Marine Conservation Area",
+                                                         "Nature Reserve",
+                                                         "Conservation Area") &
+                                             owner_e %in% c("Government of Canada",
+                                                            "Parks Canada Agency",
+                                                            "Canadian Wildlife Service. Environment and Climate Change Canada") ~ "Federal",
+                                           owner_e %in% c("BC Parks Foundation (Lead Organization)",
+                                                          "Government of British Columbia",
+                                                          "Canadian Wildlife Service. Environment and Climate Change Canada; Government of British Columbia") &
+                                             type_e %in% c("Ecological Reserve",
+                                                           "A - Park",
+                                                           "B - Park",
+                                                           "C - Park",
+                                                           "Protected Area",
+                                                           "Conservancy",
+                                                           "Recreation Area",
+                                                           "Migratory Bird Sanctuary") ~ "Provincial",
+                                           type_e %in% c("Privately Owned Conservation Area") ~ "NGO",
+                                           .default = "PACL")))
+
+output = designations %>%
+  ungroup() %>%
+  group_by(designation, type, park_type) %>%
+  summarise(perc_total = round(sum(perc),2))
+
+write_rds(output, "out/land_designations.rds")
+
+}
+
 # Supplemental plots ------------------------------------------------------
 
 plot_by_bec_zone <- function(data){
