@@ -183,6 +183,11 @@ girafe(ggobj=scatterplot)
 
 \newpage
 
+```{r}
+
+```
+
+
 ## Details of Conserved Land & Water Designations in B.C. - NOT UPDATED YET
 
 -   **BC Parks (14.4% terrestrial; 0.9% marine)**
