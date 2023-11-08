@@ -2,9 +2,9 @@
 topic: "land"
 title: "Conserved Lands & Waters in B.C."
 output: 
-  pdf_document: envreportutils.internal::print_ver
   html_document:
     self_contained: false
+  pdf_document: envreportutils.internal::print_ver
 ---
 
 ```{=html}
@@ -71,7 +71,7 @@ total_prot_area <- read_rds("out/total_prot_area.rds")
 
 pa_total <- total_prot_area %>% 
   group_by(park_type, type) %>% 
-  filter(date == 2020) %>% 
+  filter(date == 2022) %>% 
   select(summary_total)
 
 land_ppa <- pa_total %>% 
@@ -98,11 +98,7 @@ water_total <- round(water_ppa$summary_total + water_oecm$summary_total, digits=
 * Marine areas in B.C. are comprised of `r round(water_ppa$summary_total, 1)`% PPAs and `r round(water_oecm$summary_total,1)`% OECMs.
 * The amount of conserved lands and water is not evenly distributed across B.C. The following provides a glance at the distribution of conserved areas across B.C. and the representation of different ecosystems. 
 
-\newpage
-
-\vspace{30pt}
-
-```{r prot-areas-map, results='asis', fig.alt = "Map of protected lands and waters across B.C.", out.width="100%"}
+```{r prot-areas-map, results='asis', fig.alt = "Map of protected lands and waters across B.C.", out.width="80%"}
 include_graphics(path = here("out", "prov_map.png"))
 ```
 
@@ -114,9 +110,9 @@ include_graphics(path = here("out", "prov_map.png"))
 
 * B.C. is divided into [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. 
 * There are 40 terrestrial, 4 marine, and 2 ecoregions with marine and terrestrial components across B.C. 
-* The most conserved terrestrial ecoregions are located in the northwest corner of B.C. - St. Elias Mountains and Chugach Mountains and Icefields are both 99% protected. 
+* The most conserved terrestrial ecoregions are located in the northwest corner of B.C. - St. Elias Mountains and Chugach Mountains and Icefields are both 99% protected as PPAs. 
 * The least conserved terrestrial ecoregions are the Pelly Mountains (1.2%) and the Peace River Basin (2.6%).
-* The most conserved marine ecoregion is the Transitional Pacific (51.1%) and the least conserved is the marine component of the Georgia Puget Basin (4.6%).
+* The most conserved marine ecoregion is the Transitional Pacific (51.1%), which consists of 49% OECM. The least conserved is the marine component of the Georgia Puget Basin (4.6%).
 
 \vspace{16pt}
 
