@@ -147,6 +147,7 @@ gg_area <- function(data, type = "region") {
   # }
 
   data <- data %>%
+    filter(date <=2022) %>%
     group_by(type, date) %>%
     arrange(date, desc(cum_year_type)) %>%
     mutate(point = cumsum(cum_year_type)) %>%
@@ -168,7 +169,7 @@ gg_area <- function(data, type = "region") {
     geom_area(aes(fill = type_combo)) +
     geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
                          na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
-    scale_x_continuous(limits = c(1936, 2020),
+    scale_x_continuous(limits = c(1936, 2023),
                        expand = expansion(mult = c(0, 0.01)),
                        breaks = breaks_int) +
     scale_fill_manual(name = "Type", values = scale) +
@@ -176,7 +177,7 @@ gg_area <- function(data, type = "region") {
          #subtitle = if_else(any(data$missing),
                             #"Inc. areas with unknown date of protection (*)",
                             #"")) +
-    coord_cartesian(xlim = c(min(data$date), max(data$date)))
+    coord_cartesian(xlim = c(min(data$date), max(data$date)+1))
 
   if(type == "all") {
     g <- g + facet_wrap(~ type, nrow = 1)
