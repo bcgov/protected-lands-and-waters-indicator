@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -101,8 +101,8 @@ shinyServer(function(input, output, session) {
         pull(ecoregion_name)
 
         g2 = ggdraw() + draw_image(g2) +
-        draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
-                  hjust = 0, vjust = 0) +
+        #draw_plot(bc_button, x = 0.9, y = 0.9, width = 0.1, height = 0.1,
+        #          hjust = 0, vjust = 0) +
          draw_label(n, x = 0.5, y = 0.98, size = 16, colour = "black")
 
 
