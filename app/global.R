@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,23 +31,23 @@ library(magick)
 
 # Data
 eco <- readRDS("out/eco_simp.rds")
-pa_eco <- readRDS("out/CPCAD_Oct2023_eco_simp.rds") %>%
+pa_eco <- readRDS("out/CPCAD_Dec2024_eco_simp.rds") %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PPA",
-                                        "Water - OECM", "Water - PPA")))
+                             levels = c("Land - OECM", "Land - PA",
+                                        "Water - OECM", "Water - PA")))
 
 yearly_sums <- readRDS("out/total_prot_area.rds") %>%
   mutate(tooltip_date = as.character(date),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PPA",
-                                        "Water - OECM", "Water - PPA"))) %>%
+                             levels = c("Land - OECM", "Land - PA",
+                                        "Water - OECM", "Water - PA"))) %>%
   group_by(date, type) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>",
     "<strong>OECM:</strong> ",
     "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
@@ -58,13 +58,13 @@ eco_area <- readRDS("out/pa_eco_sum.rds") %>%
                                 as.character(date)),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PPA",
-                                        "Water - OECM", "Water - PPA"))) %>%
+                             levels = c("Land - OECM", "Land - PA",
+                                        "Water - OECM", "Water - PA"))) %>%
   group_by(ecoregion_code, type, date) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PPA'], 2), big.mark = ',')} %<br>",
+    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>",
     "<strong>OECM:</strong> ",
     "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
   ungroup()
@@ -75,11 +75,11 @@ eco_area_sum <- eco_area %>%
   group_by(ecoregion_code, type) %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PPA",
-                                        "Water - OECM", "Water - PPA")),
+                             levels = c("Land - OECM", "Land - PA",
+                                        "Water - OECM", "Water - PA")),
          tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
                         "<strong>Parks and Protected Areas:</strong> ",
-                        "{format(round(p_type[park_type == 'PPA'], 1), big.mark = ',')}%<br>",
+                        "{format(round(p_type[park_type == 'PA'], 1), big.mark = ',')}%<br>",
                         "<strong>OECM:</strong> ",
                         "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
 
@@ -104,15 +104,15 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
 
 # Colours - Somewhat matches msw-disposal-indicator and original
 scale = c("Land - OECM" = "#93c288",
-          "Land - PPA" = "#004529",
+          "Land - PA" = "#004529",
           "Water - OECM" = "#0a7bd1",
-          "Water - PPA" = "#063c4e")
-scale_land <- c("OECM" = "#93c288", "PPA" = "#004529")
-scale_water <- c("OECM" = "#8bc3d5", "PPA" = "#063c4e")
+          "Water - PA" = "#063c4e")
+scale_land <- c("OECM" = "#93c288", "PA" = "#004529")
+scale_water <- c("OECM" = "#8bc3d5", "PA" = "#063c4e")
 scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 # scale_combo <- setNames(c(scale_land, scale_water),
-#                         c("Land - OECM", "Land - PPA",
-#                           "Water - OECM", "Water - PPA"))
+#                         c("Land - OECM", "Land - PA",
+#                           "Water - OECM", "Water - PA"))
 
 hover <- "#FFFF99"
 select <- "#FFFFFF"
@@ -147,7 +147,7 @@ gg_area <- function(data, type = "region") {
   # }
 
   data <- data %>%
-    filter(date <=2022) %>%
+    dplyr::filter(date <=2022) %>%
     group_by(type, date) %>%
     arrange(date, desc(cum_year_type)) %>%
     mutate(point = cumsum(cum_year_type)) %>%
@@ -169,7 +169,7 @@ gg_area <- function(data, type = "region") {
     geom_area(aes(fill = type_combo)) +
     geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
                          na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
-    scale_x_continuous(limits = c(1936, 2023),
+    scale_x_continuous(limits = c(1936, 2024),
                        expand = expansion(mult = c(0, 0.01)),
                        breaks = breaks_int) +
     scale_fill_manual(name = "Type", values = scale) +
