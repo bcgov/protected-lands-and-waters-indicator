@@ -23,7 +23,7 @@ library("envreportutils")
 ```
 
 
-# Analysis of trends and current amounts of protected lands and waters in B.C.
+# Analysis of trends and current amounts of conserved lands and waters in B.C.
 
 A set of R scripts to complete the analysis behind the Environmental Indicator [Conserved Lands & Waters in B.C.](http://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html), published by [Environmental Reporting BC](http://www2.gov.bc.ca/gov/content?id=FF80E0B985F245CEA62808414D78C41B) in 2021.
 
@@ -36,9 +36,9 @@ The analysis uses data from several sources. The data does not need to be pre-do
 
 -   [Canadian Protected and Conserved Areas Database         (CPCAD)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
 -   [Ecoregions - Ecoregion Ecosystem Classification of British
-    Columbia](https://catalogue.data.gov.bc.ca/dataset/d00389e0-66da-4895-bd56-39a0dd64aa78) (Licence: `r get_data_license("ogl-bc")`)
+    Columbia](https://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia) (Licence: `r get_data_license("ogl-bc")`)
 -   [Biogeoclimatic Ecosystem Classification (BEC)
-    Map](https://catalogue.data.gov.bc.ca/dataset/f358a53b-ffde-4830-a325-a5a03ff672c3) (Licence: `r get_data_license("ogl-bc")`)
+    Map](https://catalogue.data.gov.bc.ca/dataset/bec-map)) (Licence: `r get_data_license("ogl-bc")`)
     
 ### Targets Workflow
 
@@ -76,7 +76,7 @@ Please note that this project is released with a [Contributor Code of Conduct](C
 
 ## License
 
-    Copyright 2016 Province of British Columbia
+    Copyright 2025 Province of British Columbia
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

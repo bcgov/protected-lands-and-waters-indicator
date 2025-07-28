@@ -3,7 +3,7 @@
 [![img](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Analysis of trends and current amounts of protected lands and waters in B.C.
+# Analysis of trends and current amounts of conserved lands and waters in B.C.
 
 A set of R scripts to complete the analysis behind the Environmental
 Indicator [Conserved Lands & Waters in
@@ -21,16 +21,16 @@ using the analysis and approach found
 The analysis uses data from several sources. The data does not need to
 be pre-downloaded to run the code.
 
--   [Canadian Protected and Conserved Areas Database
-    (CPCAD)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
--   [Ecoregions - Ecoregion Ecosystem Classification of British
-    Columbia](https://catalogue.data.gov.bc.ca/dataset/d00389e0-66da-4895-bd56-39a0dd64aa78)
-    (Licence: [Open Government Licence - British
-    Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
--   [Biogeoclimatic Ecosystem Classification (BEC)
-    Map](https://catalogue.data.gov.bc.ca/dataset/f358a53b-ffde-4830-a325-a5a03ff672c3)
-    (Licence: [Open Government Licence - British
-    Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+- [Canadian Protected and Conserved Areas Database
+  (CPCAD)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
+- [Ecoregions - Ecoregion Ecosystem Classification of British
+  Columbia](https://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia)
+  (Licence: [Open Government Licence - British
+  Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+- [Biogeoclimatic Ecosystem Classification (BEC)
+  Map](https://catalogue.data.gov.bc.ca/dataset/bec-map)) (Licence:
+  [Open Government Licence - British
+  Columbia](http://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
 
 ### Targets Workflow
 
@@ -79,7 +79,7 @@ to abide by its terms.
 
 ## License
 
-    Copyright 2016 Province of British Columbia
+    Copyright 2025 Province of British Columbia
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
