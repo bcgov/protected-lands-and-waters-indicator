@@ -1,0 +1,387 @@
+---
+topic: "land"
+title: "Conserved Lands & Waters in B.C."
+output: 
+  pdf_document: envreportutils.internal::print_ver
+  html_document:
+    self_contained: false
+---
+
+```{=html}
+<!--
+Copyright 2025 Province of British Columbia
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+-->
+```
+```{r setup, echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2) #plotting
+library(envreportutils) #for theme_soe and theme_soe_facet
+library(scales) #for label = comma
+library(forcats) # fct_rev() for stacking order
+library(RColorBrewer) #for colour palette
+library(dplyr)
+library(knitr) #for rendering the PDF
+library(here)
+library(reshape2)
+library(plotly)
+library(targets)
+library(ggiraph)
+library(readr)
+library(glue)
+library(bcmaps)
+library(here)
+library(shiny)
+
+
+opts_chunk$set(echo=FALSE, cache=FALSE, warning=FALSE, message=FALSE, error=FALSE, fig.height=3.5, fig.width = 8, fig.align = 'center')
+theme_print <-   theme(axis.text.y = element_text(size = 8),
+                       axis.text.x = element_text(size = 8),
+                       axis.title.y = element_text(size = 10,
+                                                   margin = margin(t = 0, r = 10,
+                                                                   b = 0, l = 0,
+                                                                   unit = "pt")),
+                       plot.title = element_text(size = 10, hjust = 0.5),
+                       plot.margin = unit(c(6,6,6,2),"mm"))
+#theme for plots with integrated labels
+theme_summary <- theme(axis.text.y = element_text(size = 8),
+                       axis.text.x = element_text(size = 8),
+                       axis.title.y = element_text(size = 10,
+                                                   margin = margin(t = 0, r = 10,
+                                                                   b = 0, l = 0,
+                                                                   unit = "pt")),
+                       plot.title = element_text(size = 10, hjust = 0.5),
+                       plot.margin = unit(c(0.5,3.5,0.5,0.5), "cm"))
+
+#knitr::opts_knit$set(root.dir = 'C:/tmp/protected-lands-and-water-indicator')
+
+is_html <- knitr::is_html_output()
+is_pdf <- knitr::is_latex_output()
+if (is_pdf) opts_chunk$set(fig.width = 6.5)
+
+total_prot_area <- read_rds(paste0(here::here(), "/out/total_prot_area.rds"))
+
+pa_total <- total_prot_area %>% 
+  group_by(park_type, type) %>% 
+  dplyr::filter(date == 2024) %>% 
+  select(summary_total)
+
+land_pa <- pa_total %>% 
+  dplyr::filter(park_type == "PA"&type =="land")
+
+land_oecm <- pa_total %>% 
+  dplyr::filter(park_type == "OECM"&type =="land")
+
+water_pa <- pa_total %>% 
+  dplyr::filter(park_type == "PA"&type =="water")
+
+water_oecm <- pa_total %>% 
+  dplyr::filter(park_type == "OECM"&type =="water")
+
+land_total <- round(land_pa$summary_total + land_oecm$summary_total, digits=1)
+
+water_total <- round(water_pa$summary_total + water_oecm$summary_total, digits=1) #watertotal
+
+n_ecoregions <- read_rds(paste0(here::here(), "/out/eco_simp.rds")) %>%
+                as.data.frame() %>%
+                count(type)
+
+land_highest_percent <- read_rds(paste0(here::here(), "/out/pa_eco_sum.rds")) %>%
+                        filter(date == 2024 & type == "land") %>%
+                        select(ecoregion_code, ecoregion_name, type, p_region) %>%
+                        distinct() %>%
+                        slice_max(p_region, n = 2) %>%
+                        as.data.frame()
+
+land_lowest_percent <-  read_rds(paste0(here::here(), "/out/pa_eco_sum.rds")) %>%
+                        filter(date == 2024 & type == "land") %>%
+                        select(ecoregion_code, ecoregion_name, type, p_region) %>%
+                        distinct() %>%
+                        slice_min(p_region, n = 2) %>%
+                        as.data.frame()
+
+water_highest_percent <- read_rds(paste0(here::here(), "/out/pa_eco_sum.rds")) %>%
+                         filter(date == 2024 & type == "water") %>%
+                         select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
+                         distinct() %>%
+                         slice_max(p_region, n = 1) %>%
+                         as.data.frame()
+
+water_lowest_percent <-  read_rds(paste0(here::here(), "/out/pa_eco_sum.rds")) %>%
+                         filter(date == 2024 & type == "water") %>%
+                         select(ecoregion_code, ecoregion_name, type, p_region) %>%
+                         distinct() %>%
+                         slice_min(p_region, n = 1) %>%
+                         as.data.frame()
+
+zone_high_elevation_percent <- read_rds(paste0(here::here(), "/out/bec_area.rds")) %>%
+                filter(zone_name == "Boreal Altai Fescue Alpine"|
+                zone_name == "Interior Mountain-heather Alpine") %>%
+                mutate(total_bc = bcmaps::bc_area(),
+                       bec_rep = total/total_bc)
+
+zone_highest_percent <- read_rds(paste0(here::here(), "/out/bec_area.rds")) %>%
+                mutate(total_bc = bcmaps::bc_area(),
+                       bec_rep = total/total_bc) %>%
+                slice_max(bec_rep, n = 1) %>%
+                as.data.frame()
+
+zone_lowest_percent <- read_rds(paste0(here::here(), "/out/bec_area.rds")) %>%
+                       slice_min(perc_zone, n = 1) %>%
+                       as.data.frame()
+```
+
+* Conserved lands and waters are legally established areas set aside to protect nature and cultural values. Conserved areas, particularly BC Parks, are well-used by British Columbians with 6 in 10 people visiting a provincial park each year^1^.
+* **Conserved lands and water cover `r land_total`% of B.C.'s terrestrial areas and inland water and `r water_total`% of coastal and marine areas.** B.C.'s network of conserved lands and waters contribute to the [Convention on Biological Diversity Aichi Target 11](https://www.cbd.int/aichi-targets/target/11)^2^ commitments to set aside 17% of terrestrial areas and 10% of marine areas by 2020. 
+* B.C.'s conserved areas include marine and terrestrial protected areas [(PAs)](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html) and other effective area-based conservation measures [(OECMs)](https://www.iucn.org/commissions/world-commission-protected-areas/our-work/oecms#:~:text=What%20is%20an%20'OECM'%3F,biodiversity%20outside%20of%20protected%20areas). OECMs are areas other than a protected areas that are managed to sustain biodiversity, ecosystem functions, and cultural, socio-economic, spiritual, and other relevant values^3^.
+* Different types of OECMs in B.C. include Old Growth Management Areas, Wildlife Habitat Areas, Nature Reserves, and location-specific examples include the Sea to Sky Wildland Zones, Muskwa-Kechika Special Wildland Areas, and the Flathead Watershed Area.
+* For terrestrial areas/inland water, the conserved areas are comprised of `r round(land_pa$summary_total,1)`% PAs and `r round(land_oecm$summary_total,1)`% OECMs.
+* Marine areas in B.C. are comprised of `r round(water_pa$summary_total, 1)`% PAs and `r round(water_oecm$summary_total,1)`% OECMs.
+* The amount of conserved lands and water is not evenly distributed across B.C. The following provides a glance at the distribution of conserved areas across B.C. and the representation of different ecosystems. 
+
+```{r prot-areas-map, results='asis', fig.alt = "Map of protected lands and waters across B.C.", out.width="80%"}
+include_graphics(path = here("out", "prov_map.png"))
+```
+
+\newpage
+
+\vspace{20pt}
+
+## Trends in the Conservation of British Columbia's Terrestrial and Marine Ecoregions
+
+* B.C. is divided into [ecoregions](https://www2.gov.bc.ca/assets/gov/environment/plants-animals-and-ecosystems/ecosystems/broad-ecosystem/an_introduction_to_the_ecoregions_of_british_columbia.pdf). Ecoregions are considered 'big picture' ecosystems and group nearby areas with similar climate and geologic features together. 
+* There are `r n_ecoregions[n_ecoregions$type == "land","n"]` terrestrial and `r n_ecoregions[n_ecoregions$type == "water","n"]` marine ecoregions across B.C. 
+* The most conserved terrestrial ecoregions are located in the northwest corner of B.C. - `r as.character(land_highest_percent[1,"ecoregion_name"])` and `r as.character(land_highest_percent[2,"ecoregion_name"])` are both over 99% protected as PAs. 
+* The least conserved terrestrial ecoregions are the `r as.character(land_lowest_percent[1,"ecoregion_name"])` (`r round(land_lowest_percent[1,"p_region"], 1)`%) and the `r as.character(land_lowest_percent[2,"ecoregion_name"])` (`r round(land_lowest_percent[2,"p_region"], 1)`%).
+* The most conserved marine ecoregion is the `r as.character(water_highest_percent[1,"ecoregion_name"])` (`r round(water_highest_percent[1,"p_region"], 1)`%), which consists of `r round(water_highest_percent[water_highest_percent$park_type == "OECM","p_type"], 1)`% OECM. The least conserved is the marine component of the `r as.character(water_lowest_percent[1,"ecoregion_name"])` (`r round(water_lowest_percent[1,"p_region"], 1)`%).
+
+\vspace{16pt}
+
+```{r ecoregions, include=is_pdf, eval=is_pdf, out.width="100%", fig.align='center'}
+include_graphics(path = here("out", "ecoregion_map.png"))
+include_graphics(path = here("out", "eco_bar_all.png"))
+```
+
+```{r ecoregion-shiny, include=is_html, eval=is_html, out.width="100%"}
+knitr::include_url("https://bcgov-env.shinyapps.io/conserved-lands-and-waters/")
+```
+
+
+\newpage
+
+## Terrestrial Ecosystem Representation within Conserved Lands in B.C.
+
+* The distribution of conserved areas is also shown by [biogeoclimatic zones (BEC)](https://www.for.gov.bc.ca/hre/becweb/). 
+* BEC zones are defined by the terrestrial ecosystems that develop in an area due to the climate and geography. They provide 
+insight into the soils and plant communities you would expect to see in an area. 
+* Conserved lands are not evenly distributed among British Columbia's ecosystems. High elevation and mountainous areas such as 
+the Boreal Altai Fescue Alpine and the Interior Mountain-heather Alpine zones are over 30% conserved as PA's (`r round(zone_high_elevation_percent[zone_high_elevation_percent$zone_name == "Boreal Altai Fescue Alpine" & zone_high_elevation_percent$park_type == "OECM", "perc_type_zone"], 1)`% and `r round(zone_high_elevation_percent[zone_high_elevation_percent$zone_name == "Interior Mountain-heather Alpine" & zone_high_elevation_percent$park_type == "OECM", "perc_type_zone"], 1)`% OECM respectively) while representing `r ifelse(zone_high_elevation_percent[zone_high_elevation_percent$zone_name == "Boreal Altai Fescue Alpine" & zone_high_elevation_percent$park_type == "OECM", "bec_rep"] > 7, "more", "less")` than 7% of the province's ecosystems. 
+* By contrast, low elevation, warm zones such as `r as.character(zone_highest_percent[1, "zone_name"])` are more common across B.C. and tend to be less conserved (< 15% of BEC zone). `r as.character(zone_lowest_percent[1, "zone_name"])` is the least conserved at `r round(zone_lowest_percent[zone_lowest_percent$park_type == "PA", "perc_type_zone"], 1)`% PA. 
+
+\newpage
+
+```{r bec-zones-map, include=is_pdf, eval=is_pdf, out.width="100%"}
+include_graphics(path = here("out", "bec_comb.png"))
+```
+
+```{r bec-zone-html, include=is_html, eval=is_html, fig.alt = "Map of the biogeoclimatic zones across B.C.", out.width="100%"}
+
+include_graphics(path = here("out", "bec_map.png"))
+
+pa_bec_sum <- read_rds(paste0(here::here(), "/out/bec_area.rds"))
+
+bec_totals <- pa_bec_sum %>%
+    group_by(zone_name) %>% 
+    mutate(tooltip = glue(
+    "<strong>PA:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'PA'], 2), big.mark = ',')} %<br>",
+    "<strong>OECM:</strong> ",
+    "{format(round(perc_type_zone[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    ungroup() %>% 
+    dplyr::filter(park_type == "PA") %>%
+    mutate(total_bc = bcmaps::bc_area()) %>%
+    mutate(bec_rep = total/total_bc) %>%
+    select(zone, zone_name, perc_zone, total, total_bc, bec_rep, tooltip) %>%
+    arrange(desc(perc_zone))
+
+scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, label= zone_name))+
+    theme_minimal(base_size = 14) +
+    #theme(panel.grid.major.y = element_blank()) +
+    #geom_point(size=2)+
+    geom_point_interactive(aes(color= zone, tooltip=tooltip))+
+    ggrepel::geom_text_repel()+
+    theme(legend.position = "none", axis.title=element_text(size=12)) +
+    scale_color_manual(values = bec_colours(), guide = FALSE) +
+    labs(x = "BEC Zone Composition Across B.C. (%)", y = "Percentage of BEC Zone Protected (%)")
+
+girafe(ggobj=scatterplot)
+```
+
+\newpage
+
+```{r}
+ld = read_rds(paste0(here::here(), "/out/land_designations.rds"))
+
+prov_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "Provincial") %>%
+  pull(perc_total)
+
+prov_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "Provincial") %>%
+  pull(perc_total)
+
+fed_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "Federal") %>%
+  pull(perc_total) %>%
+  .[2]
+
+fed_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "Federal") %>%
+  pull(perc_total) %>%
+  .[2]
+
+pacl_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "PACL") %>%
+  pull(perc_total) 
+
+pacl_terr_total = sum(pacl_terr)
+
+pacl_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "PACL") %>%
+  pull(perc_total)
+
+pacl_mar_total = sum(pacl_mar)
+
+ngo_terr = ld %>%
+  dplyr::filter(type == "land" & designation == "NGO") %>%
+  pull(perc_total)
+
+ngo_mar = ld %>%
+  dplyr::filter(type == "water" & designation == "NGO") %>%
+  pull(perc_total) 
+  
+```
+
+
+## Details of Conserved Land & Water Designations in B.C.
+
+-   **BC Parks (`r round(prov_terr, 1)`% terrestrial; `r round(prov_mar, 1)`% marine)**
+
+    -   Most of the protected land and a third of the protected waters
+        in B.C. are managed by [BC
+        Parks](http://www.env.gov.bc.ca/bcparks/)^4^.
+    -   Protected areas managed by BC Parks are governed by several
+        pieces of [legislation](https://bcparks.ca/about/our-mission-responsibilities/legislation/)
+        and fall into one of the following designations: [Ecological
+        Reserve](https://bcparks.ca/about/our-mission-responsibilities/types-parks-protected-areas/#ec
+        logical-reserves), [Provincial 
+        Park](https://bcparks.ca/about/our-mission-responsibilities/types-parks-protected-areas/#provin
+        cial-parks), [Protected 
+        Area](https://bcparks.ca/about/our-mission-responsibilities/types-parks-protected-areas/#protec
+        ted-areas), [Conservancy](https://bcparks.ca/about/our-mission-responsibilities/types-parks-pro
+        tected-areas/#conservancies), and [Recreation 
+        Area](https://bcparks.ca/about/our-mission-responsibilities/types-parks-protected-areas/#recrea
+        tion-areas).
+
+-   **National Protected Areas (`r round(fed_terr, 1)`% terrestrial; `r round(fed_mar, 1)`% marine)**
+
+    -   The Government of Canada has established protected land and
+        marine areas in British Columbia, for example National Parks,
+        National Wildlife Areas, Marine Protected Areas and Migratory
+        Bird Sanctuaries.
+    -   These designations are governed by several pieces of federal
+        legislation including: [*Canada National Parks
+        Act*](https://laws-lois.justice.gc.ca/eng/acts/N-14.01/), [*Canada
+        National Marine Conservation Areas
+        Act*](https://laws-lois.justice.gc.ca/eng/acts/C-7.3/index.html),
+        [*Canada Wildlife Act*](https://laws-lois.justice.gc.ca/eng/acts/W-9/), 
+        [*Migratory Birds Convention Act*](https://laws-lois.justice.gc.ca/eng/acts/m-7.01/), 
+        and the [*Oceans Act (1996)*](http://laws-lois.justice.gc.ca/eng/acts/O-2.4/).
+
+-   **B.C. Provincial Administered Conservation Lands (`r round(pacl_terr_total, 1)`%
+    terrestrial; `r round(pacl_mar_total, 1)`% marine)**
+
+    -   [Administered Conservation
+        Lands](https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/wildlife/wildli
+        fe-habitats/conservation-lands)
+        are lands over which the Government of British Columbia has
+        legal administrative and management authority.
+    -   Wildlife Management Areas are Administered Conservation Lands
+        that are designated under the provincial [*Wildlife
+        Act*](https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/96488_01) to protect 
+        habitat for regionally, nationally or internationally significant species.
+    -   Other types of Administered Conservation Lands are aquired by
+        way of: [*Land Act*](https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/96245_01)
+        section 106 Transfers of Administration, Fee Simple Acquisitions
+        (through direct purchase, donation, or land exchange), and Lease
+        Sites.
+
+-   **B.C. Non-Government Organization Conservation Areas (`r round(ngo_terr, 2)`%
+    terrestrial)**
+
+    -   [B.C. Non-Government Organization Conservation
+        Areas](https://ltabc.ca/publications-a-research/bc-ngo-conservation-areas-database/), 
+        also known as private conservation lands, include (1) Fee Simple areas,
+        which refer to ownership of the title to a legal parcel, and (2) Registerable Interests --- other conservation securements registered on title, such as conservation covenants and leases.
+
+
+## Methods
+
+* This indicator uses data from the [Canadian Protected and Conserved Areas Database](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html). The [Old Growth Management Areas - Legal - Current](https://catalogue.data.gov.bc.ca/dataset/old-growth-management-areas-legal-current) and the [Wildlife Habitat Areas](https://catalogue.data.gov.bc.ca/dataset/wildlife-habitat-areas-approved) datasets from BC Data Catalogue were also used to fill in missing dates. 
+* Municipal and regional parks are not included in the analyses. Overlaps between protected areas have been accounted for in the analyses^5^. 
+* The [**R**](http://www.r-project.org) code for repeating the analyses presented on this page is [available on GitHub](https://github.com/bcgov/protected_areas_analysis). 
+
+## References and Other Useful Links
+
+^1^[Reports - BC Parks](https://news.gov.bc.ca/releases/2011ENV0023-000586)
+
+^2^[Convention on Biological Diversity: Aichi Biodiversity
+Targets](https://www.cbd.int/sp/targets)
+
+^3^[IUCN - Recognising and reporting other effective area-based conservation measures](https://portals.iucn.org/library/sites/library/files/documents/PATRS-003-En.pdf)
+
+^4^[BC Parks](http://www.env.gov.bc.ca/bcparks/)
+
+^5^[CPCAD User Manual](https://data-donnees.az.ec.gc.ca/api/file?path=%2Fspecies%2Fprotectrestore%2Fcanadian-protected-conserved-areas-database%2FUserManuals%2FProtectedConservedArea_UserManual_2024.pdf)
+
+[Canadian Council on Ecological Areas (CCEA)](http://www.ccea.org/)
+
+[2020 Biodiversity Goals and Targets for
+Canada](https://www.biodivcanada.ca/national-biodiversity-strategy-and-action-plan/2020-biodiversity-goals-and-targets-for-canada)
+
+[British Columbia Non-Governmental Organization Conservation Areas
+Database Working Group](https://ltabc.ca/publications-a-research/bc-ngo-conservation-areas-database/)
+
+[B.C. Government Conservation
+Lands](https://www2.gov.bc.ca/gov/content/environment/plants-animals-ecosystems/wildlife/wildlife-habitats/conservation-lands)
+
+
+## Data
+\*By accessing these datasets, you agree to the licence associated with
+each file, as indicated below.
+
+- [Canadian Protected and Conserved Areas Database](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html) 
+- [Old Growth Management Areas - Legal - Current](https://catalogue.data.gov.bc.ca/dataset/old-growth-management-areas-legal-current)(Licence: [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61)
+- [Wildlife Habitat Areas](https://catalogue.data.gov.bc.ca/dataset/wildlife-habitat-areas-approved) (Licence: [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+- [Ecoregion Ecosystem Classification of British Columbia](https://catalogue.data.gov.bc.ca/dataset/ecoregions-ecoregion-ecosystem-classification-of-british-columbia) (Licence: [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+- [Biogeoclimatic Ecosystem Classification (BEC) Map](https://catalogue.data.gov.bc.ca/dataset/bec-map) (Licence: [Open Government Licence - British Columbia](https://www2.gov.bc.ca/gov/content?id=A519A56BC2BF44E4A008B33FCF527F61))
+
+----
+
+Published and Available On-Line at Environmental Reporting BC:   
+<https://www.env.gov.bc.ca/soe/indicators/land/protected-lands-and-waters.html>
+
+Email correspondence to: envreportbc@gov.bc.ca
+
+*Suggested Citation*:  
+Environmental Reporting BC. `r format(Sys.Date(), "%Y")`. Conserved Lands & Waters in B.C. State of Environment Reporting, Ministry of Environment and Parks, British Columbia, Canada.
+
+
