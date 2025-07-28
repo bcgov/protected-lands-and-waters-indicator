@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
 # the License.
 
 # Load packages etc.
-source("00_setup.R")
+source(here("background_scripts", "00_setup.R"))
 
 # Load data
-pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+pa_eco <- read_rds("data/CPCAD_Dec2024_BC_clean_no_ovlps_ecoregions.rds")
+pa_bec <- read_rds("data/CPCAD_Dec2024_BC_clean_no_ovlps_beczones.rds")
 
 eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower) %>%
@@ -70,7 +70,7 @@ write_rds(pa_eco_df, "out/eco_area.rds")
 
 
 pa_eco_all_df <- pa_eco %>%
-  mutate(total_area = st_area(geometry),
+  mutate(total_area = as.numeric(st_area(geometry)),
          d_max = max(date, na.rm = TRUE)) %>%
   st_set_geometry(NULL) %>%
   # Add placeholder for missing dates for plots (max year plus 1)

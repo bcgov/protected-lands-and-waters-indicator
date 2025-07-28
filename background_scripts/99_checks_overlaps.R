@@ -1,4 +1,4 @@
-#' Copyright 2021 Province of British Columbia
+#' Copyright 2025 Province of British Columbia
 #'
 #' Licensed under the Apache License, Version 2.0 (the "License");
 #' you may not use this file except in compliance with the License.
@@ -38,15 +38,15 @@ library(patchwork)
 library(kableExtra)
 
 #' ## Load protected areas
-pa2 <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") %>%
-  mutate(area_single2 = as.numeric(st_area(Shape)))
-pa1 <- read_rds("data/CPCAD_Dec2020_BC_clean.rds") %>%
+pa2 <- read_rds("data/ProtectedConservedArea_2024_BC_clean_no_ovlps.rds") %>%
+  mutate(area_single2 = as.numeric(st_area(shape)))
+pa1 <- read_rds("data/ProtectedConservedArea_2024_BC_clean.rds") %>%
   st_transform(crs = st_crs(pa2))
 #' pa1 = original clean, pa2 with overlaps removed
 
 pa2_df <- st_set_geometry(pa2, NULL) %>%
-  group_by(zone_id, name_e, oecm) %>%
-  summarize(o_area = unique(o_area),
+  group_by(zone_id, name_e, pa_oecm_df) %>%
+  summarize(o_area = unique(o_area_ha),
             area_all = unique(area_all),
             area_all2 = sum(area_single2),
             area_diff = abs(area_all - area_all2))
@@ -54,7 +54,7 @@ pa2_df <- st_set_geometry(pa2, NULL) %>%
 
 
 #' Look for features where a lot of overlap was removed
-filter(pa2_df, area_diff > 2000000) %>%
+dplyr::filter(pa2_df, area_diff > 2000000) %>%
   arrange(desc(area_diff)) %>%
   kable() %>%
   kable_styling()
@@ -62,10 +62,10 @@ filter(pa2_df, area_diff > 2000000) %>%
 #+ echo = FALSE
 # Hecate Strait and Queen Charlotte Sound   ---------------------------------
 #' ## Hecate Strait and Queen Charlotte Sound
-sub_pa1 <- filter(pa1, str_detect(name_e, "Hecate"))
-sub_pa2 <- filter(pa2, str_detect(name_e, "Hecate"))
+sub_pa1 <- dplyr::filter(pa1, str_detect(name_e, "Hecate"))
+sub_pa2 <- dplyr::filter(pa2, str_detect(name_e, "Hecate"))
 
-select(sub_pa2, parent_id, zone_id, name_e, oecm, iucn_cat, protdate) %>%
+select(sub_pa2, parent_id, zone_id, name_e, pa_oecm_df, iucn_cat, date) %>%
   st_set_geometry(NULL) %>%
   distinct() %>%
   kable() %>%
@@ -90,7 +90,7 @@ g1 + g2 + plot_layout(guides = "collect") &
 # Scott Islands -----------------------------------------------------------
 #' ## Scott Islands
 
-bbx <- filter(pa2, zone_id == 730017000) %>%
+bbx <- dplyr::filter(pa2, zone_id == 730017000) %>%
   st_buffer(dist = 1000) %>%
   st_bbox()
 
@@ -106,18 +106,18 @@ g1 + g2 + plot_layout(guides = "collect")
 
 #' Cape Scott Park takes priority because more important IUCN Category (II vs. VI)
 
-select(sub_pa2, parent_id, zone_id, name_e, oecm, iucn_cat, protdate) %>%
+select(sub_pa2, parent_id, zone_id, name_e, pa_oecm_df, iucn_cat, date) %>%
   st_set_geometry(NULL) %>%
-  filter(name_e %in% c("Cape Scott Park",
+  dplyr::filter(name_e %in% c("Cape Scott Park",
                        "Scott Islands Marine National Wildlife Area")) %>%
   distinct() %>%
   kable() %>%
   kable_styling()
 
 #' Small islands parks take priority because Ia > VI
-select(sub_pa2, parent_id, zone_id, name_e, oecm, iucn_cat, protdate) %>%
+select(sub_pa2, parent_id, zone_id, name_e, pa_oecm_df, iucn_cat, date) %>%
   st_set_geometry(NULL) %>%
-  filter(name_e %in% c("Lanz And Cox Islands",
+  dplyr::filter(name_e %in% c("Lanz And Cox Islands",
                        "Anne Vallee (Triangle Island) Ecological Reserve",
                        "Beresford Island Ecological Reserve",
                        "Scott Islands Marine National Wildlife Area")) %>%
@@ -133,12 +133,12 @@ g1 + facet_wrap(~name_e) +
 
 #' Check out wiggly bits left over
 bbx <- c(xmin = 828472.4, xmax = 831002.2, ymin = 640000, ymax = 644300)
-g1 <- ggplot(data = filter(sub_pa1, zone_id == 730017000), aes(fill = name_e)) +
+g1 <- ggplot(data = dplyr::filter(sub_pa1, zone_id == 730017000), aes(fill = name_e)) +
   geom_sf(alpha = 0.5) +
   coord_sf(xlim = bbx[1:2], ylim = bbx[3:4]) +
   facet_wrap(~name_e) +
   labs(title = "Orig")
-g2 <- ggplot(data = filter(sub_pa2, zone_id == 730017000), aes(fill = name_e)) +
+g2 <- ggplot(data = dplyr::filter(sub_pa2, zone_id == 730017000), aes(fill = name_e)) +
   geom_sf(alpha = 0.5) +
   coord_sf(xlim = bbx[1:2], ylim = bbx[3:4]) +
   facet_wrap(~name_e)+
@@ -148,7 +148,7 @@ g2 <- ggplot(data = filter(sub_pa2, zone_id == 730017000), aes(fill = name_e)) +
 g1 + g2 + plot_layout(guides = "collect")
 
 pa2_df %>%
-  filter(zone_id == 730017000) %>%
+  dplyr::filter(zone_id == 730017000) %>%
   kable() %>%
   kable_styling()
 
@@ -159,14 +159,15 @@ pa2_df %>%
 #+ echo = FALSE
 # Mount Maxwell - Phase II --------------------------------------------
 #' ## Mount Maxwell - Phase II
-bbx <- filter(pa2, zone_id == 591104501) %>%
+bbx <- dplyr::filter(pa2, zone_id == 591104501) %>%
   st_buffer(dist = 1000) %>%
   st_bbox()
 
 sub_pa1 <- st_crop(pa1, bbx)
 sub_pa2 <- st_crop(pa2, bbx)
 
-select(sub_pa2, zone_id, name_e, oecm, iucn_cat, protdate, delisdate) %>%
+select(sub_pa2, zone_id, name_e, pa_oecm_df, iucn_cat, date#, delisdate
+       ) %>%
   kable() %>%
   kable_styling()
 
@@ -188,8 +189,8 @@ g22 <- ggplot(data = sub_pa2, aes(fill = name_e)) +
 g11 / g22
 
 
-filter(sub_pa2, str_detect(name_e, "Maxwell")) %>%
-  select(parent_id, name_e, zone_id, iucn_cat, oecm, o_area, type_e, protdate) %>%
+dplyr::filter(sub_pa2, str_detect(name_e, "Maxwell")) %>%
+  select(parent_id, name_e, zone_id, iucn_cat, pa_oecm_df, o_area_ha, type_e, date) %>%
   kable() %>%
   kable_styling()
 
@@ -224,7 +225,7 @@ compare <- pa2_df %>%
          o_diff2 = o_area - area_all2)
 
 compare %>%
-  group_by(oecm) %>%
+  group_by(pa_oecm_df) %>%
   summarize(o_area = sum(o_area),
             area_all = sum(area_all),
             area_all2 = sum(area_all2))
@@ -232,7 +233,7 @@ compare %>%
 
 
 compare %>%
-  filter(abs(o_diff2) > 5) %>%
+  dplyr::filter(abs(o_diff2) > 5) %>%
   DT::datatable() %>%
   DT::formatRound(columns = 3:5, digits = 0) %>%
   DT::formatRound(columns = 6:8, digits = 2)
@@ -241,7 +242,7 @@ compare %>%
 #' official area and shape area...
 #'
 compare %>%
-  filter(abs(o_diff1) > 5, abs(o_diff2) < 5)%>%
+  dplyr::filter(abs(o_diff1) > 5, abs(o_diff2) < 5)%>%
   DT::datatable() %>%
   DT::formatRound(columns = 3:5, digits = 0) %>%
   DT::formatRound(columns = 6:8, digits = 2)

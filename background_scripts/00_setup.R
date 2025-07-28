@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package_list <- c("dplyr", "tidyr", "readr", "purrr", "stringr", "ggplot2",
                   "lubridate", "glue", "assertr", "sf", "bcmaps", "bcdata",
                   "rmapshaper", "geojsonio", "ggiraph", "cowplot", "shiny",
-                  "knitr", "rmarkdown", "kableExtra")
+                  "knitr", "rmarkdown", "kableExtra", "archive")
 package_new <- package_list[!(package_list %in% installed.packages()[,"Package"])]
 if(length(package_new)) install.packages(package_new)
 
@@ -33,6 +33,7 @@ library(bcmaps)
 library(bcdata)
 library(rmapshaper)
 library(geojsonio)
+library(archive)
 
 if(!dir.exists("data")) dir.create("data")
 if(!dir.exists("share")) dir.create("share")

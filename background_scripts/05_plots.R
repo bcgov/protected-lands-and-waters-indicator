@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # the License.
 
 # Load packages etc.
-source("00_setup.R")
+source(here("background_scripts", "00_setup.R"))
 
 bec <- st_read("out/bec_simp.geojson", crs = 3005)
 bec_area <- read_rds("out/bec_area.rds")

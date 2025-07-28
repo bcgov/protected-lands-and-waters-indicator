@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # the License.
 
 # Setup ----------------------------------------------------------------------
-source("00_setup.R")
+source(here("background_scripts", "00_setup.R"))
 
 # Data is downloaded only if it doesn't already exist,
 # optionally, clear existing data first
@@ -25,11 +25,11 @@ if(FALSE) {
 # Get Protected Areas -----------------------------------------------------
 # See https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html#toc1 for the current database
 
-f <- "CPCAD-BDCAPC_Dec2020.gdb.zip"
-ff <- file.path("data", str_remove(f, ".zip"))
+f <- "ProtectedConservedArea_2024.zip"
+ff <- file.path("data", paste0(str_remove(f, ".zip"),".gdb"))
 if(!dir.exists(ff)){
-  download.file(file.path("https://cws-scf.ca", f), destfile = f)
-  unzip(f, exdir = "data")
+  download.file(paste0("https://data-donnees.az.ec.gc.ca/api/file?path=%2Fspecies%2Fprotectrestore%2Fcanadian-protected-conserved-areas-database%2FDatabases%2F", f), destfile = f)
+  archive_extract(f, dir = "data")
   unlink(f)
 }
 
@@ -37,24 +37,25 @@ if(!dir.exists(ff)){
 # Load data
 st_layers(ff)
 
-pa <- st_read(ff, layer = "CPCAD_Dec2020") %>%
+pa <- st_read(ff, layer = "ProtectedConservedArea_2024") %>%
   rename_all(tolower)
 
 # Filter to listed in BC or Pacific Ocean
-pa <- filter(pa, str_detect(loc_e, "Pacific|British Columbia"))
+pa <- pa %>%
+  dplyr::filter(loc %in% c(2, 16, 19)) # 2 = British Columbia, 16 = Coastal Pacific Marine, 19 = Offshore Pacific Marine
 
 # Remove those that are NOT AICHI_T11 and NOT OECM
-filter(pa, (aichi_t11 == "No" & oecm == "No")) %>%
+dplyr::filter(pa, (pa_oecm_df %in% c(1:4))) %>% This includes PA, OECM, interim PA, and interim OECM.
   pull(shape_area) %>%
   sum() / 10000 # Total removed in hectares
 
-pa <- filter(pa, !(aichi_t11 == "No" & oecm == "No"))
+pa <- dplyr::filter(pa, !(pa_oecm_df == 5))
 
 # Fix problems
 pa <- st_make_valid(pa)        # Fix Ring Self-intersections
 
 # Save file for comparisons
-write_rds(pa, "data/CPCAD_Dec2020_BC_fixed.rds")
+write_rds(pa, "data/CPCAD_Dec2024_BC_fixed.rds")
 
 # Pre-download maps from bcmaps  ----------------------------------------------
 cache <- show_cached_files()$file

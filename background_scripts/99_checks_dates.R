@@ -1,4 +1,4 @@
-#' Copyright 2021 Province of British Columbia
+#' Copyright 2025 Province of British Columbia
 #'
 #' Licensed under the Apache License, Version 2.0 (the "License");
 #' you may not use this file except in compliance with the License.
@@ -25,21 +25,21 @@ library(tidyverse)
 library(sf)
 library(patchwork)
 
-pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds") %>%
+pa <- read_rds("data/ProtectedConservedArea_2024_BC_clean_no_ovlps.rds") %>%
   st_set_geometry(NULL)
 
 #' Are there any polygons with more than one date assigned?
 pa %>%
-  select(name_e, protdate, approval_date, legalization_frpa_date) %>%
-  filter((!is.na(protdate) & !is.na(approval_date)) |
-           (!is.na(protdate) & !is.na(legalization_frpa_date)) |
+  select(name_e, date, approval_date, legalization_frpa_date) %>%
+  filter((!is.na(date) & !is.na(approval_date)) |
+           (!is.na(date) & !is.na(legalization_frpa_date)) |
            (!is.na(approval_date) & !is.na(legalization_frpa_date))) %>%
   distinct() %>%
   nrow()
 
 #' How many missing dates at the start?
 pa %>%
-  filter(is.na(protdate)) %>%
+  filter(is.na(date)) %>%
   group_by(name_e) %>%
   summarise(area=sum(area_all), n=n()) %>%
   arrange(desc(n))

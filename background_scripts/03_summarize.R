@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@
 
 
 # Load packages etc.
-source("00_setup.R")
+source(here("background_scripts", "00_setup.R"))
 
 marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
 # Load data
-pa <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps.rds")
+pa <- read_rds("data/CPCAD_Dec2024_BC_clean_no_ovlps.rds")
 
 eco <- ecoregions(ask = FALSE) %>%
   rename_all(tolower) %>%
@@ -48,13 +48,13 @@ message("Clip BEC to BC outline")
 geojson_write(bec, file = "data/bec.geojson")
 geojson_write(bc, file = "data/bc.geojson")
 
-system(glue("mapshaper-xl data/bec.geojson ",
-            "-clip data/bc.geojson remove-slivers ",
-            "-o data/bec_clipped.geojson"))
+system(glue("mapshaper-xl ", here::here(), "/data/bec.geojson ",
+            "-clip ", here::here(), "/data/bc.geojson remove-slivers ",
+            "-o ", here::here(), "/data/bec_clipped.geojson"))
 
-system(glue("mapshaper-xl data/bec_clipped.geojson ",
+system(glue("mapshaper-xl ", here::here(), "/data/bec_clipped.geojson ",
             "-simplify 50% ",
-            "-o data/bec_clipped_simp.geojson"))
+            "-o ", here::here(), "/data/bec_clipped_simp.geojson"))
 
 # Add ecoregions to PA ------------------------------------------------------
 message("Add eco regions")
@@ -73,8 +73,8 @@ message("Fix linestrings")
 pa_eco <- st_collection_extract(pa_eco, type = "POLYGON")
 pa_bec <- st_collection_extract(pa_bec, type = "POLYGON")
 
-write_rds(pa_eco, "data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
-write_rds(pa_bec, "data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
+write_rds(pa_eco, "data/CPCAD_Dec2024_BC_clean_no_ovlps_ecoregions.rds")
+write_rds(pa_bec, "data/CPCAD_Dec2024_BC_clean_no_ovlps_beczones.rds")
 
 # pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds")
 # pa_bec <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_beczones.rds")
@@ -94,7 +94,7 @@ message("Simplify - Eco regions")
 eco_simp <- slice(pa_eco, 0)
 for(e in unique(pa_eco$ecoregion_code)) {
   message(e)
-  temp <- filter(pa_eco, ecoregion_code == e)
+  temp <- dplyr::filter(pa_eco, ecoregion_code == e)
   keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
   keep <- case_when(nrow(temp) < 50 ~ 1,
                     nrow(temp) < 1000 ~ 0.1,
@@ -103,8 +103,8 @@ for(e in unique(pa_eco$ecoregion_code)) {
                                                           keep_shapes = keep_shapes)
   eco_simp <- rbind(eco_simp, region)
 }
-eco_simp <- filter(eco_simp, !st_is_empty(eco_simp))
-write_rds(eco_simp, "out/CPCAD_Dec2020_eco_simp.rds")
+eco_simp <- dplyr::filter(eco_simp, !st_is_empty(eco_simp))
+write_rds(eco_simp, "out/CPCAD_Dec2024_eco_simp.rds")
 rm(pa_eco)
 
 # Simplify bec zones for plotting  --------------------------------------------
@@ -114,7 +114,7 @@ geojson_write(pa_bec, file = "data/pa_bec.geojson")
 
 system(glue("mapshaper-xl data/pa_bec.geojson ",
             "-simplify 5% keep-shapes ",
-            "-o out/CPCAD_Dec2020_bec_simp.geojson"))
+            "-o out/CPCAD_Dec2024_bec_simp.geojson"))
 
 # Simplify ecoregions background map ------------------------------------------
 eco <- ms_simplify(eco, keep = 0.01)

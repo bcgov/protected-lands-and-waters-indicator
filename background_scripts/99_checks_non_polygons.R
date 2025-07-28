@@ -1,4 +1,4 @@
-#' Copyright 2021 Province of British Columbia
+#' Copyright 2025 Province of British Columbia
 #'
 #' Licensed under the Apache License, Version 2.0 (the "License");
 #' you may not use this file except in compliance with the License.
@@ -27,14 +27,14 @@ library(sf)
 library(patchwork)
 
 #' ## Load protected areas
-pa_eco <- read_rds("data/CPCAD_Dec2020_BC_clean_no_ovlps_ecoregions.rds") %>%
+pa_eco <- read_rds("data/CPCAD_Dec2024_BC_clean_no_ovlps_ecoregions.rds") %>%
   mutate(type = st_geometry_type(.))
 
 #' Look for non-polygon shapes
-np <- filter(pa_eco, !str_detect(type, "POLYGON"))
+np <- dplyr::filter(pa_eco, !str_detect(type, "POLYGON"))
 np_lines <- st_collection_extract(np, "LINESTRING") %>%
   mutate(length = as.numeric(st_length(geometry))) %>%
-  filter(length > 25)
+  dplyr::filter(length > 25)
 
 #' There are only `r nrow(np_lines)` LINESTRINGS (length > 25m) out
 #' of ~`r nrow(pa_eco)` total shapes

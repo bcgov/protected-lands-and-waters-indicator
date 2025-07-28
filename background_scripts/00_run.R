@@ -1,4 +1,4 @@
-# Copyright 2021 Province of British Columbia
+# Copyright 2025 Province of British Columbia
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 #
 # Rscript 00_run.R
 
-source("01_load.R")
-source("02_clean.R")
-source("03_summarize.R")
-source("04_analysis.R")
+source(here("background_scripts", "01_load.R"))
+source(here("background_scripts", "02_clean.R"))
+source(here("background_scripts", "03_summarize.R"))
+source(here("background_scripts", "04_analysis.R"))
