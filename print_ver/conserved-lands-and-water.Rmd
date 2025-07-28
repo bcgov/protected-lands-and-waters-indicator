@@ -2,9 +2,9 @@
 topic: "land"
 title: "Conserved Lands & Waters in B.C."
 output: 
+  pdf_document: envreportutils.internal::print_ver
   html_document:
     self_contained: true
-  pdf_document: envreportutils.internal::print_ver
 ---
 
 ```{=html}
@@ -65,7 +65,7 @@ theme_summary <- theme(axis.text.y = element_text(size = 8),
 is_html <- knitr::is_html_output()
 is_pdf <- knitr::is_latex_output()
 
-total_prot_area <- read_rds("out/total_prot_area.rds")
+total_prot_area <- read_rds(paste0(here::here(), "/out/total_prot_area.rds"))
 
 pa_total <- total_prot_area %>% 
   group_by(park_type, type) %>% 
@@ -153,7 +153,7 @@ include_graphics(path = here("out", "bec_map.png"))
 
 ```{r bec-rep-html, include=is_html, eval=is_html, fig.alt = "Representation of the biogeoclimatic zones within conserved areas", out.width="50%"}
 
-pa_bec_sum <- read_rds("out/bec_area.rds")
+pa_bec_sum <- read_rds(paste0(here::here(), "/out/bec_area.rds"))
 
 bec_totals <- pa_bec_sum %>%
     group_by(zone_name) %>% 
