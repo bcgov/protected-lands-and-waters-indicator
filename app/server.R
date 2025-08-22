@@ -45,7 +45,7 @@ shinyServer(function(input, output, session) {
   g_bc <- ggdraw(g_bc + theme(legend.position = "none")) +
     draw_plot(g_legend_water, x = 0, y = 0, width = 1, height = 1) +
     draw_plot(g_legend_land, x = 0, y = 0, width = 1, height = 1) +
-    draw_label("Percent\nConserved", x = 0.8, y = 0.82, size = 12, colour = "black")
+    draw_label("Percent\nProtected", x = 0.8, y = 0.82, size = 12, colour = "black")
 
 
   # Top Panel ---------------------------------------------------------------
@@ -83,7 +83,7 @@ shinyServer(function(input, output, session) {
         labs(x = lab_total_area) +
         theme(axis.title.y=element_blank())+
         scale_fill_manual(values = scale_map, guide = FALSE) +
-        scale_alpha_manual(name = "Type", values = c("OECM" = 0.5, "PA" = 1)) +
+        scale_alpha_manual(name = "Type", values = c("PA" = 1)) +
         scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
         theme(legend.position='none')
       water

@@ -34,22 +34,20 @@ eco <- readRDS("out/eco_simp.rds")
 pa_eco <- readRDS("out/CPCAD_Dec2024_eco_simp.rds") %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PA",
-                                        "Water - OECM", "Water - PA")))
+                             levels = c("Land - PA",
+                                        "Water - PA")))
 
 yearly_sums <- readRDS("out/total_prot_area.rds") %>%
   mutate(tooltip_date = as.character(date),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PA",
-                                        "Water - OECM", "Water - PA"))) %>%
+                             levels = c("Land - PA",
+                                        "Water - PA"))) %>%
   group_by(date, type) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>",
-    "<strong>OECM:</strong> ",
-    "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>")) %>%
   ungroup()
 
 eco_area <- readRDS("out/pa_eco_sum.rds") %>%
@@ -58,15 +56,13 @@ eco_area <- readRDS("out/pa_eco_sum.rds") %>%
                                 as.character(date)),
          type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PA",
-                                        "Water - OECM", "Water - PA"))) %>%
+                             levels = c("Land - PA",
+                                        "Water - PA"))) %>%
   group_by(ecoregion_code, type, date) %>%
   mutate(tooltip = glue(
     "<strong>Year:</strong> {tooltip_date}<br>",
     "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>",
-    "<strong>OECM:</strong> ",
-    "{format(round(cum_year_type[park_type == 'OECM'], 2), big.mark = ',')} %")) %>%
+    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>")) %>%
   ungroup()
 
 eco_area_sum <- eco_area %>%
@@ -75,13 +71,11 @@ eco_area_sum <- eco_area %>%
   group_by(ecoregion_code, type) %>%
   mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
          type_combo = factor(type_combo,
-                             levels = c("Land - OECM", "Land - PA",
-                                        "Water - OECM", "Water - PA")),
+                             levels = c("Land - PA",
+                                        "Water - PA")),
          tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
                         "<strong>Parks and Protected Areas:</strong> ",
-                        "{format(round(p_type[park_type == 'PA'], 1), big.mark = ',')}%<br>",
-                        "<strong>OECM:</strong> ",
-                        "{format(round(p_type[park_type == 'OECM'], 1), big.mark = ',')}%"))
+                        "{format(round(p_type[park_type == 'PA'], 1), big.mark = ',')}%<br>"))
 
 # Add tool tip to map so they match
 eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
@@ -103,12 +97,10 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
                 font-size: 12px; border-width 2px; border-color: black;"
 
 # Colours - Somewhat matches msw-disposal-indicator and original
-scale = c("Land - OECM" = "#93c288",
-          "Land - PA" = "#004529",
-          "Water - OECM" = "#0a7bd1",
+scale = c("Land - PA" = "#004529",
           "Water - PA" = "#063c4e")
-scale_land <- c("OECM" = "#93c288", "PA" = "#004529")
-scale_water <- c("OECM" = "#8bc3d5", "PA" = "#063c4e")
+scale_land <- c("PA" = "#004529")
+scale_water <- c("PA" = "#063c4e")
 scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 # scale_combo <- setNames(c(scale_land, scale_water),
 #                         c("Land - OECM", "Land - PA",
@@ -118,9 +110,9 @@ hover <- "#FFFF99"
 select <- "#FFFFFF"
 
 # Labels
-lab_total_area <- "Percent Area Conserved"
+lab_total_area <- "Percent Area Protected"
 lab_year <- "Year"
-lab_growth <- "Cumulative\n% Conserved"
+lab_growth <- "Cumulative\n% Protected"
 lab_oecm <- "Type"
 
 # Points and lines

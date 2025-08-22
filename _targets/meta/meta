@@ -15,51 +15,51 @@ bc_button|stem|af248247a376c054|4019e0b4bddf8160|3338526d68090c6b|-1248329268||t
 clipped_bec|stem|965a45ddee33ef5e|3fe0e16bd7980c68|d5dc336fabd028f2|526591796||t20248.8426318804s|s66450882b|66450882|rds|local|vector|||144.8||
 mod_ecoregions|stem|714b6a92c5be4f90|82fbfd167a024b35|098123a95f884737|-2075725575||t20248.8435534564s|s35746905b|35746905|rds|local|vector|||69.19||
 map_eco_background|stem|f6c22132624f3366|5d841830594e889f|a2015b9178c51873|-199494079||t20264.9022557662s|s2440286b|2440286|rds|local|vector|||11.36||
-pa_data|stem|b1373933b3b52372|3ef51d9610276b4d|08e3dc12b31caec9|-1817921912||t20286.7891785303s|s129458526b|129458526|rds|local|vector|||56.95|GDAL Message 1: organizePolygons() received a polygon with more than 100 parts. The processing may be really slow.  You can skip the processing by setting METHOD=SKIP, or only make it analyze counter-clock wise parts by setting METHOD=ONLY_CCW if you can assume that the outline of holes is counter-clock wise defined|
-pa_wha|stem|d2ea1b336b0d4093|71791fa520382a39|60957def34249b93|524384876||t20286.7892410185s|s11337349b|11337349|rds|local|vector|||2.79||
-pa_ogma|stem|5d2938b8183f4b02|054002ddc122c85d|d9468fa27abf51a7|-1167417041||t20286.7893695473s|s60738710b|60738710|rds|local|vector|||3.93||
-clean_dates_pa|stem|e742725fd3355797|75f22cba602b84f7|f5821744362445da|-333074977||t20286.7895930498s|s129245209b|129245209|rds|local|vector|||7.98||
-clean_pa|stem|8d072822cab0dd02|307b142debcb5d50|72e6258db1e746ec|-970765610||t20286.7961023818s|s131462511b|131462511|rds|local|vector|||551.7||
-pa_bec|stem|0641de756adde48c|7f169591cb8d48be|588d73491e350900|1852272030||t20286.7980441247s|s145526047b|145526047|rds|local|vector|||153.54|attribute variables are assumed to be spatially constant throughout all geometries|
-pa_eco|stem|0282c6184ca9fc14|0ee0d30e3abda75e|9f3f9461da81abc7|69181802||t20286.8112334388s|s159188311b|159188311|rds|local|vector|||1125.43|attribute variables are assumed to be spatially constant throughout all geometries|
-map_bec|stem|0345d30b53a76de3|832767b61fa91bda|bf6e08ae7d7305bc|-1480485442||t20286.8122947935s|s64680752b|64680752|rds|local|vector|||84.1||
-pa_bec_sum|stem|b7de5eae6270503b|eb6fd18f880829e8|8383d819d33395d7|-1415788300||t20286.8123732742s|s1570b|1570|rds|local|vector|||3.08||
-map_bec_background|stem|d0434cf27a28a092|4e3f354862d52526|951b1cfc43ed9253|-1734025044||t20286.8133087285s|s14196214b|14196214|rds|local|vector|||77.87||
-map_eco|stem|c80ef224c9af770d|1b61d5bb34719b24|eb2a3c8c72838b78|199630118||t20286.8148060759s|s25572735b|25572735|rds|local|vector|||125.78||
-pa_eco_sum|stem|d05a85d5c7ec8de2|b4806b4b327b4429|0f471a4fed78d122|218494557||t20286.8148854609s|s44179b|44179|rds|local|vector|||4.94||
-bc_map_all|stem|31ba142582182aa1|6e86563e8b5b0f18|d797452326f5e4aa|-786741838||t20286.8164260737s|s1263791106b|1263791106|rds|local|vector|||29.94|A numeric `legend.position` argument in `theme()` was deprecated in ggplot2 3.5.0. ℹ Please use the `legend.position.inside` argument of `theme()` instead.|
-ecoregion_maps|stem|bfaa457770d68326|a9101a63e4381da9|13677dcbfce58266|-981006377||t20286.8177134194s|s114b|114|rds|local|vector|||36.36||
-bc_eco_map|stem|8c5a1cfd4e828528|a794043da60341bb|2dfea9cde2c1cfc9|-1278490121||t20286.8179279961s|s182529334b|182529334|rds|local|vector|||4.52||
-eco_bar_all|stem|3ee314f71b236bf0|91ef786f409c354e|5b88572091678dd1|1646937411||t20286.8179389967s|s340475b|340475|rds|local|vector|||0.69||
-total_prot_area|stem|9b9899ddf6b0dbf4|4f571f9d5828c18d|9a11b6c56a7ee73c|-437376396||t20286.8179775538s|s10771b|10771|rds|local|vector|||1.62||
-land_designations|stem|63d5f66b3e7a0322|61f7d6246a7237f9|eb557a5912007697|1809384501||t20286.8180190231s|s509b|509|rds|local|vector|||1.72||
 load_ecoregions|function|9e4aa488b96d1d72
-.Random.seed|object|abfc7e8a0a8384a9
+.Random.seed|object|e36498469dedbcad
 create_bc_button|function|3ca114d0dd7bbe69
 simplify_beczones|function|85ed50c369afdd52
-eco_map|function|432f8262443c488e
-plot_bec_zone_totals|function|6c5b6ca75db80e10
+eco_map|function|113a269232d9ba5d
+plot_bec_zone_totals|function|a6de0eb6e0051983
 set_directories_shiny|function|08eab20291bf12e8
 clip_bec_to_bc_boundary|function|67cea00860c5db11
 load_bec|function|9463ba33ae831c8b
-eco_static|function|fb3d1d1c62d14eb6
+eco_static|function|3c53c6204a208060
 simplify_ecoregions|function|db2b8bd19071f086
-bc_map|function|63d7e96344503259
+bc_map|function|09c862ac906d66b1
 prep_land_des|function|6199c0135e0fd64e
 clean_up_dates|function|d7bfeac5a3b37671
 get_wha_data|function|2a9802e055734cfe
-get_cpcad_bc_data|function|2bd70f257ff908b1
-protected_area_totals|function|e760b9d76d12a139
+get_cpcad_bc_data|function|619c205436bdf225
+protected_area_totals|function|1aa4cc75f4be83b0
 simplify_eco_background|function|2933b3622640d22b
-protected_area_by_eco|function|f43c6e8477e2b32d
-plot_by_bec_zone|function|c11a84b2536174f6
+protected_area_by_eco|function|380922992c4517f4
+plot_by_bec_zone|function|9dd960c3584a27cb
 protected_area_by_bec|function|ebd81cf3ae3b16ba
 intersect_pa|function|e2c833dc1f9a88ce
-eco_bar|function|237132417a7e5878
+eco_bar|function|8840ca1241e562dc
 simplify_bec_background|function|6b8665b3b11a3a55
 set_directories|function|5b77c1647f61a76e
 get_ogma_data|function|211f4be8cdb52155
 remove_overlaps|function|e6f4fbd637f8ecc7
 fix_ecoregions|function|3672cd04f18493b2
 fill_in_dates|function|ce7772534925db63
-bec_plot_total|stem|63a53a2295d895bd|402d59d890e787c0|3ae0a2497981ae5f|-1623679446||t20294.6796159081s|s1615631631b|1615631631|rds|local|vector|||29.89|The `guide` argument in `scale_()` cannot be `FALSE`. This was deprecated in ggplot2 3.3.4. ℹ Please use 'none' instead.|
+pa_data|stem|a6ee74a05c87bd3e|3ef51d9610276b4d|013d1c8d58247601|-1817921912||t20321.842424912s|s54483442b|54483442|rds|local|vector|||17.52|GDAL Message 1: organizePolygons() received a polygon with more than 100 parts. The processing may be really slow.  You can skip the processing by setting METHOD=SKIP, or only make it analyze counter-clock wise parts by setting METHOD=ONLY_CCW if you can assume that the outline of holes is counter-clock wise defined|
+pa_wha|stem|f0ac3b0522890def|71791fa520382a39|c1100e3663d3cbe4|524384876||t20321.8424482218s|s1289b|1289|rds|local|vector|||0.97||
+pa_ogma|stem|8195df1631e822ce|054002ddc122c85d|330d5b25f083a620|-1167417041||t20321.8424680213s|s1299b|1299|rds|local|vector|||0.8||
+clean_dates_pa|stem|50d45fae0ba5a727|75f22cba602b84f7|054f317f47928090|-333074977||t20321.84253991s|s54268060b|54268060|rds|local|vector|||2.64|There was 1 warning in `stopifnot()`. ℹ In argument: `iucn_cat = fct_recode(...)`. Caused by warning: ! Unknown levels in `f`: 9. There was 1 warning in `stopifnot()`. ℹ In argument: `iucn_cat = fct_relevel(...)`. Caused by warning: ! 1 unknown level in `f`: N/A|
+clean_pa|stem|7245e66ea6bcc0d9|307b142debcb5d50|5bc0afe87d514705|-970765610||t20321.8470538085s|s55582414b|55582414|rds|local|vector|||386.27||
+pa_bec|stem|49eac1ed60c18c2a|7f169591cb8d48be|f50286c742956328|1852272030||t20321.8479244612s|s64744288b|64744288|rds|local|vector|||68.34|attribute variables are assumed to be spatially constant throughout all geometries|
+pa_eco|stem|4343d92349bbabf9|0ee0d30e3abda75e|9c0d82bd1ee717e4|69181802||t20321.8570416s|s82998255b|82998255|rds|local|vector|||781.04|attribute variables are assumed to be spatially constant throughout all geometries|
+map_bec|stem|56e2a5998c5baa93|832767b61fa91bda|dc6d953d4b0465cf|-1480485442||t20321.8573551148s|s23255198b|23255198|rds|local|vector|||24.22||
+pa_bec_sum|stem|0d6273a84905ba64|eb6fd18f880829e8|f44d80d2b2df6c66|-1415788300||t20321.8574081092s|s981b|981|rds|local|vector|||2.27||
+map_bec_background|stem|c2646cd4f0e07b11|4e3f354862d52526|22fb256342275083|-1734025044||t20321.857674377s|s8173013b|8173013|rds|local|vector|||21.66||
+map_eco|stem|b8d1bfd389e01ae8|1b61d5bb34719b24|9dc556e8c01f9a9e|199630118||t20321.8584058686s|s21376015b|21376015|rds|local|vector|||61.05||
+pa_eco_sum|stem|cb5c7bf96eab7f26|b4806b4b327b4429|44d1584af65e3f61|218494557||t20321.8584583479s|s31171b|31171|rds|local|vector|||3.36||
+bc_map_all|stem|d1195425a7036dfd|6e86563e8b5b0f18|5fb36da199327e6a|-786741838||t20321.8592713889s|s730484709b|730484709|rds|local|vector|||19.86|A numeric `legend.position` argument in `theme()` was deprecated in ggplot2 3.5.0. ℹ Please use the `legend.position.inside` argument of `theme()` instead.|
+bec_plot_total|stem|6b78e59e195d253f|402d59d890e787c0|f5f7b0fd79b43c53|-1623679446||t20321.8610977719s|s1615635425b|1615635425|rds|local|vector|||24.03|The `guide` argument in `scale_()` cannot be `FALSE`. This was deprecated in ggplot2 3.3.4. ℹ Please use 'none' instead.|
+ecoregion_maps|stem|bfaa457770d68326|a9101a63e4381da9|ea62862ee9ec8f87|-981006377||t20321.8614096193s|s114b|114|rds|local|vector|||25.98||
+bc_eco_map|stem|97f6ba560f3a1464|a794043da60341bb|579ad0f9d88513d5|-1278490121||t20321.8616547689s|s182529115b|182529115|rds|local|vector|||5.36||
+eco_bar_all|stem|4a5cfe2aac69d08c|91ef786f409c354e|62c8b4a092bb74ff|1646937411||t20321.8616656839s|s325284b|325284|rds|local|vector|||0.75||
+total_prot_area|stem|d948dc58209935d1|4f571f9d5828c18d|b5de8d0637012a43|-437376396||t20321.8616931203s|s7196b|7196|rds|local|vector|||1.38||
+land_designations|stem|a017db573596804b|61f7d6246a7237f9|c7a8cbbc8e8c1fe4|1809384501||t20321.8617205978s|s448b|448|rds|local|vector|||1.37||
