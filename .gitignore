@@ -12,8 +12,10 @@ print_ver/*.pdf
 docs/*
 *.log
 backup*
-app/out/
+app/out/*.rds
 simple_app/out/*.rds
 designations.R
 print_ver/out
 .positai
+*.zip
+_targets/meta*
