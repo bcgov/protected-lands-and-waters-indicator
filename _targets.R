@@ -26,8 +26,8 @@ set_directories_shiny()
 # load datasets ------------------------------------------------------------------------------------
 
 data_load <- list(
-  tar_target(wha_data, get_wha_data()),
-  tar_target(ogma_data, get_ogma_data()),
+  #tar_target(wha_data, get_wha_data()),
+  #tar_target(ogma_data, get_ogma_data()),
   tar_target(pa_data, get_cpcad_bc_data()),
   tar_target(ecoregions, load_ecoregions()),
   tar_target(bec_zones, load_bec())
@@ -35,13 +35,30 @@ data_load <- list(
 
 # clean data --------------------------------------------------------------
 clean_data <- list(
-  tar_target(pa_wha, fill_in_dates(data=wha_data, column = "approval_date",
-                                   join= pa_data, landtype = "Wildlife Habitat Areas",
-                                   output=pa_wha)),
-  tar_target(pa_ogma, fill_in_dates(data=ogma_data, column = "legalization_frpa_date",
-                                    join= pa_data, landtype = "Old Growth Management Areas (Mapped Legal)",
-                                    output=pa_ogma)),
-  tar_target(clean_dates_pa, clean_up_dates(pa_data, pa_wha, pa_ogma, clean_dates_pa)),
+  tar_target(
+    pa_wha,
+    fill_in_dates(
+      data = wha_data,
+      column = "approval_date",
+      join = pa_data,
+      landtype = "Wildlife Habitat Areas",
+      output = pa_wha
+    )
+  ),
+  tar_target(
+    pa_ogma,
+    fill_in_dates(
+      data = ogma_data,
+      column = "legalization_frpa_date",
+      join = pa_data,
+      landtype = "Old Growth Management Areas (Mapped Legal)",
+      output = pa_ogma
+    )
+  ),
+  tar_target(
+    clean_dates_pa,
+    clean_up_dates(pa_data, pa_wha, pa_ogma, clean_dates_pa)
+  ),
   tar_target(clean_pa, remove_overlaps(clean_dates_pa, clean_pa))
 )
 

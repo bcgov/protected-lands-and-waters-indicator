@@ -1,6 +1,6 @@
 ---
 topic: "land"
-title: "Conserved Lands & Waters in B.C."
+title: "Protected Lands & Waters in B.C."
 output: 
   pdf_document: envreportutils.internal::print_ver
   html_document:
@@ -71,14 +71,11 @@ total_prot_area <- read_rds(paste0(here::here(), "/out/total_prot_area.rds"))
 
 pa_total <- total_prot_area %>% 
   group_by(park_type, type) %>% 
-  dplyr::filter(date == 2024) %>% 
+  dplyr::filter(date == 2025) %>% 
   select(summary_total)
 
 land_pa <- pa_total %>% 
   dplyr::filter(park_type == "PA"&type =="land")
-
-land_oecm <- pa_total %>% 
-  dplyr::filter(park_type == "OECM"&type =="land")
 
 water_pa <- pa_total %>% 
   dplyr::filter(park_type == "PA"&type =="water")
@@ -86,9 +83,9 @@ water_pa <- pa_total %>%
 water_oecm <- pa_total %>% 
   dplyr::filter(park_type == "OECM"&type =="water")
 
-land_total <- round(land_pa$summary_total + land_oecm$summary_total, digits=1)
+#land_total <- round(land_pa$summary_total + land_oecm$summary_total, digits=1)
 
-water_total <- round(water_pa$summary_total + water_oecm$summary_total, digits=1) #watertotal
+#water_total <- round(water_pa$summary_total + water_oecm$summary_total, digits=1) #watertotal
 
 n_ecoregions <- read_rds(paste0(here::here(), "/out/eco_simp.rds")) %>%
                 as.data.frame() %>%

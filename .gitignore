@@ -16,3 +16,4 @@ app/out/
 simple_app/out/*.rds
 designations.R
 print_ver/out
+.positai

@@ -12,69 +12,89 @@
 
 # Check that we have the required folders ---------------------------------
 
-set_directories <- function(){
-  if(!dir.exists('out')) dir.create('out')
-  if(!dir.exists('data')) dir.create('data')
-  if(!dir.exists('out/ecoregion_maps')) dir.create('out/ecoregion_maps')
+set_directories <- function() {
+  if (!dir.exists('out')) {
+    dir.create('out')
+  }
+  if (!dir.exists('data')) {
+    dir.create('data')
+  }
+  if (!dir.exists('out/ecoregion_maps')) dir.create('out/ecoregion_maps')
 }
 
-set_directories_shiny <- function(){
-  if(!dir.exists('app/out')) dir.create('app/out')
-  if(!dir.exists('app/out/ecoregion_maps')) dir.create('app/out/ecoregion_maps')
+set_directories_shiny <- function() {
+  if (!dir.exists('app/out')) {
+    dir.create('app/out')
+  }
+  if (!dir.exists('app/out/ecoregion_maps')) {
+    dir.create('app/out/ecoregion_maps')
+  }
 }
 
 # Loading data functions --------------------------------------------------
 
-get_wha_data <- function(){
-  wha_data <- bcdc_get_data("WHSE_WILDLIFE_MANAGEMENT.WCP_WILDLIFE_HABITAT_AREA_POLY") %>%
-      rename_with(tolower)
-  wha_data
-}
+# get_wha_data <- function() {
+#   wha_data <- bcdc_get_data(
+#     "WHSE_WILDLIFE_MANAGEMENT.WCP_WILDLIFE_HABITAT_AREA_POLY"
+#   ) %>%
+#     rename_with(tolower)
+#   wha_data
+# }
 
-get_ogma_data <- function(){
-  ogma_data <- bcdc_query_geodata("WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW") %>%
-    collect() %>%
-    rename_with(tolower)
-  ogma_data
-}
+# get_ogma_data <- function() {
+#   ogma_data <- bcdc_query_geodata(
+#     "WHSE_LAND_USE_PLANNING.RMP_OGMA_LEGAL_CURRENT_SVW"
+#   ) %>%
+#     collect() %>%
+#     rename_with(tolower)
+#   ogma_data
+# }
 
 get_cpcad_bc_data <- function() {
-  f <- "ProtectedConservedArea_2024.zip"
-  ff <- file.path("data", paste0(str_remove(f, ".zip"),".gdb"))
-  if(!dir.exists(ff)){
-    download.file(paste0("https://data-donnees.az.ec.gc.ca/api/file?path=%2Fspecies%2Fprotectrestore%2Fcanadian-protected-conserved-areas-database%2FDatabases%2F", f), destfile = f)
-    archive_extract(f, dir = "data")
-    unlink(f)
+  f <- "ProtectedConservedArea_2025.zip"
+  ff <- file.path("data", paste0(str_remove(f, ".zip"), ".gdb"))
+  if (!dir.exists(ff)) {
+    options(timeout = max(1000, getOption("timeout")))
+
+    download.file(
+      paste0(
+        "https://data-donnees.az.ec.gc.ca/api/file?path=%2Fspecies%2Fprotectrestore%2Fcanadian-protected-conserved-areas-database%2FDatabases%2F",
+        f
+      ),
+      destfile = ff
+    )
+    # archive_extract(f, dir = "data")
+    # unlink(f)
   }
 
-  pa <- st_read(ff, layer = "ProtectedConservedArea_2024") %>%
+  pa <- st_read(ff, layer = "ProtectedConservedArea_2025") %>%
     rename_all(tolower) %>%
-    dplyr::filter(loc %in% c(2,16,19)) %>% # 2 = British Columbia, 16 = Coastal Pacific Marine, 19 = Offshore Pacific Marine
-    dplyr::filter(pa_oecm_df %in% c(1,3)) %>% # This includes PA and interim PA.
+    dplyr::filter(loc %in% c(2, 16, 19)) %>% # 2 = British Columbia, 16 = Coastal Pacific Marine, 19 = Offshore Pacific Marine
+    dplyr::filter(pa_oecm_df == 1) %>%
+    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%# This includes PA and interim PA.
     st_make_valid() %>%
     st_transform(st_crs(3005)) %>% # Apply crs from wildlife habitat area for direct comparison
     mutate(area_all = as.numeric(st_area(.))) %>%
-    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%
     st_cast(to = "POLYGON", warn = FALSE)
   pa
 }
 
-load_ecoregions <- function(){
+load_ecoregions <- function() {
   #marine_eco <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB") #separate land & water ecoregions
   eco <- ecoregions(ask = FALSE) %>%
     rename_all(tolower) %>%
     select(ecoregion_code, ecoregion_name) %>%
     mutate(ecoregion_name = tools::toTitleCase(tolower(ecoregion_name))) %>%
-    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
-    st_cast(to="POLYGON", warn = FALSE)
+    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%
+    st_cast(to = "POLYGON", warn = FALSE)
   eco
 }
 
-load_bec <- function(){
+load_bec <- function() {
   bec <- bec(ask = FALSE) %>%
     rename_all(tolower) %>%
     select(zone, subzone, zone_name, subzone_name, natural_disturbance_name) %>%
-    st_cast(to="POLYGON", warn = FALSE)
+    st_cast(to = "POLYGON", warn = FALSE)
   bec$zone_name <- str_replace_all(bec$zone_name, "-- ", "")
   bec
 }
@@ -82,70 +102,81 @@ load_bec <- function(){
 
 # Intersections with wha and ogma data to add dates -----------------------------------------
 
-fill_in_dates <- function(data, column, join, landtype, output){
+fill_in_dates <- function(data, column, join, landtype, output) {
   output <- data %>%
     select(all_of(column)) %>%
     dplyr::filter(!is.na(column)) %>%
     st_cast(to = "POLYGON", warn = FALSE) %>%
     st_join(
       dplyr::filter(join, name_e == landtype) %>%
-        tibble::rownames_to_column(), .
+        tibble::rownames_to_column(),
+      .
     ) %>%
     group_by(rowname) %>%
     arrange(desc(column)) %>%
     slice(1)
-    # slice_max(column, with_ties = FALSE)
+  # slice_max(column, with_ties = FALSE)
   output
 }
 
 # Clean up data ------------------------------------
 
-clean_up_dates <- function(data, input1, input2, output){
+clean_up_dates <- function(data, input1, input2, output) {
   output <- data %>%
-    dplyr::filter(!name_e %in% c("Wildlife Habitat Areas",
-                                 "Old Growth Management Areas (Mapped Legal)")) %>%
+    dplyr::filter(
+      !name_e %in%
+        c(
+          "Wildlife Habitat Areas",
+          "Old Growth Management Areas (Mapped Legal)"
+        )
+    ) %>%
     bind_rows(input1, input2)
 
   output <- output %>%
     mutate(
-      date = case_when(!is.na(estyear) ~ estyear,
-                       !is.na(approval_date) ~ as.integer(year(approval_date)),
-                       !is.na(legalization_frpa_date) ~ as.integer(year(legalization_frpa_date)),
-                       name_e == "Sea To Sky Wildland Zones" ~ 2011L,
-                       name_e == "Muskwa-Kechika Special Wildland Areas" ~ 2002L, # based on website
-                       name_e == "Flathead Watershed Area" ~ 2011L), #based on online act
-      iucn_cat = fct_recode(as.factor(iucn_cat), Ia = "1",
-                            Ib = "2",
-                            II = "3",
-                            III = "4",
-                            IV = "5",
-                            V = "6",
-                            VI = "7",
-                            `N/R` = "8",
-                            `N/A` = "9"),
+      date = case_when(
+        !is.na(estyear) ~ estyear,
+        !is.na(approval_date) ~ as.integer(year(approval_date)),
+        !is.na(legalization_frpa_date) ~ as.integer(year(
+          legalization_frpa_date
+        )),
+        name_e == "Sea To Sky Wildland Zones" ~ 2011L,
+        name_e == "Muskwa-Kechika Special Wildland Areas" ~ 2002L, # based on website
+        name_e == "Flathead Watershed Area" ~ 2011L
+      ), #based on online act
+      iucn_cat = fct_recode(
+        as.factor(iucn_cat),
+        Ia = "1",
+        Ib = "2",
+        II = "3",
+        III = "4",
+        IV = "5",
+        V = "6",
+        VI = "7",
+        `N/R` = "8",
+        `N/A` = "9"
+      ),
       name_e = str_replace(name_e, "Widllife", "Wildlife"),
-      park_type = if_else(pa_oecm_df %in% c(1,3), "PA", "OECM")) %>%
-    mutate(iucn_cat = fct_relevel(iucn_cat, c("Ia",
-                                              "Ib",
-                                              "II",
-                                              "III",
-                                              "IV",
-                                              "V",
-                                              "VI",
-                                              "N/R",
-                                              "N/A"))) %>%
+      park_type = if_else(pa_oecm_df %in% c(1, 3), "PA", "OECM")
+    ) %>%
+    mutate(
+      iucn_cat = fct_relevel(
+        iucn_cat,
+        c("Ia", "Ib", "II", "III", "IV", "V", "VI", "N/R", "N/A")
+      )
+    ) %>%
     arrange(park_type, iucn_cat, date, area_all) %>%
-    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
-    st_cast(to="POLYGON", warn = FALSE)
+    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%
+    st_cast(to = "POLYGON", warn = FALSE)
   output
 }
 
-remove_overlaps <- function(data, output){
+remove_overlaps <- function(data, output) {
   output <- data %>%
     st_make_valid() %>%
-    st_difference() %>%                             # Remove overlaps (~45min)
-    st_make_valid() %>%     # Fix Self-intersections (again!)
-  mutate(area_single = as.numeric(st_area(.))) # Calculate indiv area
+    st_difference() %>% # Remove overlaps (~45min)
+    st_make_valid() %>% # Fix Self-intersections (again!)
+    mutate(area_single = as.numeric(st_area(.))) # Calculate indiv area
   output
   write_rds(output, "data/CPCAD_Dec2024_BC_clean_no_ovlps.rds") #save to disk for date checks
 }
@@ -175,23 +206,23 @@ remove_overlaps <- function(data, output){
 #     pa_comb
 # }
 
-
 # intersect data ----------------------------------------------------------
 
-clip_bec_to_bc_boundary<- function(data){# Clip BEC to BC outline ---
+clip_bec_to_bc_boundary <- function(data) {
+  # Clip BEC to BC outline ---
   bc <- bc_bound_hres(ask = FALSE)
 
   bec_clipped = ms_clip(data, bc, remove_slivers = T, sys = T)
   bec_clipped_simp = ms_simplify(bec_clipped, 0.5, sys = T)
 
-  output <- st_transform(bec_clipped_simp, crs=3005)%>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  output <- st_transform(bec_clipped_simp, crs = 3005) %>% # geojson doesn't have CRS so have to remind R that CRS is BC Albers
     st_make_valid() %>%
-    st_cast(to="MULTIPOLYGON", warn = FALSE) %>%
-    st_cast(to="POLYGON", warn = FALSE)
+    st_cast(to = "MULTIPOLYGON", warn = FALSE) %>%
+    st_cast(to = "POLYGON", warn = FALSE)
   output
 }
 
-fix_ecoregions <- function(data){
+fix_ecoregions <- function(data) {
   #m_ecoregions <- c("HCS", "IPS", "OPS", "SBC", "TPC", "GPB")
 
   m_ecoregions <- c("SBC", "TPC", "OPS", "IPS")
@@ -217,28 +248,45 @@ fix_ecoregions <- function(data){
   #casewhen block here to determine type, if in m__ecor
 
   eco_mixed_terrestrial <- eco_mixed_terrestrial %>%
-    mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
-           type = "land") %>%
+    mutate(
+      ecoregion_area = as.numeric(st_area(geometry)),
+      total_ecoregion_by_type = as.numeric(units::set_units(
+        ecoregion_area,
+        km^2
+      )),
+      type = "land"
+    ) %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
-    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type)) %>%
     ungroup()
 
   eco_mixed_marine <- eco_mixed_marine %>%
-    mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
-           type = "water") %>%
+    mutate(
+      ecoregion_area = as.numeric(st_area(geometry)),
+      total_ecoregion_by_type = as.numeric(units::set_units(
+        ecoregion_area,
+        km^2
+      )),
+      type = "water"
+    ) %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
-    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type)) %>%
     ungroup()
 
   eco_other <- eco_other %>%
-    mutate(ecoregion_area = as.numeric(st_area(geometry)),
-           total_ecoregion_by_type = as.numeric(units::set_units(ecoregion_area, km^2)),
-           type = case_when(ecoregion_code %in% m_ecoregions ~ "water",
-                            !ecoregion_code %in% c(m_ecoregions, m_t_ecoregions) ~ "land")) %>%
+    mutate(
+      ecoregion_area = as.numeric(st_area(geometry)),
+      total_ecoregion_by_type = as.numeric(units::set_units(
+        ecoregion_area,
+        km^2
+      )),
+      type = case_when(
+        ecoregion_code %in% m_ecoregions ~ "water",
+        !ecoregion_code %in% c(m_ecoregions, m_t_ecoregions) ~ "land"
+      )
+    ) %>%
     group_by(ecoregion_code, ecoregion_name, type) %>%
-    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type))%>%
+    summarise(total_ecoregion_by_type = sum(total_ecoregion_by_type)) %>%
     ungroup()
 
   ## Create simplified versions for visualization
@@ -246,7 +294,7 @@ fix_ecoregions <- function(data){
   ecoregions_comb
 }
 
-intersect_pa <- function(input1, input2, output){
+intersect_pa <- function(input1, input2, output) {
   output <- st_intersection(input1, input2) %>%
     st_collection_extract(type = "POLYGON")
   output
@@ -258,17 +306,19 @@ intersect_pa <- function(input1, input2, output){
 #  - Much faster and no crashing (on my computer at least)
 #  - Allows simplifying to different degrees for different regions
 
-simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
+simplify_ecoregions <- function(data) {
+  # Simplify ecoregions for plotting  ---
   eco_simp <- slice(data, 0)
-  for(e in unique(data$ecoregion_code)) {
+  for (e in unique(data$ecoregion_code)) {
     message(e)
     temp <- dplyr::filter(data, ecoregion_code == e)
     keep_shapes <- if_else(nrow(temp) <= 1000, TRUE, FALSE)
-    keep <- case_when(nrow(temp) < 50 ~ 1,
-                      nrow(temp) < 1000 ~ 0.1,
-                      TRUE ~ 0.05)
-    if(keep == 1) region <- temp else region <- ms_simplify(temp, keep = keep,
-                                                            keep_shapes = keep_shapes)
+    keep <- case_when(nrow(temp) < 50 ~ 1, nrow(temp) < 1000 ~ 0.1, TRUE ~ 0.05)
+    if (keep == 1) {
+      region <- temp
+    } else {
+      region <- ms_simplify(temp, keep = keep, keep_shapes = keep_shapes)
+    }
     eco_simp <- rbind(eco_simp, region)
   }
   output <- dplyr::filter(eco_simp, !st_is_empty(eco_simp))
@@ -277,23 +327,26 @@ simplify_ecoregions<- function(data){# Simplify ecoregions for plotting  ---
   output
 }
 
-simplify_beczones<-function(data){# Simplify bec zones for plotting  ---
+simplify_beczones <- function(data) {
+  # Simplify bec zones for plotting  ---
 
   CPCAD_Oct2024_bec_simp = ms_simplify(data, 0.5, sys = T)
-  output<-st_transform(CPCAD_Oct2024_bec_simp, crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  output <- st_transform(CPCAD_Oct2024_bec_simp, crs = 3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
-simplify_eco_background<- function(data){# Simplify ecoregions background map ---
-  output<- ms_simplify(data, keep = 0.01)
+simplify_eco_background <- function(data) {
+  # Simplify ecoregions background map ---
+  output <- ms_simplify(data, keep = 0.01)
   write_rds(output, "out/eco_simp.rds")
   write_rds(output, "app/out/eco_simp.rds")
   output
 }
 
-simplify_bec_background<-function(data){# Simplify bec zones background map ---
+simplify_bec_background <- function(data) {
+  # Simplify bec zones background map ---
   bec_simp = ms_simplify(data, 0.01, keep_shapes = T, sys = T)
-  output<-st_transform(bec_simp, crs=3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
+  output <- st_transform(bec_simp, crs = 3005) # geojson doesn't have CRS so have to remind R that CRS is BC Albers
   output
 }
 
@@ -309,96 +362,121 @@ simplify_bec_background<-function(data){# Simplify bec zones background map ---
 #   output
 # }
 
-protected_area_by_eco <- function(data, eco_totals){
-  eco_totals<- eco_totals %>%
+protected_area_by_eco <- function(data, eco_totals) {
+  eco_totals <- eco_totals %>%
     st_set_geometry(NULL)
   output <- data %>%
-    mutate(total_area = as.numeric(st_area(geometry)),
-           # total_area = units::set_units(total_area, km^2)
-           ) %>%
+    mutate(
+      total_area = as.numeric(st_area(geometry)),
+      # total_area = units::set_units(total_area, km^2)
+    ) %>%
     st_set_geometry(NULL) %>%
     group_by(ecoregion_code, ecoregion_name, type, date) %>%
-    complete(park_type = c("PA"),
-             fill = list(total_area = 0)) %>%
+    complete(park_type = c("PA"), fill = list(total_area = 0)) %>%
     ungroup() %>%
     # Add placeholder for missing dates for plots (max year plus 1)
-    mutate(d_max = max(date, na.rm = TRUE),
-           missing = is.na(date),
-           date = if_else(is.na(date), d_max + 1L, date)) %>%
+    mutate(
+      d_max = max(date, na.rm = TRUE),
+      missing = is.na(date),
+      date = if_else(is.na(date), d_max + 1L, date)
+    ) %>%
     group_by(ecoregion_code) %>%
     mutate(d_max = max(c(date, d_max))) %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
     # Fill in missing dates all the way to max
-    complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
-             fill = list(total_area = 0, missing = FALSE)) %>%
+    complete(
+      date = seq(min(date, na.rm = TRUE), d_max[1]),
+      fill = list(total_area = 0, missing = FALSE)
+    ) %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type, missing, date) %>%
     summarize(total_area = as.numeric(sum(total_area)), .groups = "drop") %>%
     group_by(ecoregion_code, ecoregion_name, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
-    mutate(cum_type = cumsum(total_area),
-           total_type = sum(total_area)) %>%
+    mutate(cum_type = cumsum(total_area), total_type = sum(total_area)) %>%
     ungroup() %>%
-    left_join(eco_totals, by = c("ecoregion_code", "ecoregion_name" ,"type")) %>%
+    left_join(
+      eco_totals,
+      by = c("ecoregion_code", "ecoregion_name", "type")
+    ) %>%
     # Get regional values
     group_by(ecoregion_code, type) %>%
-    mutate(both_park_type_sum = sum(total_area),
-           p_type = total_type / total_ecoregion_by_type * 100,
-           cum_year_type = cum_type / total_ecoregion_by_type * 100,
-           p_region = both_park_type_sum/total_ecoregion_by_type * 100) %>%
+    mutate(
+      both_park_type_sum = sum(total_area),
+      p_type = total_type / total_ecoregion_by_type * 100,
+      cum_year_type = cum_type / total_ecoregion_by_type * 100,
+      p_region = both_park_type_sum / total_ecoregion_by_type * 100
+    ) %>%
     ungroup() %>%
     arrange(desc(type), p_type) %>%
-    mutate(ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name)))
+    mutate(
+      ecoregion_name = factor(ecoregion_name, levels = unique(ecoregion_name))
+    )
   write_rds(output, "out/pa_eco_sum.rds")
   write_rds(output, "app/out/pa_eco_sum.rds")
   output
 }
 
-protected_area_totals<- function(data, eco_area_data){
+protected_area_totals <- function(data, eco_area_data) {
   pa_eco_all_df <- data %>%
-    mutate(total_area = as.numeric(st_area(geometry)),
-           # total_area = units::set_units(total_area, km^2),
-           d_max = max(date, na.rm = TRUE)) %>%
+    mutate(
+      total_area = as.numeric(st_area(geometry)),
+      # total_area = units::set_units(total_area, km^2),
+      d_max = max(date, na.rm = TRUE)
+    ) %>%
     st_set_geometry(NULL) %>%
     # Add placeholder for missing dates for plots (max year plus 1)
-    mutate(d_max = max(date, na.rm = TRUE),
-           missing = is.na(date),
-           date = if_else(is.na(date), d_max + 1L, date)) %>%
+    mutate(
+      d_max = max(date, na.rm = TRUE),
+      missing = is.na(date),
+      date = if_else(is.na(date), d_max + 1L, date)
+    ) %>%
     group_by(park_type, type) %>%
     # Fill in missing dates all the way to present plus 1 year (ensures plots go to present smoothly)
-    complete(date = seq(min(date, na.rm = TRUE), d_max[1]),
-             fill = list(total_area = 0, missing = FALSE)) %>%
+    complete(
+      date = seq(min(date, na.rm = TRUE), d_max[1]),
+      fill = list(total_area = 0, missing = FALSE)
+    ) %>%
     ungroup() %>%
     group_by(date) %>%
-    complete(type = c("land", "water"), park_type = c("PA"),
-             fill = list(total_area = 0, missing = FALSE)) %>%
+    complete(
+      type = c("land", "water"),
+      park_type = c("PA"),
+      fill = list(total_area = 0, missing = FALSE)
+    ) %>%
     group_by(park_type, type, missing, date) %>%
     summarize(total_area = as.numeric(sum(total_area)), .groups = "drop") %>%
     group_by(park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
-    mutate(cum_type = cumsum(total_area),
-           total_type = sum(total_area))
+    mutate(cum_type = cumsum(total_area), total_type = sum(total_area))
 
-  bc_water_total<- eco_area_data %>%
+  bc_water_total <- eco_area_data %>%
     group_by(ecoregion_name) %>%
-    slice_head(n=1) %>%
+    slice_head(n = 1) %>%
     ungroup() %>%
-    dplyr::filter(type=="water") %>%
+    dplyr::filter(type == "water") %>%
     summarize(bc_water_total = sum(total_ecoregion_by_type))
 
   output <- pa_eco_all_df %>%
-    mutate(bc_total_area = case_when(type=="water" ~ bc_water_total$bc_water_total,
-                                     type=="land" ~ as.numeric(bcmaps::bc_area(units = "m2")))) %>%
+    mutate(
+      bc_total_area = case_when(
+        type == "water" ~ bc_water_total$bc_water_total,
+        type == "land" ~ as.numeric(bcmaps::bc_area(units = "m2"))
+      )
+    ) %>%
     group_by(date, park_type, type) %>%
     arrange(date, .by_group = TRUE) %>%
-    mutate(perc_year_type = total_area/bc_total_area*100,
-           cum_year_type = cum_type/bc_total_area*100,
-           summary_total = total_type/bc_total_area*100)
+    mutate(
+      perc_year_type = total_area / bc_total_area * 100,
+      cum_year_type = cum_type / bc_total_area * 100,
+      summary_total = total_type / bc_total_area * 100
+    )
   write_rds(output, "out/total_prot_area.rds")
   write_rds(output, "app/out/total_prot_area.rds")
   output
 }
 
-protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
+protected_area_by_bec <- function(bec_data, data) {
+  # Summarize by bec zone region
   bec_totals <- bec_data %>%
     mutate(area = as.numeric(st_area(geometry))) %>%
     st_set_geometry(NULL) %>%
@@ -409,126 +487,161 @@ protected_area_by_bec<-function(bec_data, data){# Summarize by bec zone region
     mutate(total_area = st_area(geometry)) %>%
     st_set_geometry(NULL) %>%
     group_by(zone, zone_name, park_type) %>%
-    summarize(sum_type_by_zone = as.numeric(sum(total_area) / 10000), .groups = "drop") %>%
+    summarize(
+      sum_type_by_zone = as.numeric(sum(total_area) / 10000),
+      .groups = "drop"
+    ) %>%
     group_by(zone_name) %>%
     mutate(sum_zone = sum(sum_type_by_zone)) %>%
     ungroup() %>%
     left_join(bec_totals, by = "zone") %>%
-    mutate(perc_type_zone = sum_type_by_zone / total * 100,
-           perc_zone = sum_zone / total * 100) %>%
+    mutate(
+      perc_type_zone = sum_type_by_zone / total * 100,
+      perc_zone = sum_zone / total * 100
+    ) %>%
     arrange(perc_zone) %>%
-    mutate(zone_name = str_replace_all(zone_name, "--", " — "),
-           zone_name = factor(zone_name, levels = unique(zone_name)))
+    mutate(
+      zone_name = str_replace_all(zone_name, "--", " — "),
+      zone_name = factor(zone_name, levels = unique(zone_name))
+    )
 
   write_rds(output, "out/bec_area.rds")
   output
 }
 
 prep_land_des = function(data, totals) {
-df = data %>%
-  select(name_e, type, park_type, type_e, owner_e, geometry) %>%
-  mutate(aream2 = as.numeric(st_area(.))) %>%
-  left_join(unique(totals[,c(2,8)]), by = "type") %>%
-  group_by(owner_e, type_e, type, park_type) %>%
-  st_drop_geometry() %>%
-  summarise(total_area = sum(aream2),
-            bc_total_area = unique(bc_total_area),
-            perc = (total_area/bc_total_area)*100)
+  df = data %>%
+    select(name_e, type, park_type, type_e, owner_e, geometry) %>%
+    mutate(aream2 = as.numeric(st_area(.))) %>%
+    left_join(unique(totals[, c(2, 8)]), by = "type") %>%
+    group_by(owner_e, type_e, type, park_type) %>%
+    st_drop_geometry() %>%
+    summarise(
+      total_area = sum(aream2),
+      bc_total_area = unique(bc_total_area),
+      perc = (total_area / bc_total_area) * 100
+    )
 
-designations = df %>%
-  mutate(designation = as.factor(case_when(type_e %in% c("National Wildlife Area",
-                                                         "Marine National Wildlife Area",
-                                                         "Migratory Bird Sanctuary",
-                                                         "Marine Protected Area",
-                                                         "National Park",
-                                                         "National Marine Conservation Area",
-                                                         "Nature Reserve",
-                                                         "Conservation Area") &
-                                             owner_e %in% c("Government of Canada",
-                                                            "Parks Canada Agency",
-                                                            "Canadian Wildlife Service. Environment and Climate Change Canada") ~ "Federal",
-                                           owner_e %in% c("BC Parks Foundation (Lead Organization)",
-                                                          "Government of British Columbia",
-                                                          "Canadian Wildlife Service. Environment and Climate Change Canada; Government of British Columbia") &
-                                             type_e %in% c("Ecological Reserve",
-                                                           "A - Park",
-                                                           "B - Park",
-                                                           "C - Park",
-                                                           "Protected Area",
-                                                           "Conservancy",
-                                                           "Recreation Area",
-                                                           "Migratory Bird Sanctuary") ~ "Provincial",
-                                           type_e %in% c("Privately Owned Conservation Area") ~ "NGO",
-                                           .default = "PACL")))
+  designations = df %>%
+    mutate(
+      designation = as.factor(case_when(
+        type_e %in%
+          c(
+            "National Wildlife Area",
+            "Marine National Wildlife Area",
+            "Migratory Bird Sanctuary",
+            "Marine Protected Area",
+            "National Park",
+            "National Marine Conservation Area",
+            "Nature Reserve",
+            "Conservation Area"
+          ) &
+          owner_e %in%
+            c(
+              "Government of Canada",
+              "Parks Canada Agency",
+              "Canadian Wildlife Service. Environment and Climate Change Canada"
+            ) ~ "Federal",
+        owner_e %in%
+          c(
+            "BC Parks Foundation (Lead Organization)",
+            "Government of British Columbia",
+            "Canadian Wildlife Service. Environment and Climate Change Canada; Government of British Columbia"
+          ) &
+          type_e %in%
+            c(
+              "Ecological Reserve",
+              "A - Park",
+              "B - Park",
+              "C - Park",
+              "Protected Area",
+              "Conservancy",
+              "Recreation Area",
+              "Migratory Bird Sanctuary"
+            ) ~ "Provincial",
+        type_e %in% c("Privately Owned Conservation Area") ~ "NGO",
+        .default = "PACL"
+      ))
+    )
 
-output = designations %>%
-  ungroup() %>%
-  group_by(designation, type, park_type) %>%
-  summarise(perc_total = round(sum(perc),2))
+  output = designations %>%
+    ungroup() %>%
+    group_by(designation, type, park_type) %>%
+    summarise(perc_total = round(sum(perc), 2))
 
-write_rds(output, "out/land_designations.rds")
-
+  write_rds(output, "out/land_designations.rds")
 }
 
 # Supplemental plots ------------------------------------------------------
 
-plot_by_bec_zone <- function(data){
-  bar1 <- ggplot(data,
-                 aes(x = perc_type_zone, y = zone_name, fill = zone, alpha = park_type)) +
+plot_by_bec_zone <- function(data) {
+  bar1 <- ggplot(
+    data,
+    aes(x = perc_type_zone, y = zone_name, fill = zone, alpha = park_type)
+  ) +
     theme_minimal(base_size = 14) +
-    theme(panel.grid.major.y = element_blank(),
-          legend.position = c(0.7, 0.3)) +
+    theme(panel.grid.major.y = element_blank(), legend.position = c(0.7, 0.3)) +
     geom_bar(width = 0.9, stat = "identity") +
     labs(x = "Percent Area Protected (%)", y = "Biogeoclimatic Zone") +
     scale_fill_manual(values = bec_colours(), guide = FALSE) +
     scale_alpha_manual(name = "Type", values = c("PA" = 1)) + # is there a better way of presenting this?
-    scale_x_continuous(expand = c(0,0)) +
+    scale_x_continuous(expand = c(0, 0)) +
     guides(alpha = guide_legend(override.aes = list(fill = "black")))
   ggsave("out/bec_bar1.png", bar1, width = 6, height = 6, dpi = 300)
   bar1
 }
 
-plot_bec_zone_totals<- function(data, data2){
-
+plot_bec_zone_totals <- function(data, data2) {
   bec_totals <- data %>%
     dplyr::filter(park_type == "PA") %>%
     mutate(total_bc = bcmaps::bc_area()) %>%
-    mutate(bec_rep = total/total_bc) %>%
+    mutate(bec_rep = total / total_bc) %>%
     select(zone, zone_name, perc_zone, total, total_bc, bec_rep) %>%
     arrange(desc(perc_zone))
 
-  scatterplot <- ggplot(bec_totals, aes(x=bec_rep, y= perc_zone, label= zone_name))+
+  scatterplot <- ggplot(
+    bec_totals,
+    aes(x = bec_rep, y = perc_zone, label = zone_name)
+  ) +
     theme_minimal(base_size = 14) +
     #theme(panel.grid.major.y = element_blank()) +
-    geom_point(size=2, aes(color=zone))+
-    ggrepel::geom_text_repel()+
+    geom_point(size = 2, aes(color = zone)) +
+    ggrepel::geom_text_repel() +
     theme(legend.position = "none") +
     scale_color_manual(values = bec_colours(), guide = FALSE) +
-    labs(x = "BEC Zone Composition (%)", y = "Percentage of BEC Zone Protected (%)")
+    labs(
+      x = "BEC Zone Composition (%)",
+      y = "Percentage of BEC Zone Protected (%)"
+    )
   ggsave("out/bec_scatter.png", scatterplot, width = 6, height = 6, dpi = 300)
   write_rds(scatterplot, "out/bec_scatter.rds")
 
-  map<-ggplot() +
+  map <- ggplot() +
     theme_void() +
     theme(plot.title = element_text(hjust = 0.5, size = 15)) +
-    geom_sf(data = data2, aes(fill = zone), colour = NA)+
-    geom_sf(data = bc_bound_hres(), fill=NA)+
+    geom_sf(data = data2, aes(fill = zone), colour = NA) +
+    geom_sf(data = bc_bound_hres(), fill = NA) +
     scale_fill_manual(values = bec_colours()) +
-    theme(legend.title=element_blank()) +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0)) +
+    theme(legend.title = element_blank()) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
     labs(title = "BEC Zones in B.C.")
   ggsave("out/bec_map.png", map, width = 11, height = 10, dpi = 300)
   map
 
-  combined <- plot_grid(map, scatterplot, ncol=1, align="v", rel_heights=c(1.25,1))
+  combined <- plot_grid(
+    map,
+    scatterplot,
+    ncol = 1,
+    align = "v",
+    rel_heights = c(1.25, 1)
+  )
 
   ggsave("out/bec_comb.png", combined, width = 8, height = 10, dpi = 300)
   combined
-
 }
 
-create_bc_button <- function(){
+create_bc_button <- function() {
   output <- bc_bound() %>%
     st_geometry() %>%
     ms_simplify(0.02, explode = TRUE, keep_shapes = FALSE) %>%
@@ -539,62 +652,82 @@ create_bc_button <- function(){
   output
 }
 
-bc_map <- function(data){
-
+bc_map <- function(data) {
   ld_cities <- bcmaps::bc_cities() %>%
-    dplyr::filter(NAME == "Victoria" |
-                    NAME == "Prince Rupert"|
-                    NAME == "Smithers"|
-                    NAME == "Fort St. John"|
-                    NAME == "Kamloops"|
-                    NAME == "Prince George"|
-                    NAME == "Vancouver"|
-                    NAME == "Cranbrook")%>%
+    dplyr::filter(
+      NAME == "Victoria" |
+        NAME == "Prince Rupert" |
+        NAME == "Smithers" |
+        NAME == "Fort St. John" |
+        NAME == "Kamloops" |
+        NAME == "Prince George" |
+        NAME == "Vancouver" |
+        NAME == "Cranbrook"
+    ) %>%
     dplyr::select(NAME, geometry)
 
   #manually setting label location
-  ld_cities$longitude <- c(925299, 627354, 1205857, 1295775, 1399598, 1741864, 1270416, 1245673)
-  ld_cities$latitude <- c(1069703, 1050342, 979165, 1241672, 626000, 570917, 435953, 380451)
+  ld_cities$longitude <- c(
+    925299,
+    627354,
+    1205857,
+    1295775,
+    1399598,
+    1741864,
+    1270416,
+    1245673
+  )
+  ld_cities$latitude <- c(
+    1069703,
+    1050342,
+    979165,
+    1241672,
+    626000,
+    570917,
+    435953,
+    380451
+  )
 
   scale_land <- c("PA" = "#006d2c")
   scale_water <- c("PA" = "#0868ac")
-  scale_combo <- setNames(c(scale_land, scale_water),
-                          c("Land - PA",
-                            "Water - PA"))
+  scale_combo <- setNames(
+    c(scale_land, scale_water),
+    c("Land - PA", "Water - PA")
+  )
   output <- data %>%
-    mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-           type_combo = factor(type_combo,
-                               levels = c("Land - PA",
-                                          "Water - PA"))) %>%
+    mutate(
+      type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+      type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA"))
+    ) %>%
     group_by(date, type) %>%
     ungroup()
 
-  map<-ggplot() +
+  map <- ggplot() +
     theme_void() +
-    theme(plot.title = element_text(hjust =0.5, size = 25)) +
-    geom_sf(data = output, aes(fill = type_combo), colour = NA)+
-    geom_sf(data = bc_bound_hres(), fill=NA)+
-    geom_sf(data=ld_cities)+
-    geom_text(data=ld_cities, aes(x=longitude, y=latitude, label=NAME))+
+    theme(plot.title = element_text(hjust = 0.5, size = 25)) +
+    geom_sf(data = output, aes(fill = type_combo), colour = NA) +
+    geom_sf(data = bc_bound_hres(), fill = NA) +
+    geom_sf(data = ld_cities) +
+    geom_text(
+      data = ld_cities,
+      aes(x = longitude, y = latitude, label = NAME)
+    ) +
     scale_fill_manual(values = scale_combo) +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0)) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
     labs(title = "Distribution of Protected Areas in B.C. (2024)") +
-    theme(legend.title=element_blank())+
-    theme(legend.justification=c("center"),
-          legend.position=c(0.9, 0.6))
+    theme(legend.title = element_blank()) +
+    theme(legend.justification = c("center"), legend.position = c(0.9, 0.6))
   ggsave("out/prov_map.png", map, width = 11, height = 10, dpi = 300)
   map
 }
 
-eco_static <- function(data, input){
-
+eco_static <- function(data, input) {
   input <- input %>%
     dplyr::filter(park_type == "PA") %>%
     group_by(ecoregion_name, ecoregion_code, type) %>%
     dplyr::filter(date == max(date)) %>%
     select(ecoregion_name, ecoregion_code, type, p_region)
-
 
   #data <- cbind(data, st_coordinates(st_centroid(data)))
   label <- data %>%
@@ -603,153 +736,202 @@ eco_static <- function(data, input){
     ungroup()
 
   data <- data %>%
-    mutate(ecoregion_name = as.factor(ecoregion_name),
-           type=as.factor(type)) %>%
+    mutate(
+      ecoregion_name = as.factor(ecoregion_name),
+      type = as.factor(type)
+    ) %>%
     left_join(input, by = c("ecoregion_name", "ecoregion_code", "type"))
-
 
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 
   g <- ggplot(data) +
     theme_void() +
-    geom_sf(data=subset(data,type == "land"), aes(alpha = p_region), fill = scale_map["land"], size = 0.1, colour = "black")+
-    geom_sf(data=bc_bound_hres(), fill=NA)+
-    theme(plot.margin = unit(c(0,0,0,0), "pt")) +
+    geom_sf(
+      data = subset(data, type == "land"),
+      aes(alpha = p_region),
+      fill = scale_map["land"],
+      size = 0.1,
+      colour = "black"
+    ) +
+    geom_sf(data = bc_bound_hres(), fill = NA) +
+    theme(plot.margin = unit(c(0, 0, 0, 0), "pt")) +
     #geom_text(data=data, aes(X, Y, label=ecoregion_name))+
     #geom_sf_text_repel(aes(label=ecoregion_name))+
-    ggrepel::geom_text_repel(data=label, aes(label=ecoregion_name, geometry=geometry),
-                             stat="sf_coordinates",
-                             min.segment.length=0) +
+    ggrepel::geom_text_repel(
+      data = label,
+      aes(label = ecoregion_name, geometry = geometry),
+      stat = "sf_coordinates",
+      min.segment.length = 0
+    ) +
     #scale_fill_manual(values = scale_map, guide=NULL) +
-    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected (Land)") +
+    scale_alpha_continuous(
+      range = c(0.25, 1),
+      n.breaks = 5,
+      limits = c(0, 100),
+      name = "% Protected (Land)"
+    ) +
     ggnewscale::new_scale("alpha") +
-    geom_sf(data=subset(data,type == "water"), aes(alpha = p_region), fill = scale_map["water"], size = 0.1, colour = "black")+
-    scale_alpha_continuous(range = c(0.25, 1), n.breaks = 5, limits = c(0, 100), name="% Protected (Water)") +
-    scale_x_continuous(expand = c(0,0)) +
-    scale_y_continuous(expand = c(0,0)) +
+    geom_sf(
+      data = subset(data, type == "water"),
+      aes(alpha = p_region),
+      fill = scale_map["water"],
+      size = 0.1,
+      colour = "black"
+    ) +
+    scale_alpha_continuous(
+      range = c(0.25, 1),
+      n.breaks = 5,
+      limits = c(0, 100),
+      name = "% Protected (Water)"
+    ) +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
     labs(title = "Area Protected by Ecoregion") +
-    theme(plot.title = element_text(hjust=0.5, size = 25)) +
-    theme(legend.justification=c("center"),
-          legend.position=c(0.9, 0.6)) #+
-    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))#+
-    #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
+    theme(plot.title = element_text(hjust = 0.5, size = 25)) +
+    theme(legend.justification = c("center"), legend.position = c(0.9, 0.6)) #+
+  #guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))#+
+  #guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
   ggsave("out/ecoregion_map.png", g, width = 11, height = 10, dpi = 300)
   g
 }
 
-eco_bar <- function(data){
-
+eco_bar <- function(data) {
   data <- data %>%
     group_by(ecoregion_name, ecoregion_code, type, park_type) %>%
     dplyr::filter(date == max(date)) %>%
-    select(ecoregion_name, ecoregion_code, type, park_type, p_type, p_region) %>%
+    select(
+      ecoregion_name,
+      ecoregion_code,
+      type,
+      park_type,
+      p_type,
+      p_region
+    ) %>%
     arrange(desc(p_type)) %>%
-    mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA")),
-         ecoregion_type_combo = glue("{ecoregion_name} - {tools::toTitleCase(type)}"),
-         ecoregion_name = as.factor(ecoregion_name)) %>%
+    mutate(
+      type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+      type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA")),
+      ecoregion_type_combo = glue(
+        "{ecoregion_name} - {tools::toTitleCase(type)}"
+      ),
+      ecoregion_name = as.factor(ecoregion_name)
+    ) %>%
     ungroup()
 
   scale_land <- c("PA" = "#004529")
   scale_water <- c("PA" = "#063c4e")
   scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
-  scale_combo <- setNames(c(scale_land, scale_water),
-                          c("Land - PA",
-                            "Water - PA"))
+  scale_combo <- setNames(
+    c(scale_land, scale_water),
+    c("Land - PA", "Water - PA")
+  )
 
-    land <- ggplot(data=dplyr::filter(data, type=="land"),
-                   aes(x = round(p_type,2), y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
-                       fill = type, alpha = park_type)) +
-      theme_minimal(base_size = 14) +
-      theme(panel.grid.major.y = element_blank(),
-            legend.position = c(0.7, 0.3)) +
-      geom_bar(width = 0.9, stat = "identity") +
-      labs(y = "Ecoregion") +
-      theme(axis.title.x=element_blank())+
-      scale_fill_manual(values = scale_map, guide = FALSE) +
-      scale_alpha_manual(name = "Type", values = c("PA" = 1)) +
-      scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
-      guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))
-    land
+  land <- ggplot(
+    data = dplyr::filter(data, type == "land"),
+    aes(
+      x = round(p_type, 2),
+      y = fct_reorder(ecoregion_name, p_region, .desc = FALSE),
+      fill = type,
+      alpha = park_type
+    )
+  ) +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.major.y = element_blank(), legend.position = c(0.7, 0.3)) +
+    geom_bar(width = 0.9, stat = "identity") +
+    labs(y = "Ecoregion") +
+    theme(axis.title.x = element_blank()) +
+    scale_fill_manual(values = scale_map, guide = FALSE) +
+    scale_alpha_manual(name = "Type", values = c("PA" = 1)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, 110)) +
+    guides(alpha = guide_legend(override.aes = list(fill = scale_map["land"])))
+  land
 
-    water <-ggplot(data=dplyr::filter(data, type=="water"),
-                       aes(x = round(p_type,2), y = fct_reorder(ecoregion_name, p_region, .desc=FALSE),
-                           fill = type, alpha = park_type)) +
-      theme_minimal(base_size = 14) +
-      theme(panel.grid.major.y = element_blank(),
-            legend.position = c(0.7, 0.5)) +
-      geom_bar(width = 0.9, stat = "identity") +
-      labs(x = "Percent Protected Within Ecoregion (%)") +
-      theme(axis.title.y=element_blank())+
-      scale_fill_manual(values = scale_map, guide = FALSE) +
-      scale_alpha_manual(name = "Type", values = c("PA" = 1)) +
-      scale_x_continuous(expand = c(0,0), limits=c(0,110)) +
-      guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
-      #theme(legend.position='none')
-    water
+  water <- ggplot(
+    data = dplyr::filter(data, type == "water"),
+    aes(
+      x = round(p_type, 2),
+      y = fct_reorder(ecoregion_name, p_region, .desc = FALSE),
+      fill = type,
+      alpha = park_type
+    )
+  ) +
+    theme_minimal(base_size = 14) +
+    theme(panel.grid.major.y = element_blank(), legend.position = c(0.7, 0.5)) +
+    geom_bar(width = 0.9, stat = "identity") +
+    labs(x = "Percent Protected Within Ecoregion (%)") +
+    theme(axis.title.y = element_blank()) +
+    scale_fill_manual(values = scale_map, guide = FALSE) +
+    scale_alpha_manual(name = "Type", values = c("PA" = 1)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, 110)) +
+    guides(alpha = guide_legend(override.aes = list(fill = scale_map["water"])))
+  #theme(legend.position='none')
+  water
 
-    combined <- plot_grid(land, water, ncol=1, align="v", rel_heights=c(4,1))
+  combined <- plot_grid(
+    land,
+    water,
+    ncol = 1,
+    align = "v",
+    rel_heights = c(4, 1)
+  )
 
-
-    ggsave("out/eco_bar_all.png", combined, width = 9, height = 9, dpi = 300)
-    combined
+  ggsave("out/eco_bar_all.png", combined, width = 9, height = 9, dpi = 300)
+  combined
 }
 
-eco_map = function(df, r){
+eco_map = function(df, r) {
+  scale = c("Land - PA" = "#004529", "Water - PA" = "#063c4e")
 
-scale = c("Land - PA" = "#004529",
-          "Water - PA" = "#063c4e")
+  df = df %>%
+    mutate(
+      type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+      type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA"))
+    )
 
-df = df %>%
-  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA")))
+  map(unique(df$ecoregion_code), function(.x) {
+    df = df %>%
+      dplyr::filter(ecoregion_code == .x)
+    r = r %>%
+      dplyr::filter(ecoregion_code == .x)
 
-map(unique(df$ecoregion_code),
-    function(.x) {
-      df = df %>%
-        dplyr::filter(ecoregion_code == .x)
-      r = r %>%
-        dplyr::filter(ecoregion_code == .x)
+    png(paste0("out/ecoregion_maps/", .x, ".png")) # Make sure the directory exists before running this
 
-      png(paste0("out/ecoregion_maps/",.x,".png")) # Make sure the directory exists before running this
+    p = ggplot(df) +
+      theme_void() +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 15),
+        plot.margin = unit(c(0, 0, 0, 0), "pt")
+      ) +
+      geom_sf(data = r, fill = "grey80", col = NA) +
+      geom_sf(aes(fill = type_combo), colour = NA) +
+      scale_fill_manual(values = scale, guide = FALSE) +
+      scale_x_continuous(expand = c(0, 0)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      labs(title = " ") +
+      guides(alpha = guide_legend(override.aes = list(fill = "black")))
 
-      p = ggplot(df) +
-        theme_void() +
-        theme(plot.title = element_text(hjust = 0.5, size = 15),
-              plot.margin = unit(c(0,0,0,0), "pt")) +
-        geom_sf(data = r, fill = "grey80", col = NA) +
-        geom_sf(aes(fill = type_combo), colour = NA) +
-        scale_fill_manual(values = scale, guide = FALSE) +
-        scale_x_continuous(expand = c(0,0)) +
-        scale_y_continuous(expand = c(0,0)) +
-        labs(title = " ") +
-        guides(alpha = guide_legend(override.aes = list(fill = "black")))
+    plot(p)
 
-      plot(p)
+    dev.off()
 
-      dev.off()
+    png(paste0("app/out/ecoregion_maps/", .x, ".png")) # Make sure the directory exists before running this
 
-      png(paste0("app/out/ecoregion_maps/",.x,".png")) # Make sure the directory exists before running this
+    p = ggplot(df) +
+      theme_void() +
+      theme(
+        plot.title = element_text(hjust = 0.5, size = 15),
+        plot.margin = unit(c(0, 0, 0, 0), "pt")
+      ) +
+      geom_sf(data = r, fill = "grey80", col = NA) +
+      geom_sf(aes(fill = type_combo), colour = NA) +
+      scale_fill_manual(values = scale, guide = FALSE) +
+      scale_x_continuous(expand = c(0, 0)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      labs(title = " ") +
+      guides(alpha = guide_legend(override.aes = list(fill = "black")))
 
-      p = ggplot(df) +
-        theme_void() +
-        theme(plot.title = element_text(hjust = 0.5, size = 15),
-              plot.margin = unit(c(0,0,0,0), "pt")) +
-        geom_sf(data = r, fill = "grey80", col = NA) +
-        geom_sf(aes(fill = type_combo), colour = NA) +
-        scale_fill_manual(values = scale, guide = FALSE) +
-        scale_x_continuous(expand = c(0,0)) +
-        scale_y_continuous(expand = c(0,0)) +
-        labs(title = " ") +
-        guides(alpha = guide_legend(override.aes = list(fill = "black")))
+    plot(p)
 
-      plot(p)
-
-      dev.off()
-    })
-
+    dev.off()
+  })
 }

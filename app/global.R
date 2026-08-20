@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-
 # Packages ----------------------------------------------------------------
 library(shiny)
 library(ggiraph)
@@ -32,50 +31,60 @@ library(magick)
 # Data
 eco <- readRDS("out/eco_simp.rds")
 pa_eco <- readRDS("out/CPCAD_Dec2024_eco_simp.rds") %>%
-  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA")))
+  mutate(
+    type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+    type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA"))
+  )
 
 yearly_sums <- readRDS("out/total_prot_area.rds") %>%
-  mutate(tooltip_date = as.character(date),
-         type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA"))) %>%
+  mutate(
+    tooltip_date = as.character(date),
+    type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+    type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA"))
+  ) %>%
   group_by(date, type) %>%
-  mutate(tooltip = glue(
-    "<strong>Year:</strong> {tooltip_date}<br>",
-    "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>")) %>%
+  mutate(
+    tooltip = glue(
+      "<strong>Year:</strong> {tooltip_date}<br>",
+      "<strong>Parks and Protected Areas:</strong> ",
+      "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>"
+    )
+  ) %>%
   ungroup()
 
 eco_area <- readRDS("out/pa_eco_sum.rds") %>%
-  mutate(tooltip_date = if_else(missing,
-                                "Inc. unknown year of protection",
-                                as.character(date)),
-         type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA"))) %>%
+  mutate(
+    tooltip_date = if_else(
+      missing,
+      "Inc. unknown year of protection",
+      as.character(date)
+    ),
+    type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+    type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA"))
+  ) %>%
   group_by(ecoregion_code, type, date) %>%
-  mutate(tooltip = glue(
-    "<strong>Year:</strong> {tooltip_date}<br>",
-    "<strong>Parks and Protected Areas:</strong> ",
-    "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>")) %>%
+  mutate(
+    tooltip = glue(
+      "<strong>Year:</strong> {tooltip_date}<br>",
+      "<strong>Parks and Protected Areas:</strong> ",
+      "{format(round(cum_year_type[park_type == 'PA'], 2), big.mark = ',')} %<br>"
+    )
+  ) %>%
   ungroup()
 
 eco_area_sum <- eco_area %>%
   select(ecoregion_code, ecoregion_name, park_type, type, p_type, p_region) %>%
   distinct() %>%
   group_by(ecoregion_code, type) %>%
-  mutate(type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
-         type_combo = factor(type_combo,
-                             levels = c("Land - PA",
-                                        "Water - PA")),
-         tooltip = glue("<strong>Region:</strong> {ecoregion_name}<br>",
-                        "<strong>Parks and Protected Areas:</strong> ",
-                        "{format(round(p_type[park_type == 'PA'], 1), big.mark = ',')}%<br>"))
+  mutate(
+    type_combo = glue("{tools::toTitleCase(type)} - {park_type}"),
+    type_combo = factor(type_combo, levels = c("Land - PA", "Water - PA")),
+    tooltip = glue(
+      "<strong>Region:</strong> {ecoregion_name}<br>",
+      "<strong>Parks and Protected Areas:</strong> ",
+      "{format(round(p_type[park_type == 'PA'], 1), big.mark = ',')}%<br>"
+    )
+  )
 
 # Add tool tip to map so they match
 eco <- select(eco_area_sum, ecoregion_code, p_region, tooltip) %>%
@@ -97,8 +106,7 @@ tooltip_css <- "background: white; opacity: 1; color: black; border-radius: 5px;
                 font-size: 12px; border-width 2px; border-color: black;"
 
 # Colours - Somewhat matches msw-disposal-indicator and original
-scale = c("Land - PA" = "#004529",
-          "Water - PA" = "#063c4e")
+scale = c("Land - PA" = "#004529", "Water - PA" = "#063c4e")
 scale_land <- c("PA" = "#004529")
 scale_water <- c("PA" = "#063c4e")
 scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
@@ -106,8 +114,8 @@ scale_map <- c("land" = "#056100", "water" = "#0a7bd1")
 #                         c("Land - OECM", "Land - PA",
 #                           "Water - OECM", "Water - PA"))
 
-hover <- "#FFFF99"
-select <- "#FFFFFF"
+hover <- "#e66101"
+select <- "#bababa"
 
 # Labels
 lab_total_area <- "Percent Area Protected"
@@ -139,7 +147,7 @@ gg_area <- function(data, type = "region") {
   # }
 
   data <- data %>%
-    dplyr::filter(date <=2022) %>%
+    #dplyr::filter(date <=2022) %>%
     group_by(type, date) %>%
     arrange(date, desc(cum_year_type)) %>%
     mutate(point = cumsum(cum_year_type)) %>%
@@ -147,38 +155,49 @@ gg_area <- function(data, type = "region") {
 
   g <- ggplot(data = data, aes(x = date, y = cum_year_type)) +
     theme_minimal(base_size = 14) +
-    theme(panel.grid.minor.x = element_blank(),
-          axis.line = element_line(),
-          axis.title.x = element_blank(),
-          legend.title = element_blank(),
-          legend.position = "top",
-          legend.justification = "right",
-          legend.box.margin = margin(),
-          legend.margin = margin(),
-          plot.margin = unit(c(5,10,0,0), "pt"),
-          strip.background = element_blank(),
-          strip.text = element_blank()) +
+    theme(
+      panel.grid.minor.x = element_blank(),
+      axis.line = element_line(),
+      axis.title.x = element_blank(),
+      legend.title = element_blank(),
+      legend.position = "top",
+      legend.justification = "right",
+      legend.box.margin = margin(),
+      legend.margin = margin(),
+      plot.margin = unit(c(5, 10, 0, 0), "pt"),
+      strip.background = element_blank(),
+      strip.text = element_blank()
+    ) +
     geom_area(aes(fill = type_combo)) +
-    geom_col_interactive(aes(y = +Inf, tooltip = tooltip), fill = "grey",
-                         na.rm = TRUE, show.legend = FALSE, alpha = 0.01, width = 1) +
-    scale_x_continuous(limits = c(1936, 2024),
-                       expand = expansion(mult = c(0, 0.01)),
-                       breaks = breaks_int) +
+    geom_col_interactive(
+      aes(y = +Inf, tooltip = tooltip),
+      fill = "grey",
+      na.rm = TRUE,
+      show.legend = FALSE,
+      alpha = 0.01,
+      width = 1
+    ) +
+    scale_x_continuous(
+      limits = c(1936, 2028),
+      expand = expansion(mult = c(0, 0.01)),
+      breaks = breaks_int
+    ) +
     scale_fill_manual(name = "Type", values = scale) +
-    labs(x = lab_year, y = lab_growth)+#,
-         #subtitle = if_else(any(data$missing),
-                            #"Inc. areas with unknown date of protection (*)",
-                            #"")) +
-    coord_cartesian(xlim = c(min(data$date), max(data$date)+1))
+    labs(x = lab_year, y = lab_growth) + #,
+    #subtitle = if_else(any(data$missing),
+    #"Inc. areas with unknown date of protection (*)",
+    #"")) +
+    coord_cartesian(xlim = c(min(data$date), max(data$date) + 1))
 
-  if(type == "all") {
-    g <- g + facet_wrap(~ type, nrow = 1)
-  } else if (length(unique(data$type==2))){
-    g <- g + facet_wrap(~ type, nrow = 1)
-  } else {lim <- NULL}
+  if (type == "all") {
+    g <- g + facet_wrap(~type, nrow = 1)
+  } else if (length(unique(data$type == 2))) {
+    g <- g + facet_wrap(~type, nrow = 1)
+  } else {
+    lim <- NULL
+  }
 
   g <- g + scale_y_continuous(expand = expansion(mult = c(0, 0.05)))
-
 
   g
 }
