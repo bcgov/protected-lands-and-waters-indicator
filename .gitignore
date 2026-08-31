@@ -12,7 +12,7 @@ print_ver/*.pdf
 docs/*
 *.log
 backup*
-app/out/*.rds
+app/out/
 simple_app/out/*.rds
 designations.R
 print_ver/out
